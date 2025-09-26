@@ -1,0 +1,50 @@
+[
+  {
+    "id": "agent-1",
+    "agent_key": "GregH",
+    "display_name": "Greg H.",
+    "department_id": "dept-1"
+  },
+  {
+    "id": "agent-2",
+    "agent_key": "SarahM",
+    "display_name": "Sarah M.",
+    "department_id": "dept-1"
+  },
+  {
+    "id": "agent-3",
+    "agent_key": "MikeD",
+    "display_name": "Mike D.",
+    "department_id": "dept-2"
+  },
+  {
+    "id": "agent-4",
+    "agent_key": "LisaK",
+    "display_name": "Lisa K.",
+    "department_id": "dept-2"
+  },
+  {
+    "id": "agent-5",
+    "agent_key": "JohnW",
+    "display_name": "John W.",
+    "department_id": "dept-3"
+  },
+  {
+    "id": "agent-6",
+    "agent_key": "AmyR",
+    "display_name": "Amy R.",
+    "department_id": "dept-3"
+  },
+  {
+    "id": "agent-7",
+    "agent_key": "TomS",
+    "display_name": "Tom S.",
+    "department_id": "dept-4"
+  },
+  {
+    "id": "agent-8",
+    "agent_key": "JenB",
+    "display_name": "Jen B.",
+    "department_id": "dept-4"
+  }
+]

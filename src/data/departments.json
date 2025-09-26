@@ -1,0 +1,18 @@
+[
+  {
+    "id": "dept-1",
+    "name": "IFP"
+  },
+  {
+    "id": "dept-2", 
+    "name": "Medicare"
+  },
+  {
+    "id": "dept-3",
+    "name": "Small Business"
+  },
+  {
+    "id": "dept-4",
+    "name": "Admin"
+  }
+]
