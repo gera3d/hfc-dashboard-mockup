@@ -1,26 +1,150 @@
 @import "tailwindcss";
 
+/* Ensure proper stacking context for dropdown menus */
+.dropdown-menu {
+  z-index: 9999 !important;
+}
+
+/* Fix for dropdown positioning */
+.dropdown-container {
+  position: relative !important;
+}
+
+/* Force dropdowns to appear on top */
+.dropdown-content {
+  position: absolute !important;
+  z-index: 9999 !important;
+  isolation: isolate;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Design token CSS variables */
+  --color-brand-primary: #0043CE;
+  --color-brand-accent: #3DDC97;
+  --color-brand-alert: #FF6B6B;
+  
+  --color-background-app: #F5F7FA;
+  --color-background-surface: rgba(255, 255, 255, 0.82);
+  --color-background-elevated: #FFFFFF;
+  --color-background-subtle: #EAF0F9;
+  --color-background-overlay: rgba(11, 31, 51, 0.08);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background-app);
+  color: #0A2540; /* Stripe's dark blue text */
+  font-family: var(--font-sans);
+  font-size: 15px; /* Stripe uses slightly smaller text */
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em; /* Subtle letter spacing adjustment */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Stripe-style focus states - subtle blue ring */
+:focus-visible {
+  outline: 2px solid rgba(99, 91, 255, 0.4);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Stripe Button Styles */
+.stripe-button-primary {
+  background: var(--color-brand-primary);
+  color: white;
+  border-radius: 6px;
+  font-weight: 600;
+  padding: 0.625rem 1.25rem;
+  transition: all 0.15s ease;
+  border: none;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.stripe-button-primary:hover {
+  background: #7970FF;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.stripe-button-secondary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #635BFF;
+  background-color: white;
+  border: 1px solid #E3E8EE;
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.stripe-button-secondary:hover {
+  color: #6772E5;
+  border-color: #D7DCE7;
+  background-color: #F7FAFC;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Stripe Card Styles */
+.stripe-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px 0 rgba(60, 66, 87, 0.08), 0 1px 1px 0 rgba(0, 0, 0, 0.12);
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+  border: 1px solid #E3E8EE;
+}
+
+.stripe-card:hover {
+  box-shadow: 0 7px 14px 0 rgba(60, 66, 87, 0.1), 0 3px 6px 0 rgba(0, 0, 0, 0.07);
+}
+
+/* Stripe Section Headings */
+.stripe-heading {
+  font-weight: 600;
+  color: #0A2540;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+/* Stripe Table Styles */
+.stripe-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.stripe-table th {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  color: #697386;
+  background-color: white;
+  border-bottom: 1px solid #E3E8EE;
+  padding: 1rem;
+  text-align: left;
+}
+
+.stripe-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #E3E8EE;
+  color: #1A1F36;
+  font-size: 0.875rem;
+}
+
+.stripe-table tr:hover {
+  background-color: #F8FAFC;
+}
+
+.stripe-table tr:last-child td {
+  border-bottom: none;
 }

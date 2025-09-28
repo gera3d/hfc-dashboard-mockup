@@ -75,23 +75,26 @@ export function AgentTable({ data, onAgentClick }: AgentTableProps) {
   }
   
   return (
-    <div className="bg-white rounded-2xl shadow-sm border mb-8">
-      <div className="p-6 border-b border-gray-200">
+    <div className="backdrop-blur-md bg-white rounded-2xl shadow-soft border border-gray-100 mb-8 hover:shadow-elevated transition-all duration-200">
+      <div className="p-8 border-b border-gray-100">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">Agent Performance</h3>
-          <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100">
+          <div>
+            <h3 className="text-2xl font-display font-semibold text-gray-800 mb-1 tracking-tight">Agent Performance</h3>
+            <p className="text-sm text-gray-500">Detailed metrics for all agents</p>
+          </div>
+          <button className="stripe-button-secondary">
             <Download className="w-4 h-4" />
             Export CSV
           </button>
         </div>
       </div>
-      
+
       <div className="overflow-x-auto">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
+        <table className="min-w-full stripe-table">
+          <thead className="bg-white sticky top-0 z-10 border-b border-gray-100">
             <tr>
               <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => handleSort('agent_name')}
               >
                 <div className="flex items-center gap-2">
@@ -196,7 +199,12 @@ export function AgentTable({ data, onAgentClick }: AgentTableProps) {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {sortedData.map((agent, index) => (
-              <tr key={agent.agent_id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+              <tr
+                key={agent.agent_id}
+                className="group bg-white hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 last:border-b-0 cursor-pointer"
+                tabIndex={0}
+                onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && onAgentClick?.(agent.agent_id)}
+              >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">{agent.agent_name}</div>
                 </td>
@@ -291,20 +299,23 @@ export function ReviewTable({ data, showPagination = true, pageSize = 10 }: Revi
   
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-sm border">
-        <div className="p-6 border-b border-gray-200">
+      <div className="backdrop-blur-md bg-white rounded-2xl shadow-soft border border-gray-100 hover:shadow-elevated transition-all duration-200">
+        <div className="p-8 border-b border-gray-100">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">Individual Reviews</h3>
-            <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100">
+            <div>
+              <h3 className="text-2xl font-display font-semibold text-gray-800 mb-1 tracking-tight">Individual Reviews</h3>
+              <p className="text-sm text-gray-500">Complete review history with details</p>
+            </div>
+            <button className="stripe-button-secondary">
               <Download className="w-4 h-4" />
               Export CSV
             </button>
           </div>
         </div>
-        
+
         <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead className="bg-gray-50">
+          <table className="min-w-full stripe-table">
+            <thead className="bg-white sticky top-0 z-10 border-b border-gray-100">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date/Time
@@ -328,10 +339,12 @@ export function ReviewTable({ data, showPagination = true, pageSize = 10 }: Revi
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {currentData.map((review, index) => (
-                <tr 
-                  key={review.id} 
-                  className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 cursor-pointer`}
+                <tr
+                  key={review.id}
+                  className="group bg-white hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 last:border-b-0 cursor-pointer"
+                  tabIndex={0}
                   onClick={() => setSelectedReview(review)}
+                  onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setSelectedReview(review)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{formatDateTime(review.review_ts)}</div>

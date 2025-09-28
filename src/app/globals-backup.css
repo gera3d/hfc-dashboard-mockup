@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+:root {
+  /* Design token CSS variables */
+  --color-brand-primary: #0043CE;
+  --color-brand-accent: #3DDC97;
+  --color-brand-alert: #FF6B6B;
+  
+  --color-background-app: #F5F7FA;
+  --color-background-surface: rgba(255, 255, 255, 0.82);
+  --color-background-elevated: #FFFFFF;
+  --color-background-subtle: #EAF0F9;
+  --color-background-overlay: rgba(11, 31, 51, 0.08);
+  
+  --color-signal-gold: #F9C846;
+  --color-signal-platinum: #00ADEF;
+  --color-signal-positive: #22C55E;
+  --color-signal-caution: #F97316;
+  --color-signal-negative: #EF4444;
+  
+  --font-display: 'Space Grotesk', 'Inter', system-ui;
+  --font-sans: 'Inter', system-ui;
+  --font-mono: 'IBM Plex Mono', ui-monospace;
+}
+
+body {
+  background: var(--color-background-app);
+  color: #0B1F33;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

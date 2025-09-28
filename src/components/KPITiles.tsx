@@ -18,7 +18,7 @@ interface KPITileProps {
   colorClass?: string
 }
 
-function KPITile({ label, value, previousValue, showComparison, format = 'number', colorClass = 'text-blue-600' }: KPITileProps) {
+function KPITile({ label, value, previousValue, showComparison, format = 'number', colorClass = 'text-[#635BFF]' }: KPITileProps) {
   const formatValue = (val: number | string, formatType: string) => {
     if (typeof val === 'string') return val
     
@@ -54,36 +54,54 @@ function KPITile({ label, value, previousValue, showComparison, format = 'number
   }
   
   const delta = getDelta()
+  const getColor = () => {
+    // Stripe-style color codes
+    if (colorClass.includes('blue')) return '#635BFF' // Primary purple
+    if (colorClass.includes('green')) return '#00CA6F' // Green
+    if (colorClass.includes('red')) return '#FF4A4C' // Red
+    if (colorClass.includes('orange')) return '#FFAE33' // Orange
+    if (colorClass.includes('yellow')) return '#FFBF00' // Yellow
+    if (colorClass.includes('lime')) return '#00CA6F' // Green (same as green for consistency)
+    if (colorClass.includes('purple')) return '#635BFF' // Purple (primary)
+    return '#635BFF' // Default to primary
+  }
+  
+  const color = getColor()
   
   return (
-    <div className="bg-white rounded-2xl shadow-sm border p-6">
-      <div className="text-sm font-medium text-gray-600 mb-1">{label}</div>
-      <div className={`text-3xl font-bold ${colorClass} mb-2`}>
+    <div className="bg-white rounded-md border border-[#E3E8EE] p-5 transition-all duration-150 hover:shadow-soft">
+      <div className="text-xs font-medium text-[#8898AA] mb-1 tracking-wide">{label}</div>
+      <div className="text-3xl font-semibold tracking-tight text-[#0A2540] leading-tight">
         {formatValue(value, format)}
       </div>
       
       {delta && (
-        <div className="flex items-center text-sm">
-          {delta.isPositive ? (
-            <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-          ) : delta.isNegative ? (
-            <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
-          ) : (
-            <Minus className="w-4 h-4 text-gray-400 mr-1" />
-          )}
-          <span className={`font-medium ${delta.isPositive ? 'text-green-600' : delta.isNegative ? 'text-red-600' : 'text-gray-600'}`}>
-            {delta.isPositive ? '+' : ''}{delta.delta.toLocaleString()} ({delta.isPositive ? '+' : ''}{delta.percentChange.toFixed(1)}%)
+        <div className="flex items-center text-xs mt-2">
+          <div className="flex-shrink-0 mr-1.5">
+            {delta.isPositive ? (
+              <TrendingUp className="w-3 h-3 text-[#00CA6F]" />
+            ) : delta.isNegative ? (
+              <TrendingDown className="w-3 h-3 text-[#FF4A4C]" />
+            ) : (
+              <Minus className="w-3 h-3 text-[#8898AA]" />
+            )}
+          </div>
+          <span className={`font-medium ${delta.isPositive ? 'text-[#00CA6F]' : delta.isNegative ? 'text-[#FF4A4C]' : 'text-[#8898AA]'}`}>
+            {delta.isPositive ? '+' : ''}{delta.percentChange.toFixed(1)}%
           </span>
-          <span className="text-gray-500 ml-1">vs previous</span>
+          <span className="text-[#8898AA] ml-1">vs. previous</span>
         </div>
       )}
+      
+      {/* Minimalist stripe-style indicator - colored bar at bottom */}
+      <div className="h-1 w-16 mt-4" style={{ backgroundColor: color, opacity: 0.2 }}></div>
     </div>
   )
 }
 
 export default function KPITiles({ metrics, previousMetrics, showComparison }: KPITilesProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-8">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
       <KPITile
         label="1★ Reviews"
         value={metrics.star_1}

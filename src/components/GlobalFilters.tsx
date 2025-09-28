@@ -86,37 +86,40 @@ export default function GlobalFilters({ filters, onFiltersChange }: GlobalFilter
     : agents
   
   return (
-    <div className="bg-white rounded-2xl shadow-sm border p-6 mb-6">
-      <div className="flex flex-wrap gap-4 items-center">
+    <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-elevated border border-white/50 p-6 md:p-8 mb-10 hover:shadow-elevatedStrong transition-all duration-300 relative overflow-visible group">
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white via-transparent to-indigo-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      
+      <div className="relative z-10 flex flex-wrap gap-4 sm:gap-6 items-center">
         {/* Date Range Picker */}
-        <div className="relative">
+        <div className="relative dropdown-container">
           <button
             onClick={() => setShowDatePicker(!showDatePicker)}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white hover:bg-gray-50 font-medium text-gray-900"
           >
-            <Calendar className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium">{getDateRangeLabel(filters.dateRange)}</span>
-            <ChevronDown className="w-4 h-4 text-gray-500" />
+            <Calendar className="w-5 h-5 text-gray-500" />
+            <span className="text-sm font-semibold">{getDateRangeLabel(filters.dateRange)}</span>
+            <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${showDatePicker ? 'rotate-180' : ''}`} />
           </button>
           
           {showDatePicker && (
-            <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-48">
+            <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[9999] min-w-48 overflow-hidden dropdown-content">
               <div className="p-2">
                 <button
                   onClick={() => handleDateRangeSelect(dateRanges.last7Days)}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded"
+                  className="w-full text-left px-3 py-3 text-sm hover:bg-blue-50 rounded font-medium text-gray-900 hover:text-blue-700 transition-colors duration-150"
                 >
                   Last 7 days
                 </button>
                 <button
                   onClick={() => handleDateRangeSelect(dateRanges.thisMonth)}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded"
+                  className="w-full text-left px-3 py-3 text-sm hover:bg-blue-50 rounded font-medium text-gray-900 hover:text-blue-700 transition-colors duration-150"
                 >
                   This month
                 </button>
                 <button
                   onClick={() => handleDateRangeSelect(dateRanges.thisYear)}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded"
+                  className="w-full text-left px-3 py-3 text-sm hover:bg-blue-50 rounded font-medium text-gray-900 hover:text-blue-700 transition-colors duration-150"
                 >
                   This year
                 </button>
@@ -126,22 +129,26 @@ export default function GlobalFilters({ filters, onFiltersChange }: GlobalFilter
         </div>
         
         {/* Department Filter */}
-        <div className="relative">
+        <div className="relative dropdown-container">
           <button
             onClick={() => setShowDepartmentDropdown(!showDepartmentDropdown)}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className={`flex items-center gap-2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium ${
+              filters.selectedDepartments.length > 0
+                ? 'border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100'
+                : 'border-gray-300 bg-white text-gray-900 hover:border-gray-400 hover:bg-gray-50'
+            }`}
           >
-            <span className="text-sm font-medium">
+            <span className="text-sm font-semibold">
               {filters.selectedDepartments.length === 0 
                 ? 'All Departments' 
                 : `${filters.selectedDepartments.length} Department${filters.selectedDepartments.length > 1 ? 's' : ''}`
               }
             </span>
-            <ChevronDown className="w-4 h-4 text-gray-500" />
+            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showDepartmentDropdown ? 'rotate-180' : ''} ${filters.selectedDepartments.length > 0 ? 'text-blue-600' : 'text-gray-500'}`} />
           </button>
           
           {showDepartmentDropdown && (
-            <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-48">
+            <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[9999] min-w-48 dropdown-content">
               <div className="p-2">
                 {filters.selectedDepartments.length > 0 && (
                   <button
@@ -168,22 +175,26 @@ export default function GlobalFilters({ filters, onFiltersChange }: GlobalFilter
         </div>
         
         {/* Agent Filter */}
-        <div className="relative">
+        <div className="relative dropdown-container">
           <button
             onClick={() => setShowAgentDropdown(!showAgentDropdown)}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className={`flex items-center gap-2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium ${
+              filters.selectedAgents.length > 0
+                ? 'border-green-300 bg-green-50 text-green-700 hover:bg-green-100'
+                : 'border-gray-300 bg-white text-gray-900 hover:border-gray-400 hover:bg-gray-50'
+            }`}
           >
-            <span className="text-sm font-medium">
+            <span className="text-sm font-semibold">
               {filters.selectedAgents.length === 0 
                 ? 'All Agents' 
                 : `${filters.selectedAgents.length} Agent${filters.selectedAgents.length > 1 ? 's' : ''}`
               }
             </span>
-            <ChevronDown className="w-4 h-4 text-gray-500" />
+            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showAgentDropdown ? 'rotate-180' : ''} ${filters.selectedAgents.length > 0 ? 'text-green-600' : 'text-gray-500'}`} />
           </button>
           
           {showAgentDropdown && (
-            <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-48 max-h-64 overflow-y-auto">
+            <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[9999] min-w-48 max-h-64 overflow-y-auto dropdown-content">
               <div className="p-2">
                 {filters.selectedAgents.length > 0 && (
                   <button
@@ -216,22 +227,26 @@ export default function GlobalFilters({ filters, onFiltersChange }: GlobalFilter
         </div>
         
         {/* Source Filter */}
-        <div className="relative">
+        <div className="relative dropdown-container">
           <button
             onClick={() => setShowSourceDropdown(!showSourceDropdown)}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className={`flex items-center gap-2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium ${
+              filters.selectedSources.length > 0
+                ? 'border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100'
+                : 'border-gray-300 bg-white text-gray-900 hover:border-gray-400 hover:bg-gray-50'
+            }`}
           >
-            <span className="text-sm font-medium">
+            <span className="text-sm font-semibold">
               {filters.selectedSources.length === 0 
                 ? 'All Sources' 
                 : `${filters.selectedSources.length} Source${filters.selectedSources.length > 1 ? 's' : ''}`
               }
             </span>
-            <ChevronDown className="w-4 h-4 text-gray-500" />
+            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showSourceDropdown ? 'rotate-180' : ''} ${filters.selectedSources.length > 0 ? 'text-purple-600' : 'text-gray-500'}`} />
           </button>
           
           {showSourceDropdown && (
-            <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-48">
+            <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[9999] min-w-48 dropdown-content">
               <div className="p-2">
                 {filters.selectedSources.length > 0 && (
                   <button
@@ -259,14 +274,16 @@ export default function GlobalFilters({ filters, onFiltersChange }: GlobalFilter
         
         {/* Compare Mode Toggle */}
         <div className="flex items-center ml-auto">
-          <label className="flex items-center cursor-pointer">
+          <label className="flex items-center cursor-pointer group">
             <input
               type="checkbox"
               checked={filters.compareMode}
               onChange={toggleCompareMode}
-              className="mr-2 text-blue-600 focus:ring-blue-500"
+              className="mr-3 w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 transition-all duration-200"
             />
-            <span className="text-sm font-medium text-gray-700">Compare to previous period</span>
+            <span className="text-sm font-semibold text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
+              Compare to previous period
+            </span>
           </label>
         </div>
       </div>
