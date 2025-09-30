@@ -74,13 +74,37 @@ export function AgentTable({ data, onAgentClick }: AgentTableProps) {
     return date.toLocaleDateString()
   }
   
+  // Group by department
+  const grouped = data.reduce((acc, agent) => {
+    if (!acc[agent.department_name]) acc[agent.department_name] = [];
+    acc[agent.department_name].push(agent);
+    return acc;
+  }, {} as Record<string, AgentMetrics[]>);
+
+  // Calculate department and grand totals/averages
+  const calcSummary = (agents: AgentMetrics[]) => {
+    const sum = (field: keyof AgentMetrics) => agents.reduce((a, b) => a + (Number(b[field]) || 0), 0);
+    const avg = (field: keyof AgentMetrics) => agents.length ? sum(field) / agents.length : 0;
+    return {
+      star_1: sum('star_1'),
+      star_2: sum('star_2'),
+      star_3: sum('star_3'),
+      star_4: sum('star_4'),
+      star_5: sum('star_5'),
+      total: sum('total'),
+      avg_rating: avg('avg_rating'),
+      percent_5_star: avg('percent_5_star'),
+    };
+  };
+  const grandSummary = calcSummary(data);
+
   return (
     <div className="backdrop-blur-md bg-white rounded-2xl shadow-soft border border-gray-100 mb-8 hover:shadow-elevated transition-all duration-200">
       <div className="p-8 border-b border-gray-100">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-2xl font-display font-semibold text-gray-800 mb-1 tracking-tight">Agent Performance</h3>
-            <p className="text-sm text-gray-500">Detailed metrics for all agents</p>
+            <p className="text-sm text-gray-500">Detailed metrics for all agents, grouped by department, with totals and averages.</p>
           </div>
           <button className="stripe-button-secondary">
             <Download className="w-4 h-4" />
@@ -198,60 +222,78 @@ export function AgentTable({ data, onAgentClick }: AgentTableProps) {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {sortedData.map((agent, index) => (
-              <tr
-                key={agent.agent_id}
-                className="group bg-white hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 last:border-b-0 cursor-pointer"
-                tabIndex={0}
-                onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && onAgentClick?.(agent.agent_id)}
-              >
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{agent.agent_name}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{agent.department_name}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <span className="text-sm font-medium text-red-600">{agent.star_1}</span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <span className="text-sm font-medium text-orange-600">{agent.star_2}</span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <span className="text-sm font-medium text-yellow-600">{agent.star_3}</span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <span className="text-sm font-medium text-lime-600">{agent.star_4}</span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <span className="text-sm font-medium text-green-600">{agent.star_5}</span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <span className="text-sm font-bold text-blue-600">{agent.total}</span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="text-sm font-medium">{agent.avg_rating.toFixed(2)}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <span className="text-sm font-medium text-green-600">{agent.percent_5_star.toFixed(1)}%</span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <span className="text-sm text-gray-600">{formatLastReviewDate(agent.last_review_date)}</span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <button
-                    onClick={() => onAgentClick?.(agent.agent_id)}
-                    className="text-blue-600 hover:text-blue-800"
-                    title="View agent details"
+            {/* Grand total row */}
+            <tr className="bg-green-100 font-bold text-green-900 border-b-2 border-green-400">
+              <td className="px-6 py-3" colSpan={2}>TOTALS</td>
+              <td className="text-center">{grandSummary.star_1}</td>
+              <td className="text-center">{grandSummary.star_2}</td>
+              <td className="text-center">{grandSummary.star_3}</td>
+              <td className="text-center">{grandSummary.star_4}</td>
+              <td className="text-center">{grandSummary.star_5}</td>
+              <td className="text-center font-bold">{grandSummary.total}</td>
+              <td className="text-center">{grandSummary.avg_rating.toFixed(2)}</td>
+              <td className="text-center">{grandSummary.percent_5_star.toFixed(2)}%</td>
+              <td colSpan={2}></td>
+            </tr>
+            {/* Department groups */}
+            {Object.entries(grouped).map(([dept, agents]) => {
+              const summary = calcSummary(agents);
+              return [
+                <tr key={dept + '-header'} className="bg-gray-100 text-gray-700 border-t-2 border-gray-300">
+                  <td className="px-6 py-2 text-lg font-bold" colSpan={12}>{dept}</td>
+                </tr>,
+                ...agents.map(agent => (
+                  <tr
+                    key={agent.agent_id}
+                    className="group bg-white hover:bg-blue-50 transition-colors duration-150 border-b border-gray-100 last:border-b-0 cursor-pointer"
+                    tabIndex={0}
+                    onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && onAgentClick?.(agent.agent_id)}
                   >
-                    <ExternalLink className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
+                    <td className="px-6 py-3 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{agent.agent_name}</div>
+                    </td>
+                    <td className="px-6 py-3 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{agent.department_name}</div>
+                    </td>
+                    <td className="px-6 py-3 text-center text-red-600">{agent.star_1}</td>
+                    <td className="px-6 py-3 text-center text-orange-600">{agent.star_2}</td>
+                    <td className="px-6 py-3 text-center text-yellow-600">{agent.star_3}</td>
+                    <td className="px-6 py-3 text-center text-lime-600">{agent.star_4}</td>
+                    <td className="px-6 py-3 text-center text-green-600">{agent.star_5}</td>
+                    <td className="px-6 py-3 text-center font-bold text-blue-600">{agent.total}</td>
+                    <td className="px-6 py-3 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                        <span className="text-sm font-medium">{agent.avg_rating.toFixed(2)}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-3 text-center text-green-600">{agent.percent_5_star.toFixed(1)}%</td>
+                    <td className="px-6 py-3 text-center text-gray-600">{formatLastReviewDate(agent.last_review_date)}</td>
+                    <td className="px-6 py-3 text-center">
+                      <button
+                        onClick={() => onAgentClick?.(agent.agent_id)}
+                        className="text-blue-600 hover:text-blue-800"
+                        title="View agent details"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                )),
+                <tr key={dept + '-summary'} className="bg-blue-100 font-semibold text-blue-900 border-b-2 border-blue-300">
+                  <td className="px-6 py-2" colSpan={2}>Subtotal</td>
+                  <td className="text-center">{summary.star_1}</td>
+                  <td className="text-center">{summary.star_2}</td>
+                  <td className="text-center">{summary.star_3}</td>
+                  <td className="text-center">{summary.star_4}</td>
+                  <td className="text-center">{summary.star_5}</td>
+                  <td className="text-center font-bold">{summary.total}</td>
+                  <td className="text-center">{summary.avg_rating.toFixed(2)}</td>
+                  <td className="text-center">{summary.percent_5_star.toFixed(2)}%</td>
+                  <td colSpan={2}></td>
+                </tr>
+              ];
+            })}
           </tbody>
         </table>
       </div>
