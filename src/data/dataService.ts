@@ -2,6 +2,7 @@ import { sampleReviews } from './reviews';
 import departments from './departments.json';
 import agents from './agents.json';
 import sources from './sources.json';
+import { getCachedGoogleSheetsData } from './googleSheetsService';
 
 export interface Department {
   id: string;
@@ -194,6 +195,49 @@ export const getDailyMetrics = (reviews: Review[], dateRange: DateRange) => {
   });
   
   return Object.values(dailyData).sort((a, b) => a.date.localeCompare(b.date));
+};
+
+// Data loading functions with Google Sheets integration
+export const loadReviews = async (): Promise<Review[]> => {
+  try {
+    const googleData = await getCachedGoogleSheetsData();
+    if (googleData?.reviews) {
+      console.log('Loaded reviews from Google Sheets:', googleData.reviews.length);
+      return googleData.reviews;
+    }
+  } catch (error) {
+    console.warn('Failed to load Google Sheets data, using sample data:', error);
+  }
+  
+  return sampleReviews;
+};
+
+export const loadAgents = async (): Promise<Agent[]> => {
+  try {
+    const googleData = await getCachedGoogleSheetsData();
+    if (googleData?.agents) {
+      console.log('Loaded agents from Google Sheets:', googleData.agents.length);
+      return googleData.agents;
+    }
+  } catch (error) {
+    console.warn('Failed to load Google Sheets data, using sample data:', error);
+  }
+  
+  return agents;
+};
+
+export const loadDepartments = async (): Promise<Department[]> => {
+  try {
+    const googleData = await getCachedGoogleSheetsData();
+    if (googleData?.departments) {
+      console.log('Loaded departments from Google Sheets:', googleData.departments.length);
+      return googleData.departments;
+    }
+  } catch (error) {
+    console.warn('Failed to load Google Sheets data, using sample data:', error);
+  }
+  
+  return departments;
 };
 
 // Export data collections
