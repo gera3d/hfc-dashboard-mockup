@@ -2,6 +2,7 @@ import { sampleReviews } from './reviews';
 import departments from './departments.json';
 import agents from './agents.json';
 import sources from './sources.json';
+import { getCachedGoogleSheetsData, refreshGoogleSheetsData } from './googleSheetsService';
 
 export interface Department {
   id: string;
@@ -121,7 +122,7 @@ export const calculateMetrics = (reviews: Review[]): MetricsSummary => {
 };
 
 // Get agent metrics
-export const getAgentMetrics = (reviews: Review[]): AgentMetrics[] => {
+export const getAgentMetrics = (reviews: Review[], agents: Agent[] = [], departments: Department[] = []): AgentMetrics[] => {
   const agentGroups = reviews.reduce((acc, review) => {
     if (!acc[review.agent_id]) {
       acc[review.agent_id] = [];
@@ -194,6 +195,91 @@ export const getDailyMetrics = (reviews: Review[], dateRange: DateRange) => {
   });
   
   return Object.values(dailyData).sort((a, b) => a.date.localeCompare(b.date));
+};
+
+// Data loading functions with Google Sheets CSV integration
+export const loadReviews = async (): Promise<Review[]> => {
+  try {
+    const googleData = await getCachedGoogleSheetsData();
+    if (googleData?.reviews && googleData.reviews.length > 0) {
+      console.log('Loaded reviews from Google Sheets CSV:', googleData.reviews.length);
+      return googleData.reviews;
+    }
+  } catch (error) {
+    console.warn('Failed to load Google Sheets CSV data, using sample data:', error);
+  }
+
+  return sampleReviews;
+};
+
+export const loadAgents = async (): Promise<Agent[]> => {
+  try {
+    const googleData = await getCachedGoogleSheetsData();
+    if (googleData?.agents && googleData.agents.length > 0) {
+      console.log('Loaded agents from Google Sheets CSV:', googleData.agents.length);
+      return googleData.agents;
+    }
+  } catch (error) {
+    console.warn('Failed to load Google Sheets CSV data, using sample data:', error);
+  }
+
+  return agents;
+};
+
+export const loadDepartments = async (): Promise<Department[]> => {
+  try {
+    const googleData = await getCachedGoogleSheetsData();
+    if (googleData?.departments && googleData.departments.length > 0) {
+      console.log('Loaded departments from Google Sheets CSV:', googleData.departments.length);
+      return googleData.departments;
+    }
+  } catch (error) {
+    console.warn('Failed to load Google Sheets CSV data, using sample data:', error);
+  }
+
+  return departments;
+};
+
+export const refreshReviews = async (): Promise<Review[]> => {
+  try {
+    const googleData = await refreshGoogleSheetsData();
+    if (googleData?.reviews && googleData.reviews.length > 0) {
+      console.log('Refreshed reviews from Google Sheets CSV:', googleData.reviews.length);
+      return googleData.reviews;
+    }
+  } catch (error) {
+    console.warn('Failed to refresh Google Sheets CSV data, using sample data:', error);
+  }
+
+  return sampleReviews;
+};
+
+export const refreshAgents = async (): Promise<Agent[]> => {
+  try {
+    const googleData = await refreshGoogleSheetsData();
+    if (googleData?.agents && googleData.agents.length > 0) {
+      console.log('Refreshed agents from Google Sheets CSV:', googleData.agents.length);
+      return googleData.agents;
+    }
+  } catch (error) {
+    console.warn('Failed to refresh Google Sheets CSV data, using sample data:', error);
+  }
+
+  return agents;
+};
+
+export const refreshDepartments = async (): Promise<Department[]> => {
+  try {
+    const googleData = await refreshGoogleSheetsData();
+    if (googleData?.departments && googleData.departments.length > 0) {
+      console.log('Refreshed departments from Google Sheets CSV:', googleData.departments.length);
+      return googleData.departments;
+    }
+  } catch (error) {
+    console.warn('Failed to refresh Google Sheets CSV data, using sample data:', error);
+  }
+
+  return departments;
 };
 
 // Export data collections

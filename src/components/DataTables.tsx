@@ -75,7 +75,7 @@ export function AgentTable({ data, onAgentClick }: AgentTableProps) {
   }
   
   // Group by department
-  const grouped = data.reduce((acc, agent) => {
+  const grouped = sortedData.reduce((acc, agent) => {
     if (!acc[agent.department_name]) acc[agent.department_name] = [];
     acc[agent.department_name].push(agent);
     return acc;
@@ -96,7 +96,7 @@ export function AgentTable({ data, onAgentClick }: AgentTableProps) {
       percent_5_star: avg('percent_5_star'),
     };
   };
-  const grandSummary = calcSummary(data);
+  const grandSummary = calcSummary(sortedData);
 
   return (
     <div className="backdrop-blur-md bg-white rounded-2xl shadow-soft border border-gray-100 mb-8 hover:shadow-elevated transition-all duration-200">
@@ -380,7 +380,7 @@ export function ReviewTable({ data, showPagination = true, pageSize = 10 }: Revi
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {currentData.map((review, index) => (
+              {currentData.map((review) => (
                 <tr
                   key={review.id}
                   className="group bg-white hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 last:border-b-0 cursor-pointer"

@@ -1,6 +1,8 @@
 import { designTokens, type ThemeMode } from './design-tokens'
 
-export function applyTheme(mode: ThemeMode = 'light') {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function applyTheme(_mode: ThemeMode = 'light') {
+  // TODO: Implement light/dark theme switching based on mode parameter
   const root = document.documentElement
   
   // Apply color tokens

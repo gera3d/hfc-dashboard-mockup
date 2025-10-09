@@ -1,13 +1,18 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import GlobalFilters from '@/components/GlobalFilters'
 import KPITiles from '@/components/KPITiles'
 import { TimeSeriesChart, AgentLeaderboard } from '@/components/Charts'
 import { AgentTable, ReviewTable } from '@/components/DataTables'
 import { 
-  reviews,
+  loadReviews,
+  loadAgents,
+  loadDepartments,
+  refreshReviews,
+  refreshAgents,
+  refreshDepartments,
   getDateRanges,
   filterReviewsByDate,
   filterReviewsByDepartments,
@@ -15,8 +20,12 @@ import {
   calculateMetrics,
   getAgentMetrics,
   getDailyMetrics,
-  DateRange
+  DateRange,
+  Review,
+  Agent,
+  Department
 } from '@/data/dataService'
+import { syncFromGoogleSheets } from '@/data/googleSheetsService'
 
 interface Filters {
   dateRange: DateRange
@@ -30,6 +39,13 @@ export default function Dashboard() {
   const router = useRouter()
   const dateRanges = getDateRanges()
   
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [agents, setAgents] = useState<Agent[]>([])
+  const [departments, setDepartments] = useState<Department[]>([])
+  const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
+  
   const [filters, setFilters] = useState<Filters>({
     dateRange: dateRanges.last7Days,
     selectedDepartments: [],
@@ -38,11 +54,72 @@ export default function Dashboard() {
     compareMode: false
   })
   
-  // Calculate filtered data
+  // Load data on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [reviewsData, agentsData, departmentsData] = await Promise.all([
+          loadReviews(),
+          loadAgents(),
+          loadDepartments()
+        ])
+        setReviews(reviewsData)
+        setAgents(agentsData)
+        setDepartments(departmentsData)
+      } catch (error) {
+        console.error('Error loading data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    loadData()
+  }, [])
+  
+  // Refresh data from local cache (fast)
+  const refreshData = async () => {
+    setLoading(true)
+    try {
+      const [reviewsData, agentsData, departmentsData] = await Promise.all([
+        refreshReviews(),
+        refreshAgents(),
+        refreshDepartments()
+      ])
+      setReviews(reviewsData)
+      setAgents(agentsData)
+      setDepartments(departmentsData)
+      setLastRefresh(new Date())
+      console.log('Data refreshed from local cache')
+    } catch (error) {
+      console.error('Error refreshing data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+  
+  // Sync from Google Sheets (slow, updates local cache)
+  const syncData = async () => {
+    setSyncing(true)
+    try {
+      const result = await syncFromGoogleSheets()
+      if (result.success) {
+        // After successful sync, reload the data from the updated cache
+        await refreshData()
+        alert(`✅ Data synced successfully!\n\nLast updated: ${result.lastUpdated}\n\nThe dashboard now shows the latest data from Google Sheets.`)
+      } else {
+        alert(`❌ Sync failed: ${result.message}`)
+      }
+    } catch (error) {
+      console.error('Error syncing data:', error)
+      alert('❌ Failed to sync data from Google Sheets')
+    } finally {
+      setSyncing(false)
+    }
+  }
+  
+  // Filter reviews based on current filters
   const filteredData = useMemo(() => {
     let filtered = reviews
-    
-    // Apply filters
     filtered = filterReviewsByDate(filtered, filters.dateRange)
     filtered = filterReviewsByDepartments(filtered, filters.selectedDepartments)
     filtered = filterReviewsByAgents(filtered, filters.selectedAgents)
@@ -52,7 +129,7 @@ export default function Dashboard() {
     }
     
     return filtered
-  }, [filters])
+  }, [filters, reviews])
   
   // Calculate comparison data (previous period)
   const comparisonData = useMemo(() => {
@@ -74,11 +151,11 @@ export default function Dashboard() {
     }
     
     return calculateMetrics(previousFiltered)
-  }, [filters])
+  }, [filters, reviews])
   
   // Calculate metrics
   const currentMetrics = calculateMetrics(filteredData)
-  const agentMetrics = getAgentMetrics(filteredData)
+  const agentMetrics = getAgentMetrics(filteredData, agents, departments)
   const dailyMetrics = getDailyMetrics(filteredData, filters.dateRange)
   
   const handleAgentClick = (agentId: string) => {
@@ -100,6 +177,14 @@ export default function Dashboard() {
     }
     
     return parts.length > 0 ? ` (${parts.join(', ')})` : ''
+  }
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-4 border-b-4 border-[#00CA6F]"></div>
+      </div>
+    )
   }
   
   return (
@@ -124,7 +209,47 @@ export default function Dashboard() {
                   </div>
                   <div className="text-xs text-[#6B7C93] mt-1 flex items-center gap-2">
                     <div className="w-1.5 h-1.5 bg-[#00CA6F] rounded-full"></div>
-                    <span className="font-mono">{filteredData.length}</span> reviews • Updated {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    <span className="font-mono">{filteredData.length}</span> reviews • Updated {lastRefresh.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    <button
+                      onClick={refreshData}
+                      disabled={loading || syncing}
+                      className="ml-4 px-3 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center gap-1"
+                      title="Reload from local cache (fast)"
+                    >
+                      {loading ? (
+                        <>
+                          <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+                          Loading...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          Refresh
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={syncData}
+                      disabled={loading || syncing}
+                      className="px-3 py-1 text-xs bg-[#635BFF] text-white rounded-md hover:bg-[#5a52e8] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center gap-1"
+                      title="Sync from Google Sheets (slow, updates local copy)"
+                    >
+                      {syncing ? (
+                        <>
+                          <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+                          Syncing...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                          </svg>
+                          Sync from Sheets
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>

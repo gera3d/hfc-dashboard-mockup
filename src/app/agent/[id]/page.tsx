@@ -41,7 +41,7 @@ export default function AgentDetail({ params }: AgentDetailProps) {
     let filtered = filterReviewsByAgents(reviews, [agent.id])
     filtered = filterReviewsByDate(filtered, selectedDateRange)
     return filtered
-  }, [agent?.id, selectedDateRange])
+  }, [agent, selectedDateRange])
   
   // Calculate metrics - always call hooks
   const currentMetrics = calculateMetrics(agentReviews)
@@ -61,7 +61,7 @@ export default function AgentDetail({ params }: AgentDetailProps) {
     previousFiltered = filterReviewsByDate(previousFiltered, previousDateRange)
     
     return calculateMetrics(previousFiltered)
-  }, [agent?.id, selectedDateRange])
+  }, [agent, selectedDateRange])
   
   // Early return after all hooks are called
   if (!agent) {
