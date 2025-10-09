@@ -294,7 +294,7 @@ export default function Dashboard() {
         
         {/* Data Tables - Stripe clean tables with proper spacing */}
         <AgentTable data={agentMetrics} onAgentClick={handleAgentClick} />
-        <ReviewTable data={filteredData} />
+        <ReviewTable data={filteredData} agents={agents} departments={departments} />
       </div>
     </div>
   )

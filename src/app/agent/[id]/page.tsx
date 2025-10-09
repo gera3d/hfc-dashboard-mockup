@@ -1,21 +1,24 @@
 'use client'
 
-import { useState, useMemo, use } from 'react'
+import { useState, useMemo, use, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, User, Building2, Calendar, Star, TrendingUp } from 'lucide-react'
 import KPITiles from '@/components/KPITiles'
 import { TimeSeriesChart } from '@/components/Charts'
 import { ReviewTable } from '@/components/DataTables'
 import { 
-  reviews,
-  agents,
-  departments,
+  loadReviews,
+  loadAgents,
+  loadDepartments,
   getDateRanges,
   filterReviewsByDate,
   filterReviewsByAgents,
   calculateMetrics,
   getDailyMetrics,
-  DateRange
+  DateRange,
+  Review,
+  Agent,
+  Department
 } from '@/data/dataService'
 
 interface AgentDetailProps {
@@ -29,7 +32,33 @@ export default function AgentDetail({ params }: AgentDetailProps) {
   const dateRanges = getDateRanges()
   const { id: agentId } = use(params)
   
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [agents, setAgents] = useState<Agent[]>([])
+  const [departments, setDepartments] = useState<Department[]>([])
+  const [loading, setLoading] = useState(true)
   const [selectedDateRange, setSelectedDateRange] = useState<DateRange>(dateRanges.thisMonth)
+  
+  // Load data on mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [reviewsData, agentsData, departmentsData] = await Promise.all([
+          loadReviews(),
+          loadAgents(),
+          loadDepartments()
+        ])
+        setReviews(reviewsData)
+        setAgents(agentsData)
+        setDepartments(departmentsData)
+      } catch (error) {
+        console.error('Error loading data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    loadData()
+  }, [])
   
   // Find the agent
   const agent = agents.find(a => a.id === agentId)
@@ -41,7 +70,7 @@ export default function AgentDetail({ params }: AgentDetailProps) {
     let filtered = filterReviewsByAgents(reviews, [agent.id])
     filtered = filterReviewsByDate(filtered, selectedDateRange)
     return filtered
-  }, [agent, selectedDateRange])
+  }, [agent, selectedDateRange, reviews])
   
   // Calculate metrics - always call hooks
   const currentMetrics = calculateMetrics(agentReviews)
@@ -258,7 +287,7 @@ export default function AgentDetail({ params }: AgentDetailProps) {
         </div>
         
         {/* Reviews Table */}
-        <ReviewTable data={agentReviews} />
+        <ReviewTable data={agentReviews} agents={agents} departments={departments} />
       </div>
     </div>
   )

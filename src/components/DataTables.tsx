@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronUp, ChevronDown, ExternalLink, Download, Star, MessageCircle } from 'lucide-react'
-import { AgentMetrics, Review, agents, departments } from '@/data/dataService'
+import { AgentMetrics, Review, Agent, Department, agents as defaultAgents, departments as defaultDepartments } from '@/data/dataService'
 
 interface AgentTableProps {
   data: AgentMetrics[]
@@ -11,6 +11,8 @@ interface AgentTableProps {
 
 interface ReviewTableProps {
   data: Review[]
+  agents?: Agent[]
+  departments?: Department[]
   showPagination?: boolean
   pageSize?: number
 }
@@ -301,14 +303,19 @@ export function AgentTable({ data, onAgentClick }: AgentTableProps) {
   )
 }
 
-export function ReviewTable({ data, showPagination = true, pageSize = 10 }: ReviewTableProps) {
+export function ReviewTable({ data, agents = defaultAgents, departments = defaultDepartments, showPagination = true, pageSize = 10 }: ReviewTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedReview, setSelectedReview] = useState<Review | null>(null)
   
-  const totalPages = Math.ceil(data.length / pageSize)
+  // Sort reviews by date (most recent first)
+  const sortedData = [...data].sort((a, b) => {
+    return new Date(b.review_ts).getTime() - new Date(a.review_ts).getTime()
+  })
+  
+  const totalPages = Math.ceil(sortedData.length / pageSize)
   const startIndex = (currentPage - 1) * pageSize
   const endIndex = startIndex + pageSize
-  const currentData = showPagination ? data.slice(startIndex, endIndex) : data
+  const currentData = showPagination ? sortedData.slice(startIndex, endIndex) : sortedData
   
   const getAgentName = (agentId: string) => {
     return agents.find(a => a.id === agentId)?.display_name || 'Unknown'
