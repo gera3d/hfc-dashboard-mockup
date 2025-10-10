@@ -189,82 +189,227 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
       reviews: agent.total,
       rating: agent.avg_rating,
       percent_5_star: agent.percent_5_star,
-      department: agent.department_name
+      department: agent.department_name,
+      image_url: agent.image_url
     }))
   
-  console.log('AgentLeaderboard - Input data:', data.slice(0, 3))
-  console.log('AgentLeaderboard - Chart data:', chartData.slice(0, 3))
-
-  return (
-    <div className="bg-white rounded-md border border-[#E3E8EE] p-6 mb-6 transition-all duration-150 hover:shadow-soft">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[#0A2540] tracking-tight">
-          Agent Performance Rankings
-        </h3>
-        <p className="text-sm text-[#6B7C93] mt-1">
-          Top agents by review volume and quality
-        </p>
-        <div className="mt-3 p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
-          <p className="text-xs text-[#0A2540] font-medium mb-1">💡 Why This Matters</p>
-          <p className="text-xs text-[#425466]">
-            Identify your star agents for recognition and struggling agents for coaching. 
-            High volume with high ratings = replicate their approach. High volume with low ratings = need training.
+  // Generate performance badges based on multiple criteria
+  const getBadges = (agent: typeof chartData[0], rank: number) => {
+    const badges = []
+    
+    if (rank === 0) badges.push({ icon: '�', label: 'Top Performer', color: 'bg-gradient-to-r from-yellow-400 to-yellow-600' })
+    if (agent.rating >= 4.9) badges.push({ icon: '⭐', label: 'Quality Star', color: 'bg-gradient-to-r from-green-400 to-green-600' })
+    else if (agent.rating >= 4.5) badges.push({ icon: '✨', label: 'Excellent', color: 'bg-gradient-to-r from-blue-400 to-blue-600' })
+    else if (agent.rating < 4.0) badges.push({ icon: '🎯', label: 'Needs Coaching', color: 'bg-gradient-to-r from-orange-400 to-orange-600' })
+    
+    if (agent.reviews >= 50) badges.push({ icon: '🏆', label: 'Volume Champion', color: 'bg-gradient-to-r from-purple-400 to-purple-600' })
+    if (agent.percent_5_star >= 95) badges.push({ icon: '💎', label: 'Customer Favorite', color: 'bg-gradient-to-r from-cyan-400 to-cyan-600' })
+    
+    return badges
+  }
+  
+  // If no data, show empty state
+  if (chartData.length === 0) {
+    return (
+      <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-2xl border-2 border-blue-100 p-12 mb-8 shadow-xl">
+        <div className="text-center max-w-md mx-auto">
+          <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
+            <svg className="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <h3 className="text-2xl font-bold text-[#0A2540] mb-3">No Agent Data Yet</h3>
+          <p className="text-[#6B7C93] mb-6">
+            No agents have reviews in the selected date range. Try adjusting your filters or selecting "This Year" to see more data.
           </p>
         </div>
       </div>
+    )
+  }
+
+  return (
+    <div className="relative mb-8 overflow-hidden">
+      {/* Hero Background with Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-white to-purple-50/50 rounded-2xl" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.1),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(168,85,247,0.1),transparent_50%)]" />
       
-      <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} layout="horizontal">
-            <CartesianGrid strokeDasharray="3 3" stroke="#E3E8EE" horizontal={true} vertical={false} />
-            <XAxis 
-              type="number" 
-              stroke="#6B7C93" 
-              fontSize={11}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis 
-              type="category" 
-              dataKey="name" 
-              stroke="#6B7C93" 
-              fontSize={11}
-              width={120}
-              axisLine={false}
-              tickLine={false}
-            />
-            <Tooltip
-              cursor={{ fill: 'rgba(246, 249, 252, 0.5)' }}
-              contentStyle={{
-                borderRadius: '4px',
-                boxShadow: '0 2px 5px 0 rgba(60,66,87,0.08), 0 1px 1px 0 rgba(0,0,0,0.12)',
-                border: '1px solid #E3E8EE',
-                backgroundColor: '#FFFFFF',
-                padding: '8px 12px',
-              }}
-              formatter={(value: number, name: string) => {
-                if (name === 'Reviews Handled') return [value, 'Reviews']
-                if (name === 'Avg Rating') return [value.toFixed(2) + ' / 5.00', 'Rating']
-                return [value, name]
-              }}
-            />
-            <Legend />
-            <Bar 
-              dataKey="reviews" 
-              fill={COLORS.primary}
-              name="Reviews Handled"
-              radius={[0, 4, 4, 0]}
-              barSize={14}
-            />
-            <Bar 
-              dataKey="rating" 
-              fill={COLORS.success}
-              name="Avg Rating"
-              radius={[0, 4, 4, 0]}
-              barSize={14}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+      {/* Main Container */}
+      <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl border-2 border-blue-100 shadow-2xl shadow-blue-500/10">
+        
+        {/* Header Section */}
+        <div className="p-8 border-b border-blue-100/50">
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold text-[#0A2540] tracking-tight">Agent Performance Rankings</h2>
+                  <p className="text-[#6B7C93] mt-1">
+                    Top {chartData.length} agent{chartData.length !== 1 ? 's' : ''} by review volume and quality
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Quick Stats */}
+            <div className="flex gap-4">
+              <div className="text-center px-4 py-2 bg-green-50 rounded-lg border border-green-200">
+                <div className="text-2xl font-bold text-green-700">
+                  {chartData.filter(a => a.rating >= 4.5).length}
+                </div>
+                <div className="text-xs text-green-600 font-medium">Star Agents</div>
+              </div>
+              <div className="text-center px-4 py-2 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="text-2xl font-bold text-orange-700">
+                  {chartData.filter(a => a.rating < 4.0).length}
+                </div>
+                <div className="text-xs text-orange-600 font-medium">Need Coaching</div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Dynamic Insights Banner */}
+          <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-500 rounded-lg">
+            <p className="text-sm text-[#0A2540] font-medium">
+              💡 <span className="font-bold">{chartData[0]?.name}</span> is leading with {chartData[0]?.rating.toFixed(2)} stars across {chartData[0]?.reviews} reviews
+              {chartData[0]?.percent_5_star >= 95 && ' and an exceptional 5-star rate!'}
+            </p>
+          </div>
+        </div>
+
+        {/* Leaderboard Grid */}
+        <div className="p-8">
+          {/* Top 3 Podium */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {chartData.slice(0, 3).map((agent, index) => {
+              const badges = getBadges(agent, index)
+              const rankColors = [
+                { bg: 'bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600', border: 'border-yellow-400', text: 'text-yellow-600', glow: 'shadow-yellow-500/50' },
+                { bg: 'bg-gradient-to-br from-gray-300 via-gray-400 to-gray-500', border: 'border-gray-400', text: 'text-gray-600', glow: 'shadow-gray-500/50' },
+                { bg: 'bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600', border: 'border-orange-400', text: 'text-orange-600', glow: 'shadow-orange-500/50' }
+              ][index]
+              
+              return (
+                <div
+                  key={index}
+                  className={`group relative bg-white rounded-2xl border-2 ${rankColors.border} p-6 transition-all duration-300 hover:scale-105 hover:shadow-2xl ${rankColors.glow} cursor-pointer`}
+                >
+                  {/* Rank Badge */}
+                  <div className={`absolute -top-4 -left-4 w-12 h-12 ${rankColors.bg} rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg z-10`}>
+                    {index + 1}
+                  </div>
+                  
+                  {/* Agent Avatar */}
+                  <div className="flex flex-col items-center mb-4">
+                    <div className={`relative mb-3 group-hover:scale-110 transition-transform duration-300`}>
+                      <div className={`absolute inset-0 ${rankColors.bg} rounded-full blur-xl opacity-50`} />
+                      <img 
+                        src={agent.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name)}&background=4F46E5&color=fff&size=256`}
+                        alt={agent.name}
+                        className={`relative w-20 h-20 rounded-full object-cover border-4 ${rankColors.border} shadow-xl`}
+                        onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name)}&background=4F46E5&color=fff&size=256`}
+                      />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0A2540] text-center">{agent.name}</h3>
+                    <p className="text-xs text-[#6B7C93] mt-1">{agent.department}</p>
+                  </div>
+                  
+                  {/* Stats */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm text-[#6B7C93]">Rating</span>
+                      <span className="text-lg font-bold text-[#0A2540]">{agent.rating.toFixed(2)}/5.00</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm text-[#6B7C93]">Reviews</span>
+                      <span className="text-lg font-bold text-[#0A2540]">{agent.reviews}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-sm text-[#6B7C93]">5-Star Rate</span>
+                      <span className="text-lg font-bold text-[#0A2540]">{agent.percent_5_star.toFixed(0)}%</span>
+                    </div>
+                  </div>
+                  
+                  {/* Badges */}
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {badges.map((badge, i) => (
+                      <div key={i} className={`${badge.color} text-white text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1 shadow-md`}>
+                        <span>{badge.icon}</span>
+                        <span>{badge.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Remaining Agents (4-10) */}
+          {chartData.length > 3 && (
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-[#0A2540] mb-4 flex items-center gap-2">
+                <div className="w-1 h-6 bg-blue-500 rounded-full" />
+                Rising Stars
+              </h3>
+              {chartData.slice(3).map((agent, index) => {
+                const actualRank = index + 4
+                const badges = getBadges(agent, actualRank - 1)
+                
+                return (
+                  <div
+                    key={actualRank}
+                    className="group flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 transition-all duration-200 hover:border-blue-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer"
+                  >
+                    {/* Rank */}
+                    <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+                      <span className="text-lg font-bold text-gray-600">{actualRank}</span>
+                    </div>
+                    
+                    {/* Avatar */}
+                    <div className="flex-shrink-0">
+                      <img 
+                        src={agent.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name)}&background=4F46E5&color=fff&size=128`}
+                        alt={agent.name}
+                        className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md group-hover:scale-110 transition-transform"
+                        onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name)}&background=4F46E5&color=fff&size=128`}
+                      />
+                    </div>
+                    
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline gap-2 mb-1">
+                        <h4 className="font-semibold text-[#0A2540] text-base truncate">{agent.name}</h4>
+                        <span className="text-xs text-[#6B7C93] truncate">{agent.department}</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm">
+                        <span className="font-medium text-[#0A2540]">{agent.rating.toFixed(2)} ⭐</span>
+                        <span className="text-[#8896AB]">•</span>
+                        <span className="text-[#6B7C93]">{agent.reviews} reviews</span>
+                        <span className="text-[#8896AB]">•</span>
+                        <span className="text-[#6B7C93]">{agent.percent_5_star.toFixed(0)}% 5-star</span>
+                      </div>
+                    </div>
+                    
+                    {/* Badges */}
+                    <div className="flex-shrink-0 flex gap-2">
+                      {badges.slice(0, 2).map((badge, i) => (
+                        <div key={i} className={`${badge.color} text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md`}>
+                          <span>{badge.icon}</span>
+                          <span className="hidden sm:inline">{badge.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -42,6 +42,15 @@ const config = {
         elevatedStrong: '0 35px 85px -30px rgba(11, 31, 51, 0.45)',
         overlay: '0 20px 60px rgba(6, 12, 20, 0.45)',
       },
+      keyframes: {
+        shine: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+      },
+      animation: {
+        shine: 'shine 3s ease-in-out infinite',
+      },
     },
   },
   plugins: [],

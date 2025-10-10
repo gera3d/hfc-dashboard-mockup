@@ -63,7 +63,7 @@ export default function Dashboard() {
   const [showAgentManager, setShowAgentManager] = useState(false)
   
   const [filters, setFilters] = useState<Filters>({
-    dateRange: dateRanges.last7Days,
+    dateRange: dateRanges.thisYear, // Changed to show all data for the year
     selectedDepartments: [],
     selectedAgents: [],
     selectedSources: [],
@@ -464,6 +464,11 @@ export default function Dashboard() {
       )}
       
       <div className="max-w-6xl mx-auto px-6 sm:px-6 lg:px-8 -mt-8">
+        {/* Hero Chart - Agent Performance Rankings */}
+        <div className="mb-8">
+          <AgentLeaderboard data={agentMetrics} limit={10} />
+        </div>
+        
         {/* KPI Tiles - Stripe card style with sharp corners and subtle shadows */}
         <KPITiles 
           metrics={currentMetrics} 
@@ -477,20 +482,15 @@ export default function Dashboard() {
           <span className="text-sm text-[#6B7C93]">Strategic business metrics</span>
         </div>
         
-        {/* Charts - Strategic 4-chart layout for insurance agency */}
+        {/* Charts - Strategic 3-chart layout for insurance agency */}
         {/* Row 1: Satisfaction Trend - Most important metric */}
         <div className="mb-6">
           <SatisfactionTrend data={satisfactionTrendData} />
         </div>
         
-        {/* Row 2: Agent Performance & Department Comparison */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <AgentLeaderboard data={agentMetrics} limit={10} />
+        {/* Row 2: Department Comparison & Problem Spotlight */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
           <DepartmentComparison reviews={filteredData} departments={departments} />
-        </div>
-        
-        {/* Row 3: Problem Spotlight - Critical for insurance compliance */}
-        <div className="mb-12">
           <ProblemSpotlight reviews={filteredData} departments={departments} />
         </div>
         

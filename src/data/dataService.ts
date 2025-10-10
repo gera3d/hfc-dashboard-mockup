@@ -14,6 +14,7 @@ export interface Agent {
   agent_key: string;
   display_name: string;
   department_id: string;
+  image_url?: string;
 }
 
 export interface Review {
@@ -43,6 +44,7 @@ export interface AgentMetrics extends MetricsSummary {
   agent_name: string;
   department_name: string;
   last_review_date: string | null;
+  image_url?: string;
 }
 
 export interface DateRange {
@@ -146,7 +148,8 @@ export const getAgentMetrics = (reviews: Review[], agents: Agent[] = [], departm
       agent_id: agentId,
       agent_name: agent?.display_name || 'Unknown',
       department_name: department?.name || 'Unknown',
-      last_review_date: sortedReviews.length > 0 ? sortedReviews[0].review_ts : null
+      last_review_date: sortedReviews.length > 0 ? sortedReviews[0].review_ts : null,
+      image_url: agent?.image_url
     };
   }).sort((a, b) => b.total - a.total); // Sort by total reviews descending
 };

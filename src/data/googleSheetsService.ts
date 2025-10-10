@@ -134,11 +134,26 @@ function parseCSV(csvText: string): ParsedData {
 
       // Store agent
       if (!agentsMap.has(agentId)) {
+        // Try to extract image URL from sourceUrl's imgurl parameter
+        let imageUrl: string | undefined;
+        try {
+          const url = new URL(sourceUrl);
+          const imgUrlParam = url.searchParams.get('imgurl');
+          if (imgUrlParam) {
+            imageUrl = decodeURIComponent(imgUrlParam);
+          }
+        } catch {
+          // If URL parsing fails, generate default image URL
+          const cleanAgentKey = agentId.toLowerCase().replace(/[^a-z0-9]/g, '');
+          imageUrl = `https://hp-prod-wp-data.s3.us-west-1.amazonaws.com/content/agents/${cleanAgentKey}.png`;
+        }
+        
         agentsMap.set(agentId, {
           id: agentId,
           agent_key: agentId,
           display_name: agentName.replace(/!$/, ''), // Remove trailing !
-          department_id: departmentId
+          department_id: departmentId,
+          image_url: imageUrl
         });
       }
 
