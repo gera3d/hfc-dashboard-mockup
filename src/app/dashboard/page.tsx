@@ -51,6 +51,8 @@ import { RatingTrendChart } from "@/components/dashboard/RatingTrendChart";
 import { DepartmentComparisonChart } from "@/components/dashboard/DepartmentComparisonChart";
 import { SourceDistributionChart } from "@/components/dashboard/SourceDistributionChart";
 import { StarDistributionChart } from "@/components/dashboard/StarDistributionChart";
+import EnhancedAgentRankings from "@/components/dashboard/EnhancedAgentRankings";
+import EnhancedMetricsGrid from "@/components/dashboard/EnhancedMetricsGrid";
 
 interface Filters {
   dateRange: DateRange
@@ -464,16 +466,16 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* KPI Metrics - Using your existing component */}
-      <KPITiles 
+      {/* KPI Metrics - Enhanced TailAdmin Style */}
+      <EnhancedMetricsGrid 
         metrics={currentMetrics} 
         previousMetrics={comparisonData}
         showComparison={filters.compareMode}
       />
 
-      {/* Hero Chart - Agent Leaderboard from your existing dashboard */}
+      {/* Hero Chart - Enhanced Agent Rankings */}
       <div className="mt-8">
-        <AgentLeaderboard data={agentMetrics} limit={10} />
+        <EnhancedAgentRankings data={agentMetrics} limit={10} />
       </div>
 
       {/* Satisfaction Trend - Your existing chart */}
