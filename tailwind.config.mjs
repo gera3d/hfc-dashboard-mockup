@@ -8,7 +8,11 @@ const config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+      },
       colors: {
+        // Keep existing custom colors for backward compatibility
         'brand-primary': 'var(--color-brand-primary)',
         'brand-accent': 'var(--color-brand-accent)',
         'brand-alert': 'var(--color-brand-alert)',
@@ -23,24 +27,19 @@ const config = {
         'signal-caution': 'var(--color-signal-caution)',
         'signal-negative': 'var(--color-signal-negative)',
       },
-      fontFamily: {
-        display: ["var(--font-display)", 'Space Grotesk', 'Inter', 'system-ui'],
-        sans: ["var(--font-sans)", 'Inter', 'system-ui'],
-        mono: ["var(--font-mono)", 'IBM Plex Mono', 'ui-monospace'],
-      },
       borderRadius: {
-        xs: '8px',
-        sm: '12px',
-        md: '16px',
-        lg: '20px',
-        xl: '28px',
-        pill: '999px',
+        DEFAULT: '6px',  // Standard buttons, inputs
+        sm: '4px',       // Badges
+        md: '8px',       // Cards
+        lg: '12px',      // Large cards
+        xl: '16px',      // Hero sections
       },
       boxShadow: {
-        soft: '0 10px 30px -20px rgba(11, 31, 51, 0.25)',
-        elevated: '0 25px 65px -35px rgba(11, 31, 51, 0.35)',
-        elevatedStrong: '0 35px 85px -30px rgba(11, 31, 51, 0.45)',
-        overlay: '0 20px 60px rgba(6, 12, 20, 0.45)',
+        DEFAULT: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+        sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+        md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+        lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+        xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
       },
       keyframes: {
         shine: {

@@ -5,6 +5,15 @@ import {
   PieChart, Pie, Cell, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
   ComposedChart, Scatter, ScatterChart, ZAxis
 } from 'recharts'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
 import { AgentMetrics } from '@/data/dataService'
 import { Review, Agent, Department } from '@/data/dataService'
 
@@ -178,324 +187,6 @@ export function TimeSeriesChart({ data }: TimeSeriesChartProps) {
     </div>
   )
 }
-
-export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
-  // Only show agents with reviews
-  const chartData = data
-    .filter(agent => agent.total > 0)
-    .slice(0, limit)
-    .map(agent => ({
-      name: agent.agent_name,
-      reviews: agent.total,
-      rating: agent.avg_rating,
-      percent_5_star: agent.percent_5_star,
-      department: agent.department_name,
-      image_url: agent.image_url
-    }))
-  
-  // Calculate team average for comparison
-  const teamAvgRating = chartData.length > 0 
-    ? chartData.reduce((sum, a) => sum + a.rating, 0) / chartData.length 
-    : 0
-  
-  // Generate performance badges based on multiple criteria
-  const getBadges = (agent: typeof chartData[0], rank: number) => {
-    const badges: Array<{ icon: string; label: string; color: string; tooltip: string }> = []
-    
-    if (rank === 0) badges.push({ icon: '👑', label: 'Top Performer', color: 'bg-gradient-to-r from-yellow-400 to-yellow-600', tooltip: 'Highest overall performance' })
-    if (agent.rating >= 4.9) badges.push({ icon: '⭐', label: 'Quality Star', color: 'bg-gradient-to-r from-green-400 to-green-600', tooltip: '4.9+ star rating' })
-    else if (agent.rating >= 4.5) badges.push({ icon: '✨', label: 'Excellent', color: 'bg-gradient-to-r from-blue-400 to-blue-600', tooltip: '4.5+ star rating' })
-    else if (agent.rating < 4.0) badges.push({ icon: '🎯', label: 'Needs Coaching', color: 'bg-gradient-to-r from-orange-400 to-orange-600', tooltip: 'Below 4.0 - coaching recommended' })
-    
-    if (agent.reviews >= 50) badges.push({ icon: '🏆', label: 'Volume Champion', color: 'bg-gradient-to-r from-purple-400 to-purple-600', tooltip: '50+ reviews handled' })
-    if (agent.percent_5_star >= 95) badges.push({ icon: '💎', label: 'Customer Favorite', color: 'bg-gradient-to-r from-cyan-400 to-cyan-600', tooltip: '95%+ gave 5 stars' })
-    
-    return badges
-  }
-  
-  // Calculate trend indicator (comparing to team average)
-  const getTrendIndicator = (agent: typeof chartData[0]) => {
-    const delta = agent.rating - teamAvgRating
-    if (delta > 0.2) return { icon: '📈', text: `+${delta.toFixed(1)} vs avg`, color: 'text-green-600', bg: 'bg-green-50' }
-    if (delta < -0.2) return { icon: '📉', text: `${delta.toFixed(1)} vs avg`, color: 'text-red-600', bg: 'bg-red-50' }
-    return { icon: '➡️', text: 'On target', color: 'text-blue-600', bg: 'bg-blue-50' }
-  }
-  
-  // If no data, show empty state
-  if (chartData.length === 0) {
-    return (
-      <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-2xl border-2 border-blue-100 p-12 mb-8 shadow-xl">
-        <div className="text-center max-w-md mx-auto">
-          <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
-            <svg className="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-          </div>
-          <h3 className="text-2xl font-bold text-[#0A2540] mb-3">No Agent Data Yet</h3>
-          <p className="text-[#6B7C93] mb-6">
-            No agents have reviews in the selected date range. Try adjusting your filters or selecting "This Year" to see more data.
-          </p>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="relative mb-8 overflow-hidden">
-      {/* Hero Background with Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-white to-purple-50/50 rounded-2xl" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.1),transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(168,85,247,0.1),transparent_50%)]" />
-      
-      {/* Main Container */}
-      <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl border-2 border-blue-100 shadow-2xl shadow-blue-500/10">
-        
-        {/* Header Section */}
-        <div className="p-8 border-b border-blue-100/50">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-[#0A2540] tracking-tight">Agent Performance Rankings</h2>
-                  <p className="text-[#6B7C93] mt-1">
-                    Top {chartData.length} agent{chartData.length !== 1 ? 's' : ''} by review volume and quality
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            {/* Quick Stats - Enhanced with 3rd card for team average */}
-            <div className="flex gap-4">
-              <div className="text-center px-5 py-3 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 shadow-lg">
-                <div className="text-3xl font-bold text-green-700 mb-1">
-                  {chartData.filter(a => a.rating >= 4.5).length}
-                </div>
-                <div className="text-xs text-green-600 font-semibold tracking-wide">Star Agents</div>
-              </div>
-              <div className="text-center px-5 py-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border-2 border-orange-200 shadow-lg">
-                <div className="text-3xl font-bold text-orange-700 mb-1">
-                  {chartData.filter(a => a.rating < 4.0).length}
-                </div>
-                <div className="text-xs text-orange-600 font-semibold tracking-wide">Need Coaching</div>
-              </div>
-              <div className="text-center px-5 py-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 shadow-lg">
-                <div className="text-3xl font-bold text-blue-700 mb-1">
-                  {teamAvgRating.toFixed(2)}
-                </div>
-                <div className="text-xs text-blue-600 font-semibold tracking-wide">Team Average</div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Dynamic Insights Banner - Enhanced with pulsing animation */}
-          <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-500 rounded-lg">
-            <p className="text-sm text-[#0A2540] font-medium flex items-center gap-2">
-              <span className="text-lg animate-pulse">💡</span> 
-              <span><span className="font-bold">{chartData[0]?.name}</span> is leading with {chartData[0]?.rating.toFixed(2)} stars across {chartData[0]?.reviews} reviews
-              {chartData[0]?.percent_5_star >= 95 && ' and an exceptional 5-star rate!'}</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Leaderboard Grid */}
-        <div className="p-8">
-          {/* Top 3 Podium */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-            {chartData.slice(0, 3).map((agent, index) => {
-              const badges = getBadges(agent, index)
-              const trend = getTrendIndicator(agent)
-              const rankColors = [
-                { bg: 'bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600', border: 'border-yellow-400', text: 'text-yellow-600', glow: 'shadow-yellow-500/50', statBg: 'bg-gradient-to-br from-yellow-50 to-amber-50' },
-                { bg: 'bg-gradient-to-br from-gray-300 via-gray-400 to-gray-500', border: 'border-gray-400', text: 'text-gray-600', glow: 'shadow-gray-500/50', statBg: 'bg-gradient-to-br from-gray-50 to-slate-50' },
-                { bg: 'bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600', border: 'border-orange-400', text: 'text-orange-600', glow: 'shadow-orange-500/50', statBg: 'bg-gradient-to-br from-orange-50 to-red-50' }
-              ][index]
-              
-              // Make rank 1 span full width on large screens
-              const colSpan = index === 0 ? 'lg:col-span-12' : 'lg:col-span-6'
-              
-              return (
-                <div
-                  key={index}
-                  className={`${colSpan} group relative bg-white rounded-2xl border-2 ${rankColors.border} p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl ${rankColors.glow} cursor-pointer ${index === 0 ? 'lg:flex lg:items-center lg:gap-8' : ''}`}
-                >
-                  {/* Rank Badge */}
-                  <div className={`absolute -top-4 -left-4 w-12 h-12 ${rankColors.bg} rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg z-10 ${index === 0 ? 'animate-shine' : ''}`}>
-                    {index + 1}
-                  </div>
-                  
-                  {/* Crown Icon for #1 */}
-                  {index === 0 && (
-                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-4xl animate-bounce">
-                      👑
-                    </div>
-                  )}
-                  
-                  {/* Agent Avatar */}
-                  <div className={`flex flex-col items-center ${index === 0 ? 'lg:flex-shrink-0' : ''} mb-4`}>
-                    <div className={`relative mb-3 group-hover:scale-110 transition-transform duration-300`}>
-                      <div className={`absolute inset-0 ${rankColors.bg} rounded-full blur-xl opacity-50`} />
-                      <img 
-                        src={agent.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name)}&background=4F46E5&color=fff&size=256`}
-                        alt={agent.name}
-                        className={`relative ${index === 0 ? 'w-24 h-24' : 'w-20 h-20'} rounded-full object-cover border-4 ${rankColors.border} shadow-xl`}
-                        onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name)}&background=4F46E5&color=fff&size=256`}
-                      />
-                    </div>
-                    <h3 className={`${index === 0 ? 'text-2xl' : 'text-xl'} font-bold text-[#0A2540] text-center`}>{agent.name}</h3>
-                    <p className="text-xs text-[#6B7C93] mt-1">{agent.department}</p>
-                    
-                    {/* Trend Indicator */}
-                    <div className={`mt-2 px-3 py-1 ${trend.bg} rounded-full flex items-center gap-1`}>
-                      <span>{trend.icon}</span>
-                      <span className={`text-xs font-semibold ${trend.color}`}>{trend.text}</span>
-                    </div>
-                  </div>
-                  
-                  {/* Stats - Premium Design with gradients and icons */}
-                  <div className={`space-y-3 ${index === 0 ? 'lg:flex-1 lg:grid lg:grid-cols-3 lg:gap-4 lg:space-y-0' : ''}`}>
-                    <div className={`relative overflow-hidden flex items-center justify-between p-4 ${rankColors.statBg} rounded-xl border border-${index === 0 ? 'yellow' : index === 1 ? 'gray' : 'orange'}-200 shadow-md`}>
-                      <div className="absolute top-0 right-0 text-6xl opacity-10">⭐</div>
-                      <div className="relative z-10">
-                        <span className="text-xs text-[#6B7C93] font-semibold block mb-1">Rating</span>
-                        <span className={`${index === 0 ? 'text-2xl' : 'text-lg'} font-bold text-[#0A2540]`}>{agent.rating.toFixed(2)}/5.00</span>
-                      </div>
-                    </div>
-                    <div className={`relative overflow-hidden flex items-center justify-between p-4 ${rankColors.statBg} rounded-xl border border-${index === 0 ? 'yellow' : index === 1 ? 'gray' : 'orange'}-200 shadow-md`}>
-                      <div className="absolute top-0 right-0 text-6xl opacity-10">📊</div>
-                      <div className="relative z-10">
-                        <span className="text-xs text-[#6B7C93] font-semibold block mb-1">Reviews</span>
-                        <span className={`${index === 0 ? 'text-2xl' : 'text-lg'} font-bold text-[#0A2540]`}>{agent.reviews}</span>
-                      </div>
-                    </div>
-                    <div className={`relative overflow-hidden flex items-center justify-between p-4 ${rankColors.statBg} rounded-xl border border-${index === 0 ? 'yellow' : index === 1 ? 'gray' : 'orange'}-200 shadow-md`}>
-                      <div className="absolute top-0 right-0 text-6xl opacity-10">💎</div>
-                      <div className="relative z-10">
-                        <span className="text-xs text-[#6B7C93] font-semibold block mb-1">5-Star Rate</span>
-                        <span className={`${index === 0 ? 'text-2xl' : 'text-lg'} font-bold text-[#0A2540]`}>{agent.percent_5_star.toFixed(0)}%</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Badges with Tooltips */}
-                  <div className={`mt-4 flex flex-wrap gap-2 ${index === 0 ? 'lg:absolute lg:bottom-6 lg:right-6 lg:max-w-md' : ''}`}>
-                    {badges.map((badge, i) => (
-                      <div 
-                        key={i} 
-                        className={`group/badge relative ${badge.color} text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md hover:scale-110 transition-transform cursor-help`}
-                        title={badge.tooltip}
-                      >
-                        <span>{badge.icon}</span>
-                        <span>{badge.label}</span>
-                        
-                        {/* Tooltip on Hover */}
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover/badge:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl z-50">
-                          {badge.tooltip}
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Section Divider with styled badge */}
-          {chartData.length > 3 && (
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent" />
-              <div className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-bold rounded-full shadow-lg flex items-center gap-2">
-                <span>🌟</span>
-                <span>Rising Stars</span>
-              </div>
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-200 to-transparent" />
-            </div>
-          )}
-
-          {/* Remaining Agents (4-10) with trend indicators */}
-          {chartData.length > 3 && (
-            <div className="space-y-3">
-              {chartData.slice(3).map((agent, index) => {
-                const actualRank = index + 4
-                const badges = getBadges(agent, actualRank - 1)
-                const trend = getTrendIndicator(agent)
-                
-                return (
-                  <div
-                    key={actualRank}
-                    className="group flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 transition-all duration-200 hover:border-blue-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer"
-                  >
-                    {/* Rank */}
-                    <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center shadow-md">
-                      <span className="text-lg font-bold text-gray-600">{actualRank}</span>
-                    </div>
-                    
-                    {/* Avatar */}
-                    <div className="flex-shrink-0">
-                      <img 
-                        src={agent.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name)}&background=4F46E5&color=fff&size=128`}
-                        alt={agent.name}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md group-hover:scale-110 transition-transform"
-                        onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name)}&background=4F46E5&color=fff&size=128`}
-                      />
-                    </div>
-                    
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline gap-2 mb-1">
-                        <h4 className="font-semibold text-[#0A2540] text-base truncate">{agent.name}</h4>
-                        <span className="text-xs text-[#6B7C93] truncate">{agent.department}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-sm">
-                        <span className="font-medium text-[#0A2540]">{agent.rating.toFixed(2)} ⭐</span>
-                        <span className="text-[#8896AB]">•</span>
-                        <span className="text-[#6B7C93]">{agent.reviews} reviews</span>
-                        <span className="text-[#8896AB]">•</span>
-                        <span className="text-[#6B7C93]">{agent.percent_5_star.toFixed(0)}% 5-star</span>
-                        <span className="text-[#8896AB]">•</span>
-                        {/* Trend Indicator */}
-                        <span className={`${trend.bg} px-2 py-0.5 rounded-full flex items-center gap-1`}>
-                          <span className="text-xs">{trend.icon}</span>
-                          <span className={`text-xs font-semibold ${trend.color}`}>{trend.text}</span>
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {/* Badges with Tooltips */}
-                    <div className="flex-shrink-0 flex gap-2">
-                      {badges.slice(0, 2).map((badge, i) => (
-                        <div 
-                          key={i} 
-                          className={`group/badge relative ${badge.color} text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md hover:scale-110 transition-transform cursor-help`}
-                          title={badge.tooltip}
-                        >
-                          <span>{badge.icon}</span>
-                          <span className="hidden sm:inline">{badge.label}</span>
-                          
-                          {/* Tooltip on Hover */}
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover/badge:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl z-50">
-                            {badge.tooltip}
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900" />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 
 // Rating Distribution Pie Chart
 export function RatingDistribution({ reviews }: RatingDistributionProps) {
@@ -684,93 +375,88 @@ export function SourceBreakdown({ reviews }: SourceBreakdownProps) {
 
 // Satisfaction Trend Area Chart
 export function SatisfactionTrend({ data }: SatisfactionTrendProps) {
+  const chartConfig = {
+    satisfaction_score: {
+      label: "Satisfaction Score",
+      color: "hsl(var(--chart-1))",
+    },
+    benchmark: {
+      label: "Industry Benchmark",
+      color: "hsl(var(--chart-5))",
+    },
+  } satisfies ChartConfig
+
   return (
-    <div className="bg-white rounded-md border border-[#E3E8EE] p-6 mb-6 transition-all duration-150 hover:shadow-soft">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[#0A2540] tracking-tight">
-          Customer Satisfaction Trend
-        </h3>
-        <p className="text-sm text-[#6B7C93] mt-1">
+    <Card>
+      <CardHeader>
+        <CardTitle>Customer Satisfaction Trend</CardTitle>
+        <CardDescription>
           Track overall customer satisfaction over time
-        </p>
-        <div className="mt-3 p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
-          <p className="text-xs text-[#0A2540] font-medium mb-1">💡 Why This Matters</p>
-          <p className="text-xs text-[#425466]">
-            In insurance, happy customers renew policies and refer others. Track this trend to ensure your 
-            service quality stays competitive. The red benchmark line shows the 80% industry standard.
-          </p>
-        </div>
-      </div>
-      
-      <div className="h-72">
-        <ResponsiveContainer width="100%" height="100%">
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig} className="h-72 w-full">
           <AreaChart data={data}>
             <defs>
               <linearGradient id="colorSatisfaction" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={COLORS.success} stopOpacity={0.3}/>
-                <stop offset="95%" stopColor={COLORS.success} stopOpacity={0}/>
+                <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E3E8EE" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis 
               dataKey="date" 
-              stroke="#6B7C93"
-              fontSize={11}
-              axisLine={false}
               tickLine={false}
+              axisLine={false}
+              tickMargin={8}
               tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             />
             <YAxis 
-              stroke="#6B7C93" 
-              fontSize={11} 
-              axisLine={false}
               tickLine={false}
+              axisLine={false}
+              tickMargin={8}
               domain={[0, 100]}
               tickFormatter={(value) => `${value}%`}
             />
-            <Tooltip
-              contentStyle={{
-                borderRadius: '4px',
-                boxShadow: '0 2px 5px 0 rgba(60,66,87,0.08), 0 1px 1px 0 rgba(0,0,0,0.12)',
-                border: '1px solid #E3E8EE',
-                backgroundColor: '#FFFFFF',
-                padding: '8px 12px',
-              }}
-              formatter={(value: number, name: string) => {
-                if (name === 'satisfaction_score') return [`${value.toFixed(1)}%`, 'Satisfaction Score']
-                if (name === 'avg_rating') return [value.toFixed(2), 'Avg Rating']
-                if (name === 'benchmark') return [`${value}%`, 'Industry Benchmark']
-                return [value, name]
-              }}
-              labelFormatter={(value) => new Date(value).toLocaleDateString('en-US', { 
-                month: 'long', 
-                day: 'numeric' 
-              })}
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  labelFormatter={(value) => {
+                    return new Date(value).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                    })
+                  }}
+                  formatter={(value, name) => {
+                    if (name === 'benchmark') return [`${value}%`, 'Industry Benchmark']
+                    return [`${Number(value).toFixed(1)}%`, 'Satisfaction Score']
+                  }}
+                />
+              }
             />
-            <Legend />
             {/* Benchmark line at 80% */}
             <Line 
               type="monotone" 
               dataKey={() => 80}
-              stroke={COLORS.danger} 
+              stroke="hsl(var(--chart-5))"
               strokeWidth={2}
               strokeDasharray="5 5"
-              name="Industry Benchmark (80%)"
+              name="benchmark"
               dot={false}
             />
             <Area 
               type="monotone" 
               dataKey="satisfaction_score" 
-              stroke={COLORS.success} 
+              stroke="hsl(var(--chart-1))"
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#colorSatisfaction)"
-              name="Your Satisfaction Score"
+              name="satisfaction_score"
             />
           </AreaChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
+        </ChartContainer>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -795,38 +481,34 @@ export function DepartmentComparison({ reviews, departments }: DepartmentCompari
     .sort((a, b) => b.volume - a.volume) // Sort by volume
     .slice(0, 10) // Top 10
   
-  console.log('DepartmentComparison - Reviews:', reviews.length)
-  console.log('DepartmentComparison - Departments:', departments.length)
-  console.log('DepartmentComparison - Chart data:', deptData)
+  const chartConfig = {
+    volume: {
+      label: "Review Volume",
+      color: "hsl(var(--chart-1))",
+    },
+    rating: {
+      label: "Avg Rating",
+      color: "hsl(var(--chart-2))",
+    },
+  } satisfies ChartConfig
 
   return (
-    <div className="bg-white rounded-md border border-[#E3E8EE] p-6 mb-6 transition-all duration-150 hover:shadow-soft">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[#0A2540] tracking-tight">
-          Department Performance Comparison
-        </h3>
-        <p className="text-sm text-[#6B7C93] mt-1">
+    <Card>
+      <CardHeader>
+        <CardTitle>Department Performance Comparison</CardTitle>
+        <CardDescription>
           Compare insurance product lines across volume and quality
-        </p>
-        <div className="mt-3 p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
-          <p className="text-xs text-[#0A2540] font-medium mb-1">💡 Why This Matters</p>
-          <p className="text-xs text-[#425466]">
-            Different insurance products (Auto, Home, Health, Life) have different service challenges. 
-            Identify which product lines need process improvements or additional training resources.
-          </p>
-        </div>
-      </div>
-      
-      <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig} className="h-80 w-full">
           <ComposedChart data={deptData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E3E8EE" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis 
               dataKey="name" 
-              stroke="#6B7C93"
-              fontSize={11}
-              axisLine={false}
               tickLine={false}
+              axisLine={false}
+              tickMargin={8}
               angle={-45}
               textAnchor="end"
               height={120}
@@ -834,62 +516,56 @@ export function DepartmentComparison({ reviews, departments }: DepartmentCompari
             />
             <YAxis 
               yAxisId="left"
-              stroke="#6B7C93" 
-              fontSize={11} 
-              axisLine={false}
               tickLine={false}
+              axisLine={false}
+              tickMargin={8}
             />
             <YAxis 
               yAxisId="right"
               orientation="right"
-              stroke="#6B7C93" 
-              fontSize={11} 
-              axisLine={false}
               tickLine={false}
+              axisLine={false}
+              tickMargin={8}
               domain={[0, 5]}
               ticks={[0, 1, 2, 3, 4, 5]}
             />
-            <Tooltip
-              contentStyle={{
-                borderRadius: '4px',
-                boxShadow: '0 2px 5px 0 rgba(60,66,87,0.08), 0 1px 1px 0 rgba(0,0,0,0.12)',
-                border: '1px solid #E3E8EE',
-                backgroundColor: '#FFFFFF',
-                padding: '8px 12px',
-              }}
-              formatter={(value: number, name: string) => {
-                if (name === 'Review Volume') return [value, 'Reviews']
-                if (name === 'Avg Rating') return [value.toFixed(2) + ' / 5.00', 'Rating']
-                return [value, name]
-              }}
-              labelFormatter={(label, payload) => {
-                if (payload && payload[0]) {
-                  return payload[0].payload.fullName
-                }
-                return label
-              }}
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  labelFormatter={(label, payload) => {
+                    if (payload && payload[0]) {
+                      return payload[0].payload.fullName
+                    }
+                    return label
+                  }}
+                  formatter={(value, name) => {
+                    if (name === 'volume') return [value, 'Reviews']
+                    if (name === 'rating') return [`${Number(value).toFixed(2)} / 5.00`, 'Rating']
+                    return [value, name]
+                  }}
+                />
+              }
             />
-            <Legend wrapperStyle={{ paddingTop: '20px' }} />
             <Bar 
               yAxisId="left"
               dataKey="volume" 
-              fill={COLORS.primary} 
-              name="Review Volume" 
+              fill="hsl(var(--chart-1))"
+              name="volume" 
               radius={[4, 4, 0, 0]}
             />
             <Line 
               yAxisId="right"
               type="monotone" 
               dataKey="rating" 
-              stroke={COLORS.success} 
+              stroke="hsl(var(--chart-2))"
               strokeWidth={3}
-              name="Avg Rating"
-              dot={{ r: 6, fill: COLORS.success, strokeWidth: 2, stroke: '#fff' }}
+              name="rating"
+              dot={{ r: 6, fill: "hsl(var(--chart-2))", strokeWidth: 2, stroke: '#fff' }}
             />
           </ComposedChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
+        </ChartContainer>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -1076,103 +752,91 @@ export function ProblemSpotlight({ reviews, departments }: ProblemSpotlightProps
   .sort((a, b) => b.lowRatingPercent - a.lowRatingPercent) // Sort by worst first
   .slice(0, 10) // Top 10 worst
   
-  console.log('ProblemSpotlight - Reviews:', reviews.length)
-  console.log('ProblemSpotlight - Departments:', departments.length) 
-  console.log('ProblemSpotlight - Chart data:', deptData)
+  const chartConfig = {
+    lowRatingPercent: {
+      label: "Low Rating %",
+      color: "hsl(var(--chart-5))",
+    },
+  } satisfies ChartConfig
 
   return (
-    <div className="bg-white rounded-md border border-[#E3E8EE] p-6 mb-6 transition-all duration-150 hover:shadow-soft">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[#0A2540] tracking-tight">
-          Problem Spotlight: Low Ratings by Department
-        </h3>
-        <p className="text-sm text-[#6B7C93] mt-1">
+    <Card>
+      <CardHeader>
+        <CardTitle>Problem Spotlight: Low Ratings by Department</CardTitle>
+        <CardDescription>
           Identify departments with highest concentration of 1-2 star reviews
-        </p>
-        <div className="mt-3 p-3 bg-red-50 border-l-4 border-red-400 rounded">
-          <p className="text-xs text-[#0A2540] font-medium mb-1">🚨 Why This Matters</p>
-          <p className="text-xs text-[#425466]">
-            In insurance, bad reviews hurt retention and reputation. Departments with {'>'} 10% low ratings (shown in red) 
-            need immediate attention. These are compliance risks and indicate broken processes that need fixing now.
-          </p>
-        </div>
-      </div>
-      
-      <div className="h-72">
-        <ResponsiveContainer width="100%" height="100%">
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig} className="h-72 w-full">
           <BarChart data={deptData} layout="horizontal">
-            <CartesianGrid strokeDasharray="3 3" stroke="#E3E8EE" horizontal={true} vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
             <XAxis 
               type="number" 
-              stroke="#6B7C93" 
-              fontSize={11}
-              axisLine={false}
               tickLine={false}
+              axisLine={false}
+              tickMargin={8}
               tickFormatter={(value) => `${value}%`}
               domain={[0, 'auto']}
             />
             <YAxis 
               type="category" 
               dataKey="name" 
-              stroke="#6B7C93" 
-              fontSize={11}
               width={120}
-              axisLine={false}
               tickLine={false}
+              axisLine={false}
+              tickMargin={8}
             />
-            <Tooltip
+            <ChartTooltip
               cursor={{ fill: 'rgba(246, 249, 252, 0.5)' }}
-              contentStyle={{
-                borderRadius: '4px',
-                boxShadow: '0 2px 5px 0 rgba(60,66,87,0.08), 0 1px 1px 0 rgba(0,0,0,0.12)',
-                border: '1px solid #E3E8EE',
-                backgroundColor: '#FFFFFF',
-                padding: '8px 12px',
-              }}
-              formatter={(value: number, name: string, props: any) => {
-                if (name === 'lowRatingPercent') {
-                  return [
-                    `${value.toFixed(1)}% (${props.payload.lowRatingCount} of ${props.payload.total} reviews)`,
-                    '1-2 Star Rate'
-                  ]
-                }
-                return [value, name]
-              }}
-              labelFormatter={(label, payload) => {
-                if (payload && payload[0]) {
-                  return payload[0].payload.fullName
-                }
-                return label
-              }}
+              content={
+                <ChartTooltipContent
+                  labelFormatter={(label, payload) => {
+                    if (payload && payload[0]) {
+                      return payload[0].payload.fullName
+                    }
+                    return label
+                  }}
+                  formatter={(value, name, props: any) => {
+                    if (name === 'lowRatingPercent') {
+                      return [
+                        `${Number(value).toFixed(1)}% (${props.payload.lowRatingCount} of ${props.payload.total} reviews)`,
+                        '1-2 Star Rate'
+                      ]
+                    }
+                    return [value, name]
+                  }}
+                />
+              }
             />
             <Bar 
               dataKey="lowRatingPercent" 
-              name="Low Rating %"
+              name="lowRatingPercent"
               radius={[0, 4, 4, 0]}
               barSize={16}
             >
               {deptData.map((entry, index) => (
                 <Cell 
                   key={`cell-${index}`} 
-                  fill={entry.isHighRisk ? COLORS.danger : COLORS.warning}
+                  fill={entry.isHighRisk ? 'hsl(var(--chart-5))' : 'hsl(var(--chart-3))'}
                 />
               ))}
             </Bar>
           </BarChart>
-        </ResponsiveContainer>
-      </div>
-      
-      {/* Legend explaining colors */}
-      <div className="mt-4 flex items-center gap-4 text-xs">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded" style={{ backgroundColor: COLORS.danger }}></div>
-          <span className="text-[#425466]">High Risk ({'>'} 10%)</span>
+        </ChartContainer>
+        
+        {/* Legend explaining colors */}
+        <div className="mt-4 flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded" style={{ backgroundColor: COLORS.danger }}></div>
+            <span className="text-muted-foreground">High Risk ({'>'} 10%)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded" style={{ backgroundColor: COLORS.warning }}></div>
+            <span className="text-muted-foreground">Needs Monitoring ({'<'} 10%)</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded" style={{ backgroundColor: COLORS.warning }}></div>
-          <span className="text-[#425466]">Needs Monitoring ({'<'} 10%)</span>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }

@@ -1,7 +1,15 @@
 'use client'
 
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { TrendingUp, TrendingDown, Star } from 'lucide-react'
 import { MetricsSummary } from '@/data/dataService'
+import { Badge } from "@/components/ui/badge"
+import {
+  Card,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 
 interface KPITilesProps {
   metrics: MetricsSummary
@@ -9,149 +17,132 @@ interface KPITilesProps {
   showComparison?: boolean
 }
 
-interface KPITileProps {
-  label: string
-  value: number | string
-  previousValue?: number | string
-  showComparison?: boolean
-  format?: 'number' | 'decimal' | 'percentage'
-  colorClass?: string
-}
-
-function KPITile({ label, value, previousValue, showComparison, format = 'number', colorClass = 'text-[#635BFF]' }: KPITileProps) {
-  const formatValue = (val: number | string, formatType: string) => {
-    if (typeof val === 'string') return val
-    
-    switch (formatType) {
-      case 'decimal':
-        return val.toFixed(2)
-      case 'percentage':
-        return `${val.toFixed(1)}%`
-      default:
-        return val.toLocaleString()
-    }
-  }
-  
-  const getDelta = () => {
-    if (!showComparison || previousValue === undefined || typeof value === 'string' || typeof previousValue === 'string') {
-      return null
-    }
-    
-    const numValue = Number(value)
-    const numPrevious = Number(previousValue)
-    
-    if (numPrevious === 0) return null
-    
-    const delta = numValue - numPrevious
-    const percentChange = ((delta / numPrevious) * 100)
-    
+export default function KPITiles({ metrics, previousMetrics, showComparison = false }: KPITilesProps) {
+  // Calculate trends
+  const calculateTrend = (current: number, previous?: number) => {
+    if (!showComparison || !previous || previous === 0) return null
+    const percentChange = ((current - previous) / previous) * 100
     return {
-      delta,
       percentChange,
-      isPositive: delta > 0,
-      isNegative: delta < 0
+      isPositive: percentChange > 0
     }
   }
-  
-  const delta = getDelta()
-  const getColor = () => {
-    // Stripe-style color codes
-    if (colorClass.includes('blue')) return '#635BFF' // Primary purple
-    if (colorClass.includes('green')) return '#00CA6F' // Green
-    if (colorClass.includes('red')) return '#FF4A4C' // Red
-    if (colorClass.includes('orange')) return '#FFAE33' // Orange
-    if (colorClass.includes('yellow')) return '#FFBF00' // Yellow
-    if (colorClass.includes('lime')) return '#00CA6F' // Green (same as green for consistency)
-    if (colorClass.includes('purple')) return '#635BFF' // Purple (primary)
-    return '#635BFF' // Default to primary
-  }
-  
-  const color = getColor()
-  
+
+  const totalReviews = metrics.total
+  const previousTotal = previousMetrics?.total
+  const satisfactionRate = metrics.percent_5_star
+
+  const reviewsTrend = calculateTrend(totalReviews, previousTotal)
+  const ratingTrend = calculateTrend(metrics.avg_rating, previousMetrics?.avg_rating)
+  const satisfactionTrend = calculateTrend(satisfactionRate, previousMetrics?.percent_5_star)
+
   return (
-    <div className="bg-white rounded-md border border-[#E3E8EE] p-5 transition-all duration-150 hover:shadow-soft">
-      <div className="text-xs font-medium text-[#8898AA] mb-1 tracking-wide">{label}</div>
-      <div className="text-3xl font-semibold tracking-tight text-[#0A2540] leading-tight">
-        {formatValue(value, format)}
-      </div>
-      
-      {delta && (
-        <div className="flex items-center text-xs mt-2">
-          <div className="flex-shrink-0 mr-1.5">
-            {delta.isPositive ? (
-              <TrendingUp className="w-3 h-3 text-[#00CA6F]" />
-            ) : delta.isNegative ? (
-              <TrendingDown className="w-3 h-3 text-[#FF4A4C]" />
+    <div className="*:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-3 grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card">
+      <Card className="@container/card" data-slot="card">
+        <CardHeader className="relative">
+          <CardDescription>Average Star Rating</CardDescription>
+          <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums flex items-baseline gap-2">
+            {metrics.avg_rating.toFixed(2)}
+            <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+          </CardTitle>
+          {ratingTrend && Math.abs(ratingTrend.percentChange) >= 0.01 && (
+            <div className="absolute right-4 top-4">
+              <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
+                {ratingTrend.isPositive ? (
+                  <TrendingUp className="size-3" />
+                ) : (
+                  <TrendingDown className="size-3" />
+                )}
+                {ratingTrend.isPositive ? '+' : ''}{ratingTrend.percentChange.toFixed(1)}%
+              </Badge>
+            </div>
+          )}
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1 text-sm">
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            {ratingTrend?.isPositive ? (
+              <>Quality improving <TrendingUp className="size-4" /></>
+            ) : ratingTrend ? (
+              <>Needs attention <TrendingDown className="size-4" /></>
             ) : (
-              <Minus className="w-3 h-3 text-[#8898AA]" />
+              <>Customer satisfaction</>
             )}
           </div>
-          <span className={`font-medium ${delta.isPositive ? 'text-[#00CA6F]' : delta.isNegative ? 'text-[#FF4A4C]' : 'text-[#8898AA]'}`}>
-            {delta.isPositive ? '+' : ''}{delta.percentChange.toFixed(1)}%
-          </span>
-          <span className="text-[#8898AA] ml-1">vs. previous</span>
-        </div>
-      )}
-      
-      {/* Minimalist stripe-style indicator - colored bar at bottom */}
-      <div className="h-1 w-16 mt-4" style={{ backgroundColor: color, opacity: 0.2 }}></div>
-    </div>
-  )
-}
+          <div className="text-muted-foreground">
+            Overall service quality score
+          </div>
+        </CardFooter>
+      </Card>
 
-export default function KPITiles({ metrics, previousMetrics, showComparison }: KPITilesProps) {
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      <KPITile
-        label="1★ Reviews"
-        value={metrics.star_1}
-        previousValue={previousMetrics?.star_1}
-        showComparison={showComparison}
-        colorClass="text-red-600"
-      />
-      <KPITile
-        label="2★ Reviews"
-        value={metrics.star_2}
-        previousValue={previousMetrics?.star_2}
-        showComparison={showComparison}
-        colorClass="text-orange-600"
-      />
-      <KPITile
-        label="3★ Reviews"
-        value={metrics.star_3}
-        previousValue={previousMetrics?.star_3}
-        showComparison={showComparison}
-        colorClass="text-yellow-600"
-      />
-      <KPITile
-        label="4★ Reviews"
-        value={metrics.star_4}
-        previousValue={previousMetrics?.star_4}
-        showComparison={showComparison}
-        colorClass="text-lime-600"
-      />
-      <KPITile
-        label="5★ Reviews"
-        value={metrics.star_5}
-        previousValue={previousMetrics?.star_5}
-        showComparison={showComparison}
-        colorClass="text-green-600"
-      />
-      <KPITile
-        label="Total Reviews"
-        value={metrics.total}
-        previousValue={previousMetrics?.total}
-        showComparison={showComparison}
-        colorClass="text-blue-600"
-      />
-      <KPITile
-        label="Average Rating"
-        value={metrics.avg_rating}
-        previousValue={previousMetrics?.avg_rating}
-        showComparison={showComparison}
-        format="decimal"
-        colorClass="text-purple-600"
-      />
+      <Card className="@container/card" data-slot="card">
+        <CardHeader className="relative">
+          <CardDescription>Total Reviews</CardDescription>
+          <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
+            {totalReviews.toLocaleString()}
+          </CardTitle>
+          {reviewsTrend && Math.abs(reviewsTrend.percentChange) >= 0.01 && (
+            <div className="absolute right-4 top-4">
+              <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
+                {reviewsTrend.isPositive ? (
+                  <TrendingUp className="size-3" />
+                ) : (
+                  <TrendingDown className="size-3" />
+                )}
+                {reviewsTrend.isPositive ? '+' : ''}{reviewsTrend.percentChange.toFixed(1)}%
+              </Badge>
+            </div>
+          )}
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1 text-sm">
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            {reviewsTrend?.isPositive ? (
+              <>Volume increasing <TrendingUp className="size-4" /></>
+            ) : reviewsTrend ? (
+              <>Activity declining <TrendingDown className="size-4" /></>
+            ) : (
+              <>Feedback volume</>
+            )}
+          </div>
+          <div className="text-muted-foreground">
+            Total customer responses collected
+          </div>
+        </CardFooter>
+      </Card>
+
+      <Card className="@container/card" data-slot="card">
+        <CardHeader className="relative">
+          <CardDescription>5-Star Excellence Rate</CardDescription>
+          <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
+            {satisfactionRate.toFixed(1)}%
+          </CardTitle>
+          {satisfactionTrend && Math.abs(satisfactionTrend.percentChange) >= 0.01 && (
+            <div className="absolute right-4 top-4">
+              <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
+                {satisfactionTrend.isPositive ? (
+                  <TrendingUp className="size-3" />
+                ) : (
+                  <TrendingDown className="size-3" />
+                )}
+                {satisfactionTrend.isPositive ? '+' : ''}{satisfactionTrend.percentChange.toFixed(1)}%
+              </Badge>
+            </div>
+          )}
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1 text-sm">
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            {satisfactionTrend?.isPositive ? (
+              <>Excellence rising <TrendingUp className="size-4" /></>
+            ) : satisfactionTrend ? (
+              <>Performance dip <TrendingDown className="size-4" /></>
+            ) : (
+              <>Top-tier performance</>
+            )}
+          </div>
+          <div className="text-muted-foreground">
+            Percentage of perfect ratings
+          </div>
+        </CardFooter>
+      </Card>
     </div>
   )
 }

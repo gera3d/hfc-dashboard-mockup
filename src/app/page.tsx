@@ -2,14 +2,15 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
 import GlobalFilters from '@/components/GlobalFilters'
 import KPITiles from '@/components/KPITiles'
 import { 
   SatisfactionTrend,
-  AgentLeaderboard,
   DepartmentComparison,
   ProblemSpotlight
 } from '@/components/Charts'
+import { AgentLeaderboard } from '@/components/AgentLeaderboard'
 import { AgentTable, ReviewTable, CustomerFeedbackTable } from '@/components/DataTables'
 import { AgentDepartmentManager } from '@/components/AgentDepartmentManager'
 import { 
@@ -323,97 +324,99 @@ export default function Dashboard() {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-4 border-b-4 border-[#00CA6F]"></div>
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-4 border-b-4 border-blue-500"></div>
       </div>
     )
   }
   
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header - Stripe-style clean white header with subtle bottom border */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-6 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background">
+      {/* Header - Dark mode header matching shadcn */}
+      <div className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="py-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
-                <h1 className="text-3xl tracking-tight font-bold stripe-heading">
+                <h1 className="text-2xl font-semibold text-foreground">
                   HFC Reviews Dashboard
                 </h1>
-                <p className="mt-1 text-sm text-[#6B7C93]">
+                <p className="mt-1 text-sm text-muted-foreground">
                   Track customer reviews and agent performance across departments
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <div className="text-right px-4 py-2 rounded-md border border-gray-200">
-                  <div className="text-sm font-medium text-[#0A2540]">
+                <div className="text-right px-4 py-2 rounded-lg border bg-card">
+                  <div className="text-sm font-medium text-card-foreground">
                     {filters.dateRange.label || 'Custom Range'}{getFilterSummary()}
                   </div>
-                  <div className="text-xs text-[#6B7C93] mt-1 flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-[#00CA6F] rounded-full"></div>
+                  <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
                     <span className="font-mono">{filteredData.length}</span> reviews • Updated {lastRefresh.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                    <button
-                      onClick={refreshData}
-                      disabled={loading || syncing}
-                      className="ml-4 px-3 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center gap-1"
-                      title="Reload from local cache (fast)"
-                    >
-                      {loading ? (
-                        <>
-                          <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
-                          Loading...
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                          Refresh
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={syncData}
-                      disabled={loading || syncing}
-                      className="px-3 py-1 text-xs bg-[#635BFF] text-white rounded-md hover:bg-[#5a52e8] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center gap-1"
-                      title="Sync from Google Sheets (slow, updates local copy)"
-                    >
-                      {syncing ? (
-                        <>
-                          <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
-                          Syncing...
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                          </svg>
-                          Sync from Sheets
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={() => setShowAgentManager(!showAgentManager)}
-                      className="px-3 py-1 text-xs bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-200 flex items-center gap-1"
-                      title="Manage agent department assignments"
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      {showAgentManager ? 'Hide' : 'Manage'} Agents
-                    </button>
                   </div>
                 </div>
+                <Button
+                  onClick={refreshData}
+                  disabled={loading || syncing}
+                  title="Reload from local cache (fast)"
+                  className="gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Refresh
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={syncData}
+                  disabled={loading || syncing}
+                  variant="outline"
+                  title="Sync from Google Sheets (slow, updates local copy)"
+                  className="gap-2"
+                >
+                  {syncing ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                      Syncing...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                      Sync
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={() => setShowAgentManager(!showAgentManager)}
+                  variant="outline"
+                  title="Manage agent department assignments"
+                  className="gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  {showAgentManager ? 'Hide' : 'Manage'} Agents
+                </Button>
               </div>
             </div>
           </div>
         </div>
       </div>
       
-      {/* Main Content - Stripe-inspired clean white background with subtle gray sections */}
-      <div className="bg-[#F6F9FC] pb-12">
-        <div className="max-w-6xl mx-auto px-6 sm:px-6 lg:px-8 py-6">
-          {/* Global Filters - Stripe-style compact filters with subtle borders */}
+      {/* Main Content - Dark mode background */}
+      <div className="bg-background pb-12">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          {/* Global Filters - Clean compact filters */}
           <GlobalFilters filters={filters} onFiltersChange={setFilters} />
           
           {/* Local Changes Indicator */}
@@ -422,16 +425,18 @@ export default function Dashboard() {
             const totalChanges = changeCount.agentChanges + changeCount.customDepartments
             if (totalChanges > 0) {
               return (
-                <div className="mt-4 p-3 bg-amber-50 border-l-4 border-amber-400 rounded flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
+                <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0">
+                      <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                    </div>
                     <div>
                       <p className="text-sm font-medium text-amber-900">
-                        💾 {totalChanges} Local Change{totalChanges > 1 ? 's' : ''} Saved
+                        {totalChanges} Local Change{totalChanges > 1 ? 's' : ''} Saved
                       </p>
-                      <p className="text-xs text-amber-700">
+                      <p className="text-xs text-amber-700 mt-0.5">
                         {changeCount.agentChanges} agent assignment{changeCount.agentChanges !== 1 ? 's' : ''}, 
                         {' '}{changeCount.customDepartments} custom department{changeCount.customDepartments !== 1 ? 's' : ''}
                         {' '}• These survive page refreshes but need Google Sheets sync for permanence
@@ -440,7 +445,7 @@ export default function Dashboard() {
                   </div>
                   <button
                     onClick={handleClearLocalChanges}
-                    className="px-3 py-1 text-xs font-medium text-amber-700 bg-amber-100 rounded hover:bg-amber-200 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-amber-700 bg-white border border-amber-300 rounded-md hover:bg-amber-50 transition-all shadow-sm"
                   >
                     Reset to Sheets
                   </button>
@@ -454,7 +459,7 @@ export default function Dashboard() {
       
       {/* Agent Department Manager - Collapsible Section */}
       {showAgentManager && (
-        <div className="max-w-6xl mx-auto px-6 sm:px-6 lg:px-8 mb-8">
+        <div className="max-w-7xl mx-auto px-6 mb-6">
           <AgentDepartmentManager
             agents={agents}
             departments={departments}
@@ -463,23 +468,28 @@ export default function Dashboard() {
         </div>
       )}
       
-      <div className="max-w-6xl mx-auto px-6 sm:px-6 lg:px-8 -mt-8">
-        {/* Hero Chart - Agent Performance Rankings */}
-        <div className="mb-8">
+      <div className="max-w-7xl mx-auto px-6 pb-12">
+        {/* Container for responsive stat cards */}
+        <div className="@container/main flex flex-1 flex-col gap-2">
+          <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+            {/* KPI Tiles - Beautiful stat cards with gradients */}
+            <KPITiles 
+              metrics={currentMetrics} 
+              previousMetrics={comparisonData}
+              showComparison={filters.compareMode}
+            />
+          </div>
+        </div>
+        
+        {/* Agent Performance Rankings - Your original podium design with personality */}
+        <div className="mb-6">
           <AgentLeaderboard data={agentMetrics} limit={10} />
         </div>
         
-        {/* KPI Tiles - Stripe card style with sharp corners and subtle shadows */}
-        <KPITiles 
-          metrics={currentMetrics} 
-          previousMetrics={comparisonData}
-          showComparison={filters.compareMode}
-        />
-        
-        {/* Section Title - Stripe uses clear section titles */}
-        <div className="flex items-baseline justify-between mt-12 mb-6">
-          <h2 className="text-xl tracking-tight font-semibold text-[#0A2540]">Performance Insights</h2>
-          <span className="text-sm text-[#6B7C93]">Strategic business metrics</span>
+        {/* Section Title - Clear hierarchy */}
+        <div className="mt-12 mb-6">
+          <h2 className="text-lg font-semibold text-foreground">Performance Insights</h2>
+          <p className="text-sm text-muted-foreground mt-1">Strategic business metrics</p>
         </div>
         
         {/* Charts - Strategic 3-chart layout for insurance agency */}
@@ -495,13 +505,13 @@ export default function Dashboard() {
         </div>
         
         {/* Section Title */}
-        <div className="flex items-baseline justify-between mt-12 mb-6">
-          <h2 className="text-xl tracking-tight font-semibold text-[#0A2540]">Detailed Reports</h2>
-          <span className="text-sm text-[#6B7C93]">Tabular data</span>
+        <div className="mt-12 mb-6">
+          <h2 className="text-lg font-semibold text-foreground">Detailed Reports</h2>
+          <p className="text-sm text-muted-foreground mt-1">Tabular data</p>
         </div>
         
-        {/* Data Tables - Stripe clean tables with proper spacing */}
-        <div className="space-y-8">
+        {/* Data Tables - Clean tables with proper spacing */}
+        <div className="space-y-6">
           <AgentTable 
             data={agentMetrics} 
             onAgentClick={handleAgentClick}
