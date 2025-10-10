@@ -1,13 +1,16 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { ChevronUp, ChevronDown, ExternalLink, Download, Star, MessageCircle } from 'lucide-react'
+import { ChevronUp, ChevronDown, ExternalLink, Download, Star, MessageCircle, Plus } from 'lucide-react'
 import { AgentMetrics, Review, Agent, Department, agents as defaultAgents, departments as defaultDepartments } from '@/data/dataService'
 import { TableContainer } from './TableContainer'
 
 interface AgentTableProps {
   data: AgentMetrics[]
   onAgentClick?: (agentId: string) => void
+  departments?: Department[]
+  onDepartmentChange?: (agentId: string, departmentId: string) => void
+  onCreateDepartment?: (departmentName: string) => Promise<string> // Returns new department ID
 }
 
 interface ReviewTableProps {
@@ -21,9 +24,44 @@ interface ReviewTableProps {
 type SortField = 'agent_name' | 'department_name' | 'star_1' | 'star_2' | 'star_3' | 'star_4' | 'star_5' | 'total' | 'avg_rating' | 'percent_5_star' | 'last_review_date'
 type SortDirection = 'asc' | 'desc'
 
-export function AgentTable({ data, onAgentClick }: AgentTableProps) {
+export function AgentTable({ data, onAgentClick, departments = defaultDepartments, onDepartmentChange, onCreateDepartment }: AgentTableProps) {
   const [sortField, setSortField] = useState<SortField>('total')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+  const [editingAgentId, setEditingAgentId] = useState<string | null>(null)
+  const [showNewDeptModal, setShowNewDeptModal] = useState<string | null>(null) // agentId
+  const [newDeptName, setNewDeptName] = useState('')
+  const [isCreating, setIsCreating] = useState(false)
+  
+  const handleDepartmentChange = async (agentId: string, departmentId: string) => {
+    if (departmentId === 'CREATE_NEW') {
+      setShowNewDeptModal(agentId)
+      return
+    }
+    
+    if (onDepartmentChange) {
+      onDepartmentChange(agentId, departmentId)
+    }
+    setEditingAgentId(null)
+  }
+  
+  const handleCreateDepartment = async (agentId: string) => {
+    if (!newDeptName.trim() || !onCreateDepartment) return
+    
+    setIsCreating(true)
+    try {
+      const newDeptId = await onCreateDepartment(newDeptName.trim())
+      if (onDepartmentChange) {
+        onDepartmentChange(agentId, newDeptId)
+      }
+      setShowNewDeptModal(null)
+      setNewDeptName('')
+    } catch (error) {
+      console.error('Error creating department:', error)
+      alert('Failed to create department')
+    } finally {
+      setIsCreating(false)
+    }
+  }
   
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -245,8 +283,24 @@ export function AgentTable({ data, onAgentClick }: AgentTableProps) {
                     <td className="px-6 py-3 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{agent.agent_name}</div>
                     </td>
-                    <td className="px-6 py-3 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{agent.department_name}</div>
+                    <td className="px-6 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                      <div className="relative">
+                        <select
+                          value={departments.find(d => d.name === agent.department_name)?.id || ''}
+                          onChange={(e) => handleDepartmentChange(agent.agent_id, e.target.value)}
+                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 pr-8 hover:border-blue-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer bg-white transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {departments.map(dept => (
+                            <option key={dept.id} value={dept.id}>
+                              {dept.name}
+                            </option>
+                          ))}
+                          <option value="CREATE_NEW" className="text-blue-600 font-semibold">
+                            + Create New Department
+                          </option>
+                        </select>
+                      </div>
                     </td>
                     <td className="px-6 py-3 text-center text-red-600">{agent.star_1}</td>
                     <td className="px-6 py-3 text-center text-orange-600">{agent.star_2}</td>
@@ -290,6 +344,63 @@ export function AgentTable({ data, onAgentClick }: AgentTableProps) {
           </tbody>
         </table>
       </div>
+      
+      {/* New Department Modal */}
+      {showNewDeptModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowNewDeptModal(null)}>
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Create New Department</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Enter the name for the new department. The agent will be assigned to it automatically.
+            </p>
+            <input
+              type="text"
+              value={newDeptName}
+              onChange={(e) => setNewDeptName(e.target.value)}
+              placeholder="Department name (e.g., Life Insurance, Claims)"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none mb-4"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newDeptName.trim()) {
+                  handleCreateDepartment(showNewDeptModal)
+                } else if (e.key === 'Escape') {
+                  setShowNewDeptModal(null)
+                  setNewDeptName('')
+                }
+              }}
+            />
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowNewDeptModal(null)
+                  setNewDeptName('')
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                disabled={isCreating}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleCreateDepartment(showNewDeptModal)}
+                disabled={!newDeptName.trim() || isCreating}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              >
+                {isCreating ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4" />
+                    Create Department
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </TableContainer>
   )
 }

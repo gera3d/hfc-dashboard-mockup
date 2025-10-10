@@ -282,5 +282,27 @@ export const refreshDepartments = async (): Promise<Department[]> => {
   return departments;
 };
 
+// Update agent's department assignment
+export const updateAgentDepartment = async (agentId: string, departmentId: string): Promise<{ success: boolean; message: string }> => {
+  try {
+    // TODO: Implement Google Sheets update via API
+    // For now, this would need to update the Google Sheet directly
+    // You would call the Google Sheets API to update the agent's department_id
+    
+    console.log(`Updating agent ${agentId} to department ${departmentId}`);
+    
+    return {
+      success: false,
+      message: 'Direct Google Sheets updates not yet implemented. Please update manually in the sheet for now.'
+    };
+  } catch (error) {
+    console.error('Error updating agent department:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+};
+
 // Export data collections
 export { sampleReviews as reviews, departments, agents, sources };
