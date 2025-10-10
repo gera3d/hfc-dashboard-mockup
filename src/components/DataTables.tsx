@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { ChevronUp, ChevronDown, ExternalLink, Download, Star, MessageCircle } from 'lucide-react'
 import { AgentMetrics, Review, Agent, Department, agents as defaultAgents, departments as defaultDepartments } from '@/data/dataService'
+import { TableContainer } from './TableContainer'
 
 interface AgentTableProps {
   data: AgentMetrics[]
@@ -101,26 +102,16 @@ export function AgentTable({ data, onAgentClick }: AgentTableProps) {
   const grandSummary = calcSummary(sortedData);
 
   return (
-    <div className="backdrop-blur-md bg-white rounded-2xl shadow-soft border border-gray-100 mb-8 hover:shadow-elevated transition-all duration-200">
-      <div className="p-8 border-b border-gray-100">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-2xl font-display font-semibold text-gray-800 mb-1 tracking-tight">Agent Performance</h3>
-            <p className="text-sm text-gray-500">Detailed metrics for all agents, grouped by department, with totals and averages.</p>
-          </div>
-          <button className="stripe-button-secondary">
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
-        </div>
-      </div>
-
+    <TableContainer 
+      title="Agent Performance" 
+      subtitle="Detailed metrics for all agents, grouped by department, with totals and averages"
+    >
       <div className="overflow-x-auto">
-        <table className="min-w-full stripe-table">
-          <thead className="bg-white sticky top-0 z-10 border-b border-gray-100">
+        <table className="min-w-full">
+          <thead className="bg-gray-50">
             <tr>
               <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50 transition-colors"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                 onClick={() => handleSort('agent_name')}
               >
                 <div className="flex items-center gap-2">
@@ -299,7 +290,7 @@ export function AgentTable({ data, onAgentClick }: AgentTableProps) {
           </tbody>
         </table>
       </div>
-    </div>
+    </TableContainer>
   )
 }
 
@@ -348,23 +339,13 @@ export function ReviewTable({ data, agents = defaultAgents, departments = defaul
   
   return (
     <>
-      <div className="backdrop-blur-md bg-white rounded-2xl shadow-soft border border-gray-100 hover:shadow-elevated transition-all duration-200">
-        <div className="p-8 border-b border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-2xl font-display font-semibold text-gray-800 mb-1 tracking-tight">Individual Reviews</h3>
-              <p className="text-sm text-gray-500">Complete review history with details</p>
-            </div>
-            <button className="stripe-button-secondary">
-              <Download className="w-4 h-4" />
-              Export CSV
-            </button>
-          </div>
-        </div>
-
+      <TableContainer 
+        title="Individual Reviews" 
+        subtitle="Complete review history with details"
+      >
         <div className="overflow-x-auto">
-          <table className="min-w-full stripe-table">
-            <thead className="bg-white sticky top-0 z-10 border-b border-gray-100">
+          <table className="min-w-full">
+            <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date/Time
@@ -452,7 +433,7 @@ export function ReviewTable({ data, agents = defaultAgents, departments = defaul
             </div>
           </div>
         )}
-      </div>
+      </TableContainer>
       
       {/* Review Detail Modal */}
       {selectedReview && (
@@ -566,23 +547,13 @@ export function CustomerFeedbackTable({ data, agents = defaultAgents, department
   
   return (
     <>
-      <div className="backdrop-blur-md bg-white rounded-2xl shadow-soft border border-gray-100 hover:shadow-elevated transition-all duration-200">
-        <div className="p-8 border-b border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-2xl font-display font-semibold text-gray-800 mb-1 tracking-tight">Customer Feedback</h3>
-              <p className="text-sm text-gray-500">Reviews with written comments • {feedbackData.length} total</p>
-            </div>
-            <button className="stripe-button-secondary">
-              <Download className="w-4 h-4" />
-              Export Feedback
-            </button>
-          </div>
-        </div>
-
+      <TableContainer 
+        title="Customer Feedback" 
+        subtitle={`Reviews with written comments • ${feedbackData.length} total`}
+      >
         <div className="overflow-x-auto">
-          <table className="min-w-full stripe-table">
-            <thead className="bg-white sticky top-0 z-10 border-b border-gray-100">
+          <table className="min-w-full">
+            <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date/Time
@@ -705,7 +676,7 @@ export function CustomerFeedbackTable({ data, agents = defaultAgents, department
             </div>
           </div>
         )}
-      </div>
+      </TableContainer>
 
       {/* Modal for full feedback view */}
       {selectedReview && (
