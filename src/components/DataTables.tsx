@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { ChevronUp, ChevronDown, ExternalLink, Download, Star, MessageCircle } from 'lucide-react'
 import { AgentMetrics, Review, Agent, Department, agents as defaultAgents, departments as defaultDepartments } from '@/data/dataService'
 
@@ -512,6 +512,270 @@ export function ReviewTable({ data, agents = defaultAgents, departments = defaul
                         {selectedReview.comment || 'No comment provided'}
                       </p>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+// Customer Feedback Table - Only shows reviews with comments
+export function CustomerFeedbackTable({ data, agents = defaultAgents, departments = defaultDepartments, showPagination = true, pageSize = 10 }: ReviewTableProps) {
+  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedReview, setSelectedReview] = useState<Review | null>(null)
+  
+  // Filter to only reviews with comments, then sort by date (most recent first)
+  const feedbackData = useMemo(() => {
+    return [...data]
+      .filter(review => review.comment && review.comment.trim().length > 0)
+      .sort((a, b) => new Date(b.review_ts).getTime() - new Date(a.review_ts).getTime())
+  }, [data])
+  
+  const totalPages = Math.ceil(feedbackData.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const currentData = showPagination ? feedbackData.slice(startIndex, endIndex) : feedbackData
+  
+  const getAgentName = (agentId: string) => {
+    return agents.find(a => a.id === agentId)?.display_name || 'Unknown'
+  }
+  
+  const getDepartmentName = (departmentId: string) => {
+    return departments.find(d => d.id === departmentId)?.name || 'Unknown'
+  }
+  
+  const formatDateTime = (dateStr: string) => {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
+  
+  const getRatingColor = (rating: number) => {
+    const colors = {
+      1: 'text-red-600',
+      2: 'text-orange-600',
+      3: 'text-yellow-600',
+      4: 'text-lime-600',
+      5: 'text-green-600'
+    }
+    return colors[rating as keyof typeof colors] || 'text-gray-600'
+  }
+  
+  return (
+    <>
+      <div className="backdrop-blur-md bg-white rounded-2xl shadow-soft border border-gray-100 hover:shadow-elevated transition-all duration-200">
+        <div className="p-8 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-2xl font-display font-semibold text-gray-800 mb-1 tracking-tight">Customer Feedback</h3>
+              <p className="text-sm text-gray-500">Reviews with written comments • {feedbackData.length} total</p>
+            </div>
+            <button className="stripe-button-secondary">
+              <Download className="w-4 h-4" />
+              Export Feedback
+            </button>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full stripe-table">
+            <thead className="bg-white sticky top-0 z-10 border-b border-gray-100">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Date/Time
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Agent
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Department
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Rating
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Customer Feedback
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Source
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {currentData.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center">
+                    <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-gray-500">No customer feedback available for this period</p>
+                  </td>
+                </tr>
+              ) : (
+                currentData.map((review) => (
+                  <tr
+                    key={review.id}
+                    className="group bg-white hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 last:border-b-0 cursor-pointer"
+                    tabIndex={0}
+                    onClick={() => setSelectedReview(review)}
+                    onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setSelectedReview(review)}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{formatDateTime(review.review_ts)}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{getAgentName(review.agent_id)}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{getDepartmentName(review.department_id)}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="flex items-center justify-center">
+                        {[...Array(review.rating)].map((_, i) => (
+                          <Star key={i} className={`w-4 h-4 fill-current ${getRatingColor(review.rating)}`} />
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 max-w-md">
+                      <div className="text-sm text-gray-900 line-clamp-2">
+                        {review.comment}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 capitalize">
+                        {review.source}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {showPagination && feedbackData.length > pageSize && (
+          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+            <div className="text-sm text-gray-500">
+              Showing {startIndex + 1} to {Math.min(endIndex, feedbackData.length)} of {feedbackData.length} feedback entries
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum
+                  if (totalPages <= 5) {
+                    pageNum = i + 1
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i
+                  } else {
+                    pageNum = currentPage - 2 + i
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`px-3 py-1 text-sm rounded-md ${
+                        currentPage === pageNum
+                          ? 'bg-blue-600 text-white'
+                          : 'border border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  )
+                })}
+              </div>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Modal for full feedback view */}
+      {selectedReview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h3 className="text-xl font-semibold text-gray-900">Customer Feedback Details</h3>
+              <button
+                onClick={() => setSelectedReview(null)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Date & Time</label>
+                  <div className="mt-1 text-gray-900">{formatDateTime(selectedReview.review_ts)}</div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Source</label>
+                  <div className="mt-1">
+                    <span className="px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800 capitalize">
+                      {selectedReview.source}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Agent</label>
+                  <div className="mt-1 text-gray-900 font-medium">{getAgentName(selectedReview.agent_id)}</div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Department</label>
+                  <div className="mt-1 text-gray-900">{getDepartmentName(selectedReview.department_id)}</div>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-500">Rating</label>
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-6 h-6 ${
+                          i < selectedReview.rating
+                            ? `fill-current ${getRatingColor(selectedReview.rating)}`
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className={`text-lg font-medium ${getRatingColor(selectedReview.rating)}`}>
+                    {selectedReview.rating} / 5
+                  </span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-500">Customer Feedback</label>
+                <div className="mt-2 p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <MessageCircle className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-gray-900 leading-relaxed">
+                      {selectedReview.comment}
+                    </p>
                   </div>
                 </div>
               </div>

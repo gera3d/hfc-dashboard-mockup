@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import GlobalFilters from '@/components/GlobalFilters'
 import KPITiles from '@/components/KPITiles'
 import { TimeSeriesChart, AgentLeaderboard } from '@/components/Charts'
-import { AgentTable, ReviewTable } from '@/components/DataTables'
+import { AgentTable, ReviewTable, CustomerFeedbackTable } from '@/components/DataTables'
 import { 
   loadReviews,
   loadAgents,
@@ -295,6 +295,7 @@ export default function Dashboard() {
         {/* Data Tables - Stripe clean tables with proper spacing */}
         <AgentTable data={agentMetrics} onAgentClick={handleAgentClick} />
         <ReviewTable data={filteredData} agents={agents} departments={departments} />
+        <CustomerFeedbackTable data={filteredData} agents={agents} departments={departments} />
       </div>
     </div>
   )
