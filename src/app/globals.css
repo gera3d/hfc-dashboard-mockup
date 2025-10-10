@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./tailadmin.css";
 
 /* Ensure proper stacking context for dropdown menus */
 .dropdown-menu {

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import GlobalFilters from '@/components/GlobalFilters'
 import KPITiles from '@/components/KPITiles'
 import { 
@@ -207,6 +208,39 @@ export default function Dashboard() {
   const agentMetrics = getAgentMetrics(filteredData, agents, departments)
   const dailyMetrics = getDailyMetrics(filteredData, filters.dateRange)
   
+  // Debug logging for home page
+  console.log('🏠 HOME PAGE Data Summary:', {
+    totalReviews: reviews.length,
+    filteredReviews: filteredData.length,
+    agents: agents.length,
+    departments: departments.length,
+    metrics: currentMetrics,
+    dateRange: filters.dateRange.label,
+    topAgents: agentMetrics.slice(0, 5).map(a => ({
+      name: agents.find(ag => ag.id === a.agent_id)?.display_name,
+      total: a.total,
+      avg_rating: a.avg_rating,
+      percent_5_star: a.percent_5_star
+    }))
+  })
+  
+  // Debug logging - check dates
+  console.log('🔍 Date Filtering Debug:', {
+    totalReviews: reviews.length,
+    dateRange: {
+      from: filters.dateRange.from.toISOString(),
+      to: filters.dateRange.to.toISOString(),
+      label: filters.dateRange.label
+    },
+    filteredCount: filteredData.length,
+    sampleReviews: filteredData.slice(0, 3).map(r => ({
+      date: r.review_ts,
+      parsed: new Date(r.review_ts).toISOString(),
+      agentId: r.agent_id
+    })),
+    allReviews2025: reviews.filter(r => new Date(r.review_ts).getFullYear() === 2025).length
+  })
+  
   // Calculate satisfaction trend data
   const satisfactionTrendData = useMemo(() => {
     return dailyMetrics
@@ -343,6 +377,12 @@ export default function Dashboard() {
                 <p className="mt-1 text-sm text-[#6B7C93]">
                   Track customer reviews and agent performance across departments
                 </p>
+                <a 
+                  href="/dashboard" 
+                  className="mt-2 inline-flex items-center text-sm text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  → Try New TailAdmin Dashboard
+                </a>
               </div>
               <div className="flex items-center gap-3">
                 <div className="text-right px-4 py-2 rounded-md border border-gray-200">

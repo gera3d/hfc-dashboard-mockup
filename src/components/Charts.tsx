@@ -180,9 +180,16 @@ export function TimeSeriesChart({ data }: TimeSeriesChartProps) {
 }
 
 export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
-  // Only show agents with reviews
+  // DEBUG: Log what data this component receives
+  console.log('🎯 AgentLeaderboard RECEIVED data prop:', {
+    totalAgents: data.length,
+    first5: data.slice(0, 5).map(a => ({ name: a.agent_name, total: a.total, rating: a.avg_rating }))
+  });
+  
+  // Only show agents with reviews, SORT by total reviews descending
   const chartData = data
     .filter(agent => agent.total > 0)
+    .sort((a, b) => b.total - a.total)  // ✅ SORT BY REVIEW COUNT DESCENDING
     .slice(0, limit)
     .map(agent => ({
       name: agent.agent_name,
@@ -192,6 +199,12 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
       department: agent.department_name,
       image_url: agent.image_url
     }))
+  
+  // DEBUG: Log what chartData looks like after transformation
+  console.log('📊 AgentLeaderboard chartData after transformation:', {
+    totalInChart: chartData.length,
+    first5: chartData.slice(0, 5).map(c => ({ name: c.name, reviews: c.reviews, rating: c.rating }))
+  });
   
   // Calculate team average for comparison
   const teamAvgRating = chartData.length > 0 
