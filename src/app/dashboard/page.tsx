@@ -51,6 +51,7 @@ import { RatingTrendChart } from "@/components/dashboard/RatingTrendChart";
 import { DepartmentComparisonChart } from "@/components/dashboard/DepartmentComparisonChart";
 import { SourceDistributionChart } from "@/components/dashboard/SourceDistributionChart";
 import { StarDistributionChart } from "@/components/dashboard/StarDistributionChart";
+import EnhancedAgentRankings from "@/components/dashboard/EnhancedAgentRankings";
 
 interface Filters {
   dateRange: DateRange
@@ -471,9 +472,9 @@ export default function DashboardPage() {
         showComparison={filters.compareMode}
       />
 
-      {/* Hero Chart - Agent Leaderboard from your existing dashboard */}
+      {/* Hero Chart - Enhanced Agent Rankings */}
       <div className="mt-8">
-        <AgentLeaderboard data={agentMetrics} limit={10} />
+        <EnhancedAgentRankings data={agentMetrics} limit={10} />
       </div>
 
       {/* Satisfaction Trend - Your existing chart */}
