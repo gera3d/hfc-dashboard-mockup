@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { 
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -193,19 +193,32 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
       image_url: agent.image_url
     }))
   
+  // Calculate team average for comparison
+  const teamAvgRating = chartData.length > 0 
+    ? chartData.reduce((sum, a) => sum + a.rating, 0) / chartData.length 
+    : 0
+  
   // Generate performance badges based on multiple criteria
   const getBadges = (agent: typeof chartData[0], rank: number) => {
-    const badges = []
+    const badges: Array<{ icon: string; label: string; color: string; tooltip: string }> = []
     
-    if (rank === 0) badges.push({ icon: '�', label: 'Top Performer', color: 'bg-gradient-to-r from-yellow-400 to-yellow-600' })
-    if (agent.rating >= 4.9) badges.push({ icon: '⭐', label: 'Quality Star', color: 'bg-gradient-to-r from-green-400 to-green-600' })
-    else if (agent.rating >= 4.5) badges.push({ icon: '✨', label: 'Excellent', color: 'bg-gradient-to-r from-blue-400 to-blue-600' })
-    else if (agent.rating < 4.0) badges.push({ icon: '🎯', label: 'Needs Coaching', color: 'bg-gradient-to-r from-orange-400 to-orange-600' })
+    if (rank === 0) badges.push({ icon: '👑', label: 'Top Performer', color: 'bg-gradient-to-r from-yellow-400 to-yellow-600', tooltip: 'Highest overall performance' })
+    if (agent.rating >= 4.9) badges.push({ icon: '⭐', label: 'Quality Star', color: 'bg-gradient-to-r from-green-400 to-green-600', tooltip: '4.9+ star rating' })
+    else if (agent.rating >= 4.5) badges.push({ icon: '✨', label: 'Excellent', color: 'bg-gradient-to-r from-blue-400 to-blue-600', tooltip: '4.5+ star rating' })
+    else if (agent.rating < 4.0) badges.push({ icon: '🎯', label: 'Needs Coaching', color: 'bg-gradient-to-r from-orange-400 to-orange-600', tooltip: 'Below 4.0 - coaching recommended' })
     
-    if (agent.reviews >= 50) badges.push({ icon: '🏆', label: 'Volume Champion', color: 'bg-gradient-to-r from-purple-400 to-purple-600' })
-    if (agent.percent_5_star >= 95) badges.push({ icon: '💎', label: 'Customer Favorite', color: 'bg-gradient-to-r from-cyan-400 to-cyan-600' })
+    if (agent.reviews >= 50) badges.push({ icon: '🏆', label: 'Volume Champion', color: 'bg-gradient-to-r from-purple-400 to-purple-600', tooltip: '50+ reviews handled' })
+    if (agent.percent_5_star >= 95) badges.push({ icon: '💎', label: 'Customer Favorite', color: 'bg-gradient-to-r from-cyan-400 to-cyan-600', tooltip: '95%+ gave 5 stars' })
     
     return badges
+  }
+  
+  // Calculate trend indicator (comparing to team average)
+  const getTrendIndicator = (agent: typeof chartData[0]) => {
+    const delta = agent.rating - teamAvgRating
+    if (delta > 0.2) return { icon: '📈', text: `+${delta.toFixed(1)} vs avg`, color: 'text-green-600', bg: 'bg-green-50' }
+    if (delta < -0.2) return { icon: '📉', text: `${delta.toFixed(1)} vs avg`, color: 'text-red-600', bg: 'bg-red-50' }
+    return { icon: '➡️', text: 'On target', color: 'text-blue-600', bg: 'bg-blue-50' }
   }
   
   // If no data, show empty state
@@ -256,28 +269,35 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
               </div>
             </div>
             
-            {/* Quick Stats */}
+            {/* Quick Stats - Enhanced with 3rd card for team average */}
             <div className="flex gap-4">
-              <div className="text-center px-4 py-2 bg-green-50 rounded-lg border border-green-200">
-                <div className="text-2xl font-bold text-green-700">
+              <div className="text-center px-5 py-3 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 shadow-lg">
+                <div className="text-3xl font-bold text-green-700 mb-1">
                   {chartData.filter(a => a.rating >= 4.5).length}
                 </div>
-                <div className="text-xs text-green-600 font-medium">Star Agents</div>
+                <div className="text-xs text-green-600 font-semibold tracking-wide">Star Agents</div>
               </div>
-              <div className="text-center px-4 py-2 bg-orange-50 rounded-lg border border-orange-200">
-                <div className="text-2xl font-bold text-orange-700">
+              <div className="text-center px-5 py-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border-2 border-orange-200 shadow-lg">
+                <div className="text-3xl font-bold text-orange-700 mb-1">
                   {chartData.filter(a => a.rating < 4.0).length}
                 </div>
-                <div className="text-xs text-orange-600 font-medium">Need Coaching</div>
+                <div className="text-xs text-orange-600 font-semibold tracking-wide">Need Coaching</div>
+              </div>
+              <div className="text-center px-5 py-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 shadow-lg">
+                <div className="text-3xl font-bold text-blue-700 mb-1">
+                  {teamAvgRating.toFixed(2)}
+                </div>
+                <div className="text-xs text-blue-600 font-semibold tracking-wide">Team Average</div>
               </div>
             </div>
           </div>
           
-          {/* Dynamic Insights Banner */}
+          {/* Dynamic Insights Banner - Enhanced with pulsing animation */}
           <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-500 rounded-lg">
-            <p className="text-sm text-[#0A2540] font-medium">
-              💡 <span className="font-bold">{chartData[0]?.name}</span> is leading with {chartData[0]?.rating.toFixed(2)} stars across {chartData[0]?.reviews} reviews
-              {chartData[0]?.percent_5_star >= 95 && ' and an exceptional 5-star rate!'}
+            <p className="text-sm text-[#0A2540] font-medium flex items-center gap-2">
+              <span className="text-lg animate-pulse">💡</span> 
+              <span><span className="font-bold">{chartData[0]?.name}</span> is leading with {chartData[0]?.rating.toFixed(2)} stars across {chartData[0]?.reviews} reviews
+              {chartData[0]?.percent_5_star >= 95 && ' and an exceptional 5-star rate!'}</span>
             </p>
           </div>
         </div>
@@ -285,62 +305,98 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
         {/* Leaderboard Grid */}
         <div className="p-8">
           {/* Top 3 Podium */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
             {chartData.slice(0, 3).map((agent, index) => {
               const badges = getBadges(agent, index)
+              const trend = getTrendIndicator(agent)
               const rankColors = [
-                { bg: 'bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600', border: 'border-yellow-400', text: 'text-yellow-600', glow: 'shadow-yellow-500/50' },
-                { bg: 'bg-gradient-to-br from-gray-300 via-gray-400 to-gray-500', border: 'border-gray-400', text: 'text-gray-600', glow: 'shadow-gray-500/50' },
-                { bg: 'bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600', border: 'border-orange-400', text: 'text-orange-600', glow: 'shadow-orange-500/50' }
+                { bg: 'bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600', border: 'border-yellow-400', text: 'text-yellow-600', glow: 'shadow-yellow-500/50', statBg: 'bg-gradient-to-br from-yellow-50 to-amber-50' },
+                { bg: 'bg-gradient-to-br from-gray-300 via-gray-400 to-gray-500', border: 'border-gray-400', text: 'text-gray-600', glow: 'shadow-gray-500/50', statBg: 'bg-gradient-to-br from-gray-50 to-slate-50' },
+                { bg: 'bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600', border: 'border-orange-400', text: 'text-orange-600', glow: 'shadow-orange-500/50', statBg: 'bg-gradient-to-br from-orange-50 to-red-50' }
               ][index]
+              
+              // Make rank 1 span full width on large screens
+              const colSpan = index === 0 ? 'lg:col-span-12' : 'lg:col-span-6'
               
               return (
                 <div
                   key={index}
-                  className={`group relative bg-white rounded-2xl border-2 ${rankColors.border} p-6 transition-all duration-300 hover:scale-105 hover:shadow-2xl ${rankColors.glow} cursor-pointer`}
+                  className={`${colSpan} group relative bg-white rounded-2xl border-2 ${rankColors.border} p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl ${rankColors.glow} cursor-pointer ${index === 0 ? 'lg:flex lg:items-center lg:gap-8' : ''}`}
                 >
                   {/* Rank Badge */}
-                  <div className={`absolute -top-4 -left-4 w-12 h-12 ${rankColors.bg} rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg z-10`}>
+                  <div className={`absolute -top-4 -left-4 w-12 h-12 ${rankColors.bg} rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg z-10 ${index === 0 ? 'animate-shine' : ''}`}>
                     {index + 1}
                   </div>
                   
+                  {/* Crown Icon for #1 */}
+                  {index === 0 && (
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-4xl animate-bounce">
+                      👑
+                    </div>
+                  )}
+                  
                   {/* Agent Avatar */}
-                  <div className="flex flex-col items-center mb-4">
+                  <div className={`flex flex-col items-center ${index === 0 ? 'lg:flex-shrink-0' : ''} mb-4`}>
                     <div className={`relative mb-3 group-hover:scale-110 transition-transform duration-300`}>
                       <div className={`absolute inset-0 ${rankColors.bg} rounded-full blur-xl opacity-50`} />
                       <img 
                         src={agent.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name)}&background=4F46E5&color=fff&size=256`}
                         alt={agent.name}
-                        className={`relative w-20 h-20 rounded-full object-cover border-4 ${rankColors.border} shadow-xl`}
+                        className={`relative ${index === 0 ? 'w-24 h-24' : 'w-20 h-20'} rounded-full object-cover border-4 ${rankColors.border} shadow-xl`}
                         onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name)}&background=4F46E5&color=fff&size=256`}
                       />
                     </div>
-                    <h3 className="text-xl font-bold text-[#0A2540] text-center">{agent.name}</h3>
+                    <h3 className={`${index === 0 ? 'text-2xl' : 'text-xl'} font-bold text-[#0A2540] text-center`}>{agent.name}</h3>
                     <p className="text-xs text-[#6B7C93] mt-1">{agent.department}</p>
-                  </div>
-                  
-                  {/* Stats */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm text-[#6B7C93]">Rating</span>
-                      <span className="text-lg font-bold text-[#0A2540]">{agent.rating.toFixed(2)}/5.00</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm text-[#6B7C93]">Reviews</span>
-                      <span className="text-lg font-bold text-[#0A2540]">{agent.reviews}</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm text-[#6B7C93]">5-Star Rate</span>
-                      <span className="text-lg font-bold text-[#0A2540]">{agent.percent_5_star.toFixed(0)}%</span>
+                    
+                    {/* Trend Indicator */}
+                    <div className={`mt-2 px-3 py-1 ${trend.bg} rounded-full flex items-center gap-1`}>
+                      <span>{trend.icon}</span>
+                      <span className={`text-xs font-semibold ${trend.color}`}>{trend.text}</span>
                     </div>
                   </div>
                   
-                  {/* Badges */}
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  {/* Stats - Premium Design with gradients and icons */}
+                  <div className={`space-y-3 ${index === 0 ? 'lg:flex-1 lg:grid lg:grid-cols-3 lg:gap-4 lg:space-y-0' : ''}`}>
+                    <div className={`relative overflow-hidden flex items-center justify-between p-4 ${rankColors.statBg} rounded-xl border border-${index === 0 ? 'yellow' : index === 1 ? 'gray' : 'orange'}-200 shadow-md`}>
+                      <div className="absolute top-0 right-0 text-6xl opacity-10">⭐</div>
+                      <div className="relative z-10">
+                        <span className="text-xs text-[#6B7C93] font-semibold block mb-1">Rating</span>
+                        <span className={`${index === 0 ? 'text-2xl' : 'text-lg'} font-bold text-[#0A2540]`}>{agent.rating.toFixed(2)}/5.00</span>
+                      </div>
+                    </div>
+                    <div className={`relative overflow-hidden flex items-center justify-between p-4 ${rankColors.statBg} rounded-xl border border-${index === 0 ? 'yellow' : index === 1 ? 'gray' : 'orange'}-200 shadow-md`}>
+                      <div className="absolute top-0 right-0 text-6xl opacity-10">📊</div>
+                      <div className="relative z-10">
+                        <span className="text-xs text-[#6B7C93] font-semibold block mb-1">Reviews</span>
+                        <span className={`${index === 0 ? 'text-2xl' : 'text-lg'} font-bold text-[#0A2540]`}>{agent.reviews}</span>
+                      </div>
+                    </div>
+                    <div className={`relative overflow-hidden flex items-center justify-between p-4 ${rankColors.statBg} rounded-xl border border-${index === 0 ? 'yellow' : index === 1 ? 'gray' : 'orange'}-200 shadow-md`}>
+                      <div className="absolute top-0 right-0 text-6xl opacity-10">💎</div>
+                      <div className="relative z-10">
+                        <span className="text-xs text-[#6B7C93] font-semibold block mb-1">5-Star Rate</span>
+                        <span className={`${index === 0 ? 'text-2xl' : 'text-lg'} font-bold text-[#0A2540]`}>{agent.percent_5_star.toFixed(0)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Badges with Tooltips */}
+                  <div className={`mt-4 flex flex-wrap gap-2 ${index === 0 ? 'lg:absolute lg:bottom-6 lg:right-6 lg:max-w-md' : ''}`}>
                     {badges.map((badge, i) => (
-                      <div key={i} className={`${badge.color} text-white text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1 shadow-md`}>
+                      <div 
+                        key={i} 
+                        className={`group/badge relative ${badge.color} text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md hover:scale-110 transition-transform cursor-help`}
+                        title={badge.tooltip}
+                      >
                         <span>{badge.icon}</span>
                         <span>{badge.label}</span>
+                        
+                        {/* Tooltip on Hover */}
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover/badge:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl z-50">
+                          {badge.tooltip}
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900" />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -349,16 +405,25 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
             })}
           </div>
 
-          {/* Remaining Agents (4-10) */}
+          {/* Section Divider with styled badge */}
+          {chartData.length > 3 && (
+            <div className="flex items-center gap-4 mb-6">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent" />
+              <div className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-bold rounded-full shadow-lg flex items-center gap-2">
+                <span>🌟</span>
+                <span>Rising Stars</span>
+              </div>
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-200 to-transparent" />
+            </div>
+          )}
+
+          {/* Remaining Agents (4-10) with trend indicators */}
           {chartData.length > 3 && (
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-[#0A2540] mb-4 flex items-center gap-2">
-                <div className="w-1 h-6 bg-blue-500 rounded-full" />
-                Rising Stars
-              </h3>
               {chartData.slice(3).map((agent, index) => {
                 const actualRank = index + 4
                 const badges = getBadges(agent, actualRank - 1)
+                const trend = getTrendIndicator(agent)
                 
                 return (
                   <div
@@ -366,7 +431,7 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
                     className="group flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 transition-all duration-200 hover:border-blue-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer"
                   >
                     {/* Rank */}
-                    <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+                    <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center shadow-md">
                       <span className="text-lg font-bold text-gray-600">{actualRank}</span>
                     </div>
                     
@@ -392,15 +457,31 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
                         <span className="text-[#6B7C93]">{agent.reviews} reviews</span>
                         <span className="text-[#8896AB]">•</span>
                         <span className="text-[#6B7C93]">{agent.percent_5_star.toFixed(0)}% 5-star</span>
+                        <span className="text-[#8896AB]">•</span>
+                        {/* Trend Indicator */}
+                        <span className={`${trend.bg} px-2 py-0.5 rounded-full flex items-center gap-1`}>
+                          <span className="text-xs">{trend.icon}</span>
+                          <span className={`text-xs font-semibold ${trend.color}`}>{trend.text}</span>
+                        </span>
                       </div>
                     </div>
                     
-                    {/* Badges */}
+                    {/* Badges with Tooltips */}
                     <div className="flex-shrink-0 flex gap-2">
                       {badges.slice(0, 2).map((badge, i) => (
-                        <div key={i} className={`${badge.color} text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md`}>
+                        <div 
+                          key={i} 
+                          className={`group/badge relative ${badge.color} text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md hover:scale-110 transition-transform cursor-help`}
+                          title={badge.tooltip}
+                        >
                           <span>{badge.icon}</span>
                           <span className="hidden sm:inline">{badge.label}</span>
+                          
+                          {/* Tooltip on Hover */}
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover/badge:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl z-50">
+                            {badge.tooltip}
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900" />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -414,6 +495,7 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
     </div>
   )
 }
+
 
 // Rating Distribution Pie Chart
 export function RatingDistribution({ reviews }: RatingDistributionProps) {
