@@ -53,6 +53,7 @@ import { SourceDistributionChart } from "@/components/dashboard/SourceDistributi
 import { StarDistributionChart } from "@/components/dashboard/StarDistributionChart";
 import EnhancedAgentRankings from "@/components/dashboard/EnhancedAgentRankings";
 import EnhancedMetricsGrid from "@/components/dashboard/EnhancedMetricsGrid";
+import ProblemFeedback from "@/components/dashboard/ProblemFeedback";
 
 interface Filters {
   dateRange: DateRange
@@ -476,6 +477,11 @@ export default function DashboardPage() {
       {/* Hero Chart - Enhanced Agent Rankings */}
       <div className="mt-8">
         <EnhancedAgentRankings data={agentMetrics} limit={10} />
+      </div>
+
+      {/* Problem Feedback Section - Low-rated reviews with comments */}
+      <div className="mt-8">
+        <ProblemFeedback reviews={filteredData} />
       </div>
 
       {/* Satisfaction Trend - Your existing chart */}
