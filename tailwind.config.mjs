@@ -6,6 +6,7 @@ const config = {
     join(__dirname, 'src/**/*.{js,ts,jsx,tsx,mdx}'),
     join(__dirname, 'app/**/*.{js,ts,jsx,tsx,mdx}'),
   ],
+  darkMode: ['class'],
   theme: {
     extend: {
       colors: {
@@ -22,6 +23,32 @@ const config = {
         'signal-positive': 'var(--color-signal-positive)',
         'signal-caution': 'var(--color-signal-caution)',
         'signal-negative': 'var(--color-signal-negative)',
+        // Health for California brand colors (from actual website)
+        'hfc': {
+          50: '#e8f1f8',
+          100: '#d1e3f1',
+          200: '#a3c7e3',
+          300: '#75abd5',
+          400: '#478fc7',
+          500: '#1e5a8e',  // Primary dark blue (header color)
+          600: '#184872',
+          700: '#123656',
+          800: '#0c243a',
+          900: '#06121d',
+          950: '#030910',
+        },
+        'hfc-gold': {
+          50: '#fef9ec',
+          100: '#fdf3d9',
+          200: '#fbe7b3',
+          300: '#f9db8d',
+          400: '#f7cf67',
+          500: '#f5b942',  // California gold accent
+          600: '#c49435',
+          700: '#936f28',
+          800: '#624a1a',
+          900: '#31250d',
+        },
       },
       fontFamily: {
         display: ["var(--font-display)", 'Space Grotesk', 'Inter', 'system-ui'],

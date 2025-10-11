@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from 'next/navigation';
 import { Trophy, Building2, AlertTriangle, BarChart3 } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
 import { 
   loadReviews, 
   loadAgents, 
@@ -37,6 +38,7 @@ import {
 import { AgentTable, ReviewTable, CustomerFeedbackTable } from '@/components/DataTables';
 import TimePeriodSelector from '@/components/TimePeriodSelector';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
+import DashboardLayout from '@/components/DashboardLayout';
 
 // TailAdmin dashboard components
 import { ReviewMetrics } from "@/components/dashboard/ReviewMetrics";
@@ -62,6 +64,7 @@ interface Filters {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { theme } = useTheme();
   const dateRanges = getDateRanges();
   
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -282,16 +285,25 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-8 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 min-h-screen pb-12 px-6">
-      
-      {/* Beautiful Time Period Selector */}
-      <TimePeriodSelector
-        selectedRange={filters.dateRange}
-        compareMode={filters.compareMode}
-        onRangeChange={(range) => setFilters(prev => ({ ...prev, dateRange: range }))}
-        onCompareModeChange={(enabled) => setFilters(prev => ({ ...prev, compareMode: enabled }))}
-        dateRanges={dateRanges}
-      />
+    <DashboardLayout
+      selectedRange={filters.dateRange}
+      compareMode={filters.compareMode}
+      onRangeChange={(range) => setFilters(prev => ({ ...prev, dateRange: range }))}
+      onCompareModeChange={(enabled) => setFilters(prev => ({ ...prev, compareMode: enabled }))}
+      dateRanges={dateRanges}
+    >
+      <div className="space-y-8 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 hfc:from-gray-50 hfc:via-gray-50 hfc:to-gray-50 min-h-screen pb-12 px-6">
+        
+        {/* Beautiful Time Period Selector - Hidden in HFC theme */}
+        {theme !== 'hfc' && (
+          <TimePeriodSelector
+            selectedRange={filters.dateRange}
+            compareMode={filters.compareMode}
+            onRangeChange={(range) => setFilters(prev => ({ ...prev, dateRange: range }))}
+            onCompareModeChange={(enabled) => setFilters(prev => ({ ...prev, compareMode: enabled }))}
+            dateRanges={dateRanges}
+          />
+        )}
 
       {/* KPI Metrics - Enhanced TailAdmin Style */}
       <EnhancedMetricsGrid 
@@ -467,6 +479,7 @@ export default function DashboardPage() {
           </div>
         </CollapsibleSection>
       </div>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

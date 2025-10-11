@@ -341,3 +341,437 @@ body {
 .animate-shake {
   animation: shake 0.5s ease-in-out;
 }
+
+/* ===== HEALTH FOR CALIFORNIA (HFC) THEME ===== */
+.hfc {
+  /* HFC Brand Colors - From Actual Website */
+  --hfc-blue-primary: #1e5a8e;      /* Dark blue header */
+  --hfc-blue-medium: #2673b0;        /* Medium blue */
+  --hfc-blue-light: #478fc7;         /* Light blue accents */
+  --hfc-gold: #f5b942;               /* California gold */
+  --hfc-gold-dark: #c49435;          /* Darker gold */
+  
+  /* Background colors - Clean white like actual website */
+  --color-background-app: #ffffff;
+  --color-background-surface: #ffffff;
+  --color-background-elevated: #ffffff;
+  --color-background-subtle: #f8f9fa;
+  
+  /* Text colors */
+  color: #1a1a1a;
+}
+
+.hfc body {
+  background: #ffffff;
+  color: #1a1a1a;
+}
+
+/* HFC Button Styles - Dark Blue with Gold Accents */
+.hfc .stripe-button-primary,
+.hfc button[class*="bg-indigo"],
+.hfc button[class*="bg-purple"] {
+  background: var(--hfc-blue-primary) !important;
+  color: white !important;
+  border: none;
+  font-weight: 600;
+}
+
+.hfc .stripe-button-primary:hover,
+.hfc button[class*="bg-indigo"]:hover,
+.hfc button[class*="bg-purple"]:hover {
+  background: #164166 !important;
+  transform: translateY(-1px);
+}
+
+/* HFC Gold Accent Buttons */
+.hfc button[class*="bg-green"],
+.hfc .bg-green-600 {
+  background: var(--hfc-gold) !important;
+  color: #1a1a1a !important;
+  font-weight: 600;
+}
+
+.hfc button[class*="bg-green"]:hover {
+  background: var(--hfc-gold-dark) !important;
+}
+
+/* HFC Card Styles */
+.hfc .stripe-card,
+.hfc .bg-white {
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+.hfc .stripe-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* HFC Gradient Backgrounds - Minimal, clean */
+.hfc .bg-gradient-to-br {
+  background: white;
+}
+
+/* HFC Page Background - Clean white */
+.hfc .bg-gray-50,
+.hfc .bg-blue-50,
+.hfc .bg-indigo-50,
+.hfc .bg-purple-50 {
+  background-color: #ffffff !important;
+}
+
+/* HFC Text Colors - Dark Blue Primary */
+.hfc .text-indigo-600,
+.hfc .text-indigo-700,
+.hfc .text-purple-600 {
+  color: var(--hfc-blue-primary) !important;
+}
+
+.hfc h1, .hfc h2, .hfc h3, .hfc h4, .hfc h5, .hfc h6 {
+  color: var(--hfc-blue-primary) !important;
+}
+
+.hfc .text-gray-900 {
+  color: var(--hfc-blue-primary) !important;
+}
+
+.hfc .text-green-600,
+.hfc .text-emerald-600 {
+  color: var(--hfc-gold-dark) !important;
+}
+
+/* HFC Border Colors */
+.hfc .border-indigo-200,
+.hfc .border-purple-200 {
+  border-color: #a3c7e3 !important;
+}
+
+.hfc .border-indigo-300 {
+  border-color: #75abd5 !important;
+}
+
+/* HFC Background Colors - Dark Blue and Gold */
+.hfc .bg-indigo-50,
+.hfc .bg-purple-50 {
+  background-color: #f8f9fa !important;
+}
+
+.hfc .bg-indigo-100 {
+  background-color: #e8f1f8 !important;
+}
+
+.hfc .bg-indigo-500,
+.hfc .bg-indigo-600,
+.hfc .bg-purple-600 {
+  background-color: var(--hfc-blue-primary) !important;
+  color: white !important;
+}
+
+.hfc .bg-green-600 {
+  background-color: var(--hfc-gold) !important;
+  color: #1a1a1a !important;
+}
+
+.hfc .bg-green-100 {
+  background-color: #fef9ec !important;
+}
+
+/* HFC Gradient Icons - Dark Blue */
+.hfc .bg-gradient-to-br.from-indigo-500.to-purple-600,
+.hfc [class*="from-indigo"][class*="to-purple"] {
+  background: var(--hfc-blue-primary) !important;
+}
+
+/* HFC Badges - Dark Blue Theme */
+.hfc [class*="bg-indigo"][class*="text-indigo"] {
+  background-color: #e8f1f8 !important;
+  color: var(--hfc-blue-primary) !important;
+}
+
+.hfc [class*="bg-green"][class*="text-green"] {
+  background-color: #fef9ec !important;
+  color: var(--hfc-gold-dark) !important;
+}
+
+/* HFC Links and Hover States */
+.hfc a,
+.hfc .text-blue-600 {
+  color: var(--hfc-blue-primary);
+}
+
+.hfc a:hover,
+.hfc .text-blue-600:hover {
+  color: #123656;
+}
+
+/* HFC Headings - Dark Blue */
+.hfc h1, .hfc h2, .hfc h3, .hfc h4, .hfc h5, .hfc h6 {
+  color: var(--hfc-blue-primary);
+}
+
+/* HFC Chart Colors */
+.hfc [class*="stroke-indigo"],
+.hfc [class*="stroke-purple"] {
+  stroke: var(--hfc-blue-primary) !important;
+}
+
+.hfc [class*="fill-indigo"],
+.hfc [class*="fill-purple"] {
+  fill: var(--hfc-blue-primary) !important;
+}
+
+.hfc [class*="stroke-green"],
+.hfc [class*="fill-green"] {
+  stroke: var(--hfc-gold) !important;
+  fill: var(--hfc-gold) !important;
+}
+
+/* HFC Status Indicators */
+.hfc .text-green-700 {
+  color: var(--hfc-gold-dark) !important;
+}
+
+.hfc .bg-red-100 {
+  background-color: #ffe6e6 !important;
+}
+
+.hfc .text-red-700 {
+  color: #cc0000 !important;
+}
+
+/* HFC Focus States */
+.hfc :focus-visible {
+  outline: 2px solid var(--hfc-blue-primary);
+  outline-offset: 2px;
+}
+
+/* HFC Shadows - Subtle gray shadows like website */
+.hfc .shadow-lg {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.hfc .shadow-xl {
+  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.15), 0 10px 15px -5px rgba(0, 0, 0, 0.06);
+}
+
+/* HFC Gold Accents for Success/Positive States */
+.hfc .text-green-600 {
+  color: var(--hfc-gold-dark) !important;
+}
+
+.hfc [class*="text-green-"] {
+  color: var(--hfc-gold-dark) !important;
+}
+
+/* HFC Overall Page Styling - Clean white backgrounds */
+.hfc main,
+.hfc .container,
+.hfc .max-w-7xl {
+  background-color: #f8f9fa;
+}
+
+/* HFC Navigation */
+.hfc nav {
+  background: linear-gradient(to right, #1e5a8e, #2673b0, #1e5a8e) !important;
+  border-bottom: 1px solid #164166 !important;
+  box-shadow: 0 4px 12px rgba(30, 90, 142, 0.3) !important;
+}
+
+/* HFC Expandable Time Period Section */
+.hfc nav [class*="border-t"] {
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* HFC Time Period Buttons in Nav */
+.hfc nav button[class*="bg-white/10"] {
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+
+.hfc nav button[class*="bg-white/10"]:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Selected period button in nav */
+.hfc nav button[class*="bg-white"][class*="text-"]:not([class*="bg-white/"]) {
+  background: white !important;
+  color: #1e5a8e !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Ensure all text in white buttons is readable */
+.hfc nav button[class*="bg-white"]:not([class*="bg-white/"]) * {
+  color: #1e5a8e !important;
+}
+
+/* Glassmorphism effect for period info box */
+.hfc nav [class*="bg-white/10"][class*="rounded-lg"] {
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* HFC Remove all blue tints from backgrounds */
+.hfc [class*="bg-blue-"],
+.hfc [class*="bg-indigo-"]:not([class*="bg-indigo-500"]):not([class*="bg-indigo-600"]) {
+  background-color: #ffffff !important;
+}
+
+/* HFC Time Period Selector */
+.hfc .bg-gradient-to-br.from-white {
+  background: white !important;
+}
+
+.hfc button[class*="from-indigo-600"] {
+  background: var(--hfc-blue-primary) !important;
+}
+
+/* HFC Time Period Buttons - White cards with blue text */
+.hfc button[class*="bg-white"][class*="border-2"] {
+  background: white !important;
+  border-color: #d1d5db !important;
+  color: var(--hfc-blue-primary) !important;
+}
+
+.hfc button[class*="bg-white"][class*="border-2"]:hover {
+  border-color: var(--hfc-blue-primary) !important;
+  box-shadow: 0 2px 8px rgba(30, 90, 142, 0.15) !important;
+}
+
+/* Selected period button - ensure white text on dark blue */
+.hfc button.scale-105 {
+  background: var(--hfc-blue-primary) !important;
+  border-color: var(--hfc-blue-primary) !important;
+  color: white !important;
+}
+
+.hfc button.scale-105 * {
+  color: white !important;
+}
+
+/* Override all gradient backgrounds in HFC theme */
+.hfc button[class*="gradient"] {
+  background: white !important;
+  border: 2px solid #d1d5db !important;
+  color: var(--hfc-blue-primary) !important;
+}
+
+.hfc button[class*="gradient"] * {
+  color: var(--hfc-blue-primary) !important;
+}
+
+.hfc button[class*="gradient"].scale-105,
+.hfc button[class*="gradient"][class*="scale-105"] {
+  background: var(--hfc-blue-primary) !important;
+  border-color: var(--hfc-blue-primary) !important;
+  color: white !important;
+}
+
+.hfc button[class*="gradient"].scale-105 *,
+.hfc button[class*="gradient"][class*="scale-105"] * {
+  color: white !important;
+}
+
+/* Compare button */
+.hfc button[class*="Compare"] {
+  background: white !important;
+  border: 2px solid var(--hfc-blue-primary) !important;
+  color: var(--hfc-blue-primary) !important;
+}
+
+.hfc button[class*="Compare"].scale-105 {
+  background: var(--hfc-blue-primary) !important;
+  color: white !important;
+}
+
+.hfc button[class*="Compare"].scale-105 * {
+  color: white !important;
+}
+
+/* HFC Borders - Clean gray borders like website */
+.hfc .border-gray-200 {
+  border-color: #e5e7eb !important;
+}
+
+.hfc .border-blue-100,
+.hfc .border-blue-200,
+.hfc .border-indigo-200,
+.hfc .border-purple-200 {
+  border-color: #e5e7eb !important;
+}
+
+/* HFC Time Period Container */
+.hfc [class*="rounded-2xl"][class*="border-2"] {
+  background: white !important;
+  border-color: #e5e7eb !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Hide decorative gradient blobs in HFC theme */
+.hfc [class*="absolute"][class*="blur-3xl"] {
+  display: none !important;
+}
+
+/* Force white text on selected buttons */
+.hfc button[class*="scale-105"] span,
+.hfc button[class*="scale-105"] div,
+.hfc button[class*="scale-105"] svg {
+  color: white !important;
+  fill: currentColor !important;
+}
+
+/* Force blue text on unselected buttons */
+.hfc button:not([class*="scale-105"]) span,
+.hfc button:not([class*="scale-105"]) div {
+  color: var(--hfc-blue-primary) !important;
+}
+
+/* Ensure Time Period title is readable */
+.hfc h3.text-gray-900 {
+  color: var(--hfc-blue-primary) !important;
+}
+
+/* Selected Period Box */
+.hfc [class*="bg-gradient-to-br"][class*="from-indigo"] {
+  background: var(--hfc-blue-primary) !important;
+  color: white !important;
+}
+
+.hfc [class*="bg-gradient-to-br"][class*="from-indigo"] * {
+  color: white !important;
+}
+
+/* Time Period icons should remain visible */
+.hfc button svg,
+.hfc button span[class*="text-"] {
+  color: inherit !important;
+}
+
+/* HFC KPI Cards */
+.hfc .bg-white.rounded-md {
+  background: white !important;
+  border-color: #e5e7eb !important;
+}
+
+.hfc .hover\:shadow-soft:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* HFC Collapsible Sections - Icon backgrounds */
+.hfc [class*="from-indigo-500"][class*="to-purple-600"] {
+  background: var(--hfc-blue-primary) !important;
+  color: white !important;
+}
+
+/* HFC Badge colors */
+.hfc .bg-indigo-100 {
+  background-color: #e8f1f8 !important;
+}
+
+.hfc .text-indigo-700,
+.hfc .text-indigo-600 {
+  color: var(--hfc-blue-primary) !important;
+}
