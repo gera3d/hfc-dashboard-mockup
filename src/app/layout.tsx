@@ -34,11 +34,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable}`}>
-      <body className="font-sans antialiased dark:bg-gray-900">
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable}`} suppressHydrationWarning>
+      <body className="font-sans antialiased dark:bg-gray-900" suppressHydrationWarning>
         <ThemeProvider>
           <TopNav />
-          <main className="pt-20">
+          <main className="pt-16">
             {children}
           </main>
         </ThemeProvider>

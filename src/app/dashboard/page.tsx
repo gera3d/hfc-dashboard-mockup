@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from 'next/navigation';
+import { Trophy, Building2, AlertTriangle, BarChart3 } from 'lucide-react';
 import { 
   loadReviews, 
   loadAgents, 
@@ -34,7 +35,8 @@ import {
   ProblemSpotlight
 } from '@/components/Charts';
 import { AgentTable, ReviewTable, CustomerFeedbackTable } from '@/components/DataTables';
-import GlobalFilters from '@/components/GlobalFilters';
+import TimePeriodSelector from '@/components/TimePeriodSelector';
+import { CollapsibleSection } from '@/components/CollapsibleSection';
 
 // TailAdmin dashboard components
 import { ReviewMetrics } from "@/components/dashboard/ReviewMetrics";
@@ -280,25 +282,16 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6 bg-[#F6F9FC] min-h-screen pb-12 px-6">
-      {/* Clean Header */}
-      <div className="bg-white border-b border-gray-200 dark:bg-gray-dark dark:border-gray-800 -mx-6 px-6 py-6 mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Analytics Dashboard
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Comprehensive review insights • {filteredData.length} reviews{getFilterSummary()}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Global Filters */}
-      <div className="-mx-6 px-6 bg-[#F6F9FC]">
-        <GlobalFilters filters={filters} onFiltersChange={setFilters} />
-      </div>
+    <div className="space-y-8 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 min-h-screen pb-12 px-6">
+      
+      {/* Beautiful Time Period Selector */}
+      <TimePeriodSelector
+        selectedRange={filters.dateRange}
+        compareMode={filters.compareMode}
+        onRangeChange={(range) => setFilters(prev => ({ ...prev, dateRange: range }))}
+        onCompareModeChange={(enabled) => setFilters(prev => ({ ...prev, compareMode: enabled }))}
+        dateRanges={dateRanges}
+      />
 
       {/* KPI Metrics - Enhanced TailAdmin Style */}
       <EnhancedMetricsGrid 
@@ -309,69 +302,170 @@ export default function DashboardPage() {
 
       {/* Unified Agent Rankings */}
       <div className="mt-8">
-        <UnifiedAgentRankings data={agentMetrics} limit={10} />
+        <CollapsibleSection
+          title="Agent Performance Rankings"
+          subtitle="Top performing agents by review volume and ratings"
+          defaultExpanded={true}
+          badge="Top 10"
+          icon={<Trophy className="w-5 h-5" />}
+          previewContent={
+            <div className="flex items-center gap-4 text-sm">
+              <div className="text-right">
+                <div className="font-semibold text-gray-900 dark:text-white">
+                  {agentMetrics[0]?.agent_name || 'N/A'}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Top Agent</div>
+              </div>
+              <div className="text-right">
+                <div className="font-semibold text-green-600">
+                  {agentMetrics[0]?.total || 0} reviews
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">{agentMetrics[0]?.avg_rating?.toFixed(2) || '0.00'}★</div>
+              </div>
+            </div>
+          }
+        >
+          <UnifiedAgentRankings data={agentMetrics} limit={10} />
+        </CollapsibleSection>
       </div>
 
       {/* Department Performance Rankings */}
       <div className="mt-8">
-        <DepartmentPerformanceRankings reviews={filteredData} departments={departments} agents={agents} limit={10} />
+        <CollapsibleSection
+          title="Department Performance Rankings"
+          subtitle="Compare performance metrics across all departments"
+          defaultExpanded={false}
+          badge={`${departments.length} depts`}
+          icon={<Building2 className="w-5 h-5" />}
+          previewContent={
+            <div className="flex items-center gap-4 text-sm">
+              <div className="text-right">
+                <div className="font-semibold text-gray-900 dark:text-white">
+                  {departments.length}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Departments</div>
+              </div>
+              <div className="text-right">
+                <div className="font-semibold text-indigo-600">
+                  {filteredData.length}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Total Reviews</div>
+              </div>
+            </div>
+          }
+        >
+          <DepartmentPerformanceRankings reviews={filteredData} departments={departments} agents={agents} limit={10} />
+        </CollapsibleSection>
       </div>
 
       {/* Problem Feedback Section - Low-rated reviews with comments */}
       <div className="mt-8">
-        <ProblemFeedback reviews={filteredData} />
+        <CollapsibleSection
+          title="Problem Feedback"
+          subtitle="Low-rated reviews requiring attention"
+          defaultExpanded={false}
+          badge="Critical"
+          icon={<AlertTriangle className="w-5 h-5" />}
+          previewContent={
+            <div className="flex items-center gap-4 text-sm">
+              <div className="text-right">
+                <div className="font-semibold text-red-600">
+                  {filteredData.filter(r => r.rating <= 2).length}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Low Ratings</div>
+              </div>
+              <div className="text-right">
+                <div className="font-semibold text-orange-600">
+                  {filteredData.filter(r => r.rating <= 2 && r.comment && r.comment.trim()).length}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">With Comments</div>
+              </div>
+            </div>
+          }
+        >
+          <ProblemFeedback reviews={filteredData} />
+        </CollapsibleSection>
       </div>
 
-      {/* Satisfaction Trend - Your existing chart */}
-      <div className="mt-6">
-        <SatisfactionTrend data={satisfactionTrendData} />
-      </div>
+      {/* Detailed Analytics Collapsible Section */}
+      <div className="mt-8">
+        <CollapsibleSection
+          title="Detailed Analytics & Reports"
+          subtitle="Comprehensive trends, charts, and data tables"
+          defaultExpanded={false}
+          badge="Advanced"
+          icon={<BarChart3 className="w-5 h-5" />}
+          previewContent={
+            <div className="flex items-center gap-4 text-sm">
+              <div className="text-right">
+                <div className="font-semibold text-gray-900 dark:text-white">
+                  {satisfactionTrendData.length}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Days Tracked</div>
+              </div>
+              <div className="text-right">
+                <div className="font-semibold text-purple-600">
+                  6 Charts
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">4 Tables</div>
+              </div>
+            </div>
+          }
+        >
+          <div className="space-y-6">
+            {/* Satisfaction Trend - Your existing chart */}
+            <div>
+              <SatisfactionTrend data={satisfactionTrendData} />
+            </div>
 
-      {/* Charts Row - Department Comparison & Problem Spotlight */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <DepartmentComparison reviews={filteredData} departments={departments} />
-        <ProblemSpotlight reviews={filteredData} departments={departments} />
-      </div>
+            {/* Charts Row - Department Comparison & Problem Spotlight */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <DepartmentComparison reviews={filteredData} departments={departments} />
+              <ProblemSpotlight reviews={filteredData} departments={departments} />
+            </div>
 
-      {/* TailAdmin Charts Row 1 */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <RatingTrendChart reviews={filteredData} />
-        <StarDistributionChart metrics={currentMetrics} />
-      </div>
+            {/* TailAdmin Charts Row 1 */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <RatingTrendChart reviews={filteredData} />
+              <StarDistributionChart metrics={currentMetrics} />
+            </div>
 
-      {/* TailAdmin Charts Row 2 */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <SourceDistributionChart reviews={filteredData} />
-        <DepartmentComparisonChart reviews={filteredData} departments={departments} />
-      </div>
+            {/* TailAdmin Charts Row 2 */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <SourceDistributionChart reviews={filteredData} />
+              <DepartmentComparisonChart reviews={filteredData} departments={departments} />
+            </div>
 
-      {/* Agent Performance Table - TailAdmin Style */}
-      <AgentPerformanceTable 
-        agentMetrics={agentMetrics.sort((a, b) => b.total - a.total)} 
-        maxRows={10} 
-      />
+            {/* Agent Performance Table - TailAdmin Style */}
+            <AgentPerformanceTable 
+              agentMetrics={agentMetrics.sort((a, b) => b.total - a.total)} 
+              maxRows={10} 
+            />
 
-      {/* Data Tables - Your existing tables */}
-      <div className="space-y-6">
-        <AgentTable 
-          data={agentMetrics} 
-          onAgentClick={handleAgentClick}
-          departments={departments}
-          onDepartmentChange={handleAgentDepartmentUpdate}
-          onCreateDepartment={handleCreateDepartment}
-        />
-        
-        <ReviewTable data={filteredData} agents={agents} departments={departments} />
-        
-        <CustomerFeedbackTable data={filteredData} agents={agents} departments={departments} />
-        
-        {/* TailAdmin Reviews Table */}
-        <ReviewsTable 
-          reviews={sortedReviews} 
-          agents={agents} 
-          departments={departments}
-          maxRows={15}
-        />
+            {/* Data Tables - Your existing tables */}
+            <div className="space-y-6">
+              <AgentTable 
+                data={agentMetrics} 
+                onAgentClick={handleAgentClick}
+                departments={departments}
+                onDepartmentChange={handleAgentDepartmentUpdate}
+                onCreateDepartment={handleCreateDepartment}
+              />
+              
+              <ReviewTable data={filteredData} agents={agents} departments={departments} />
+              
+              <CustomerFeedbackTable data={filteredData} agents={agents} departments={departments} />
+              
+              {/* TailAdmin Reviews Table */}
+              <ReviewsTable 
+                reviews={sortedReviews} 
+                agents={agents} 
+                departments={departments}
+                maxRows={15}
+              />
+            </div>
+          </div>
+        </CollapsibleSection>
       </div>
     </div>
   );

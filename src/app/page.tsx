@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import GlobalFilters from '@/components/GlobalFilters'
 import KPITiles from '@/components/KPITiles'
+import { CollapsibleSection } from '@/components/CollapsibleSection'
 import { 
   SatisfactionTrend,
   AgentLeaderboard,
@@ -13,6 +14,7 @@ import {
 } from '@/components/Charts'
 import { AgentTable, ReviewTable, CustomerFeedbackTable } from '@/components/DataTables'
 import { AgentDepartmentManager } from '@/components/AgentDepartmentManager'
+import { Trophy, TrendingUp, BarChart3, AlertCircle, Users, FileText, MessageSquare } from 'lucide-react'
 import { 
   loadReviews,
   loadAgents,
@@ -516,7 +518,31 @@ export default function Dashboard() {
       <div className="max-w-6xl mx-auto px-6 sm:px-6 lg:px-8 -mt-8">
         {/* Hero Chart - Agent Performance Rankings */}
         <div className={`mb-8 transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '0ms' }}>
-          <AgentLeaderboard data={agentMetrics} limit={10} />
+          <CollapsibleSection
+            title="Agent Performance Rankings"
+            subtitle="Top performing agents by satisfaction score"
+            defaultExpanded={true}
+            badge="Top 10"
+            icon={<Trophy className="w-5 h-5" />}
+            previewContent={
+              <div className="flex items-center gap-4 text-sm">
+                <div className="text-right">
+                  <div className="font-semibold text-gray-900">
+                    {agentMetrics[0]?.agent_name || 'N/A'}
+                  </div>
+                  <div className="text-xs text-gray-500">Top Agent</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-semibold text-green-600">
+                    {agentMetrics[0]?.percent_5_star?.toFixed(1) || '0'}%
+                  </div>
+                  <div className="text-xs text-gray-500">5-Star Rate</div>
+                </div>
+              </div>
+            }
+          >
+            <AgentLeaderboard data={agentMetrics} limit={10} />
+          </CollapsibleSection>
         </div>
         
         {/* KPI Tiles - Stripe card style with sharp corners and subtle shadows */}
@@ -526,50 +552,184 @@ export default function Dashboard() {
           showComparison={filters.compareMode}
         />
         
-        {/* Section Title - Stripe uses clear section titles */}
-        <div className={`flex items-baseline justify-between mt-12 mb-6 transition-all duration-800 ${isAnimating ? 'animate-fade-in' : ''}`} style={{ animationDelay: '200ms' }}>
-          <h2 className="text-xl tracking-tight font-semibold text-[#0A2540]">Performance Insights</h2>
-          <span className="text-sm text-[#6B7C93]">Strategic business metrics</span>
-        </div>
-        
-        {/* Charts - Strategic 3-chart layout for insurance agency */}
-        {/* Row 1: Satisfaction Trend - Most important metric */}
-        <div className={`mb-6 transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '100ms' }}>
-          <SatisfactionTrend data={satisfactionTrendData} />
-        </div>
-        
-        {/* Row 2: Department Comparison & Problem Spotlight */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-          <div className={`transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '200ms' }}>
-            <DepartmentComparison reviews={filteredData} departments={departments} />
+        {/* Performance Insights Section */}
+        <div className="mt-12 space-y-6">
+          <div className={`flex items-baseline justify-between mb-6 transition-all duration-800 ${isAnimating ? 'animate-fade-in' : ''}`} style={{ animationDelay: '200ms' }}>
+            <h2 className="text-xl tracking-tight font-semibold text-[#0A2540]">Performance Insights</h2>
+            <span className="text-sm text-[#6B7C93]">Strategic business metrics</span>
           </div>
-          <div className={`transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '300ms' }}>
-            <ProblemSpotlight reviews={filteredData} departments={departments} />
+          
+          {/* Satisfaction Trend */}
+          <div className={`transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '100ms' }}>
+            <CollapsibleSection
+              title="Customer Satisfaction Trend"
+              subtitle="Daily satisfaction scores and average ratings over time"
+              defaultExpanded={false}
+              badge={`${satisfactionTrendData.length} days`}
+              icon={<TrendingUp className="w-5 h-5" />}
+              previewContent={
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="text-right">
+                    <div className="font-semibold text-gray-900">
+                      {currentMetrics.percent_5_star.toFixed(1)}%
+                    </div>
+                    <div className="text-xs text-gray-500">5-Star Rate</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-semibold text-indigo-600">
+                      {currentMetrics.avg_rating.toFixed(2)} ⭐
+                    </div>
+                    <div className="text-xs text-gray-500">Avg Rating</div>
+                  </div>
+                </div>
+              }
+            >
+              <SatisfactionTrend data={satisfactionTrendData} />
+            </CollapsibleSection>
+          </div>
+          
+          {/* Department Insights - Side by Side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className={`transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '200ms' }}>
+              <CollapsibleSection
+                title="Department Comparison"
+                subtitle="Performance metrics across departments"
+                defaultExpanded={false}
+                badge={`${departments.length} depts`}
+                icon={<BarChart3 className="w-5 h-5" />}
+                previewContent={
+                  <div className="text-sm text-right">
+                    <div className="font-semibold text-gray-900">
+                      {departments.length} Departments
+                    </div>
+                    <div className="text-xs text-gray-500">Active</div>
+                  </div>
+                }
+              >
+                <DepartmentComparison reviews={filteredData} departments={departments} />
+              </CollapsibleSection>
+            </div>
+            
+            <div className={`transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '300ms' }}>
+              <CollapsibleSection
+                title="Problem Spotlight"
+                subtitle="Identify and track low-satisfaction issues"
+                defaultExpanded={false}
+                badge="Critical"
+                icon={<AlertCircle className="w-5 h-5" />}
+                previewContent={
+                  <div className="text-sm text-right">
+                    <div className="font-semibold text-red-600">
+                      {filteredData.filter(r => r.rating <= 2).length}
+                    </div>
+                    <div className="text-xs text-gray-500">Low Ratings</div>
+                  </div>
+                }
+              >
+                <ProblemSpotlight reviews={filteredData} departments={departments} />
+              </CollapsibleSection>
+            </div>
           </div>
         </div>
         
-        {/* Section Title */}
-        <div className={`flex items-baseline justify-between mt-12 mb-6 transition-all duration-800 ${isAnimating ? 'animate-fade-in' : ''}`} style={{ animationDelay: '400ms' }}>
-          <h2 className="text-xl tracking-tight font-semibold text-[#0A2540]">Detailed Reports</h2>
-          <span className="text-sm text-[#6B7C93]">Tabular data</span>
-        </div>
-        
-        {/* Data Tables - Stripe clean tables with proper spacing */}
-        <div className="space-y-8">
+        {/* Detailed Reports Section */}
+        <div className="mt-12 space-y-6">
+          <div className={`flex items-baseline justify-between mb-6 transition-all duration-800 ${isAnimating ? 'animate-fade-in' : ''}`} style={{ animationDelay: '400ms' }}>
+            <h2 className="text-xl tracking-tight font-semibold text-[#0A2540]">Detailed Reports</h2>
+            <span className="text-sm text-[#6B7C93]">Tabular data</span>
+          </div>
+          
+          {/* Agent Performance Table */}
           <div className={`transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '500ms' }}>
-            <AgentTable 
-              data={agentMetrics} 
-              onAgentClick={handleAgentClick}
-              departments={departments}
-              onDepartmentChange={handleAgentDepartmentUpdate}
-              onCreateDepartment={handleCreateDepartment}
-            />
+            <CollapsibleSection
+              title="Agent Performance Report"
+              subtitle="Complete agent metrics with department management"
+              defaultExpanded={false}
+              badge={`${agentMetrics.length} agents`}
+              icon={<Users className="w-5 h-5" />}
+              previewContent={
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="text-right">
+                    <div className="font-semibold text-gray-900">
+                      {agentMetrics.length}
+                    </div>
+                    <div className="text-xs text-gray-500">Total Agents</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-semibold text-indigo-600">
+                      {agentMetrics.filter(a => a.percent_5_star >= 80).length}
+                    </div>
+                    <div className="text-xs text-gray-500">High Performers</div>
+                  </div>
+                </div>
+              }
+            >
+              <AgentTable 
+                data={agentMetrics} 
+                onAgentClick={handleAgentClick}
+                departments={departments}
+                onDepartmentChange={handleAgentDepartmentUpdate}
+                onCreateDepartment={handleCreateDepartment}
+              />
+            </CollapsibleSection>
           </div>
+          
+          {/* Review Data Table */}
           <div className={`transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '600ms' }}>
-            <ReviewTable data={filteredData} agents={agents} departments={departments} />
+            <CollapsibleSection
+              title="All Reviews"
+              subtitle="Complete review data with agent and department information"
+              defaultExpanded={false}
+              badge={`${filteredData.length} reviews`}
+              icon={<FileText className="w-5 h-5" />}
+              previewContent={
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="text-right">
+                    <div className="font-semibold text-gray-900">
+                      {filteredData.length}
+                    </div>
+                    <div className="text-xs text-gray-500">Total Reviews</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-semibold text-green-600">
+                      {filteredData.filter(r => r.rating >= 4).length}
+                    </div>
+                    <div className="text-xs text-gray-500">Positive</div>
+                  </div>
+                </div>
+              }
+            >
+              <ReviewTable data={filteredData} agents={agents} departments={departments} />
+            </CollapsibleSection>
           </div>
+          
+          {/* Customer Feedback Table */}
           <div className={`transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '700ms' }}>
-            <CustomerFeedbackTable data={filteredData} agents={agents} departments={departments} />
+            <CollapsibleSection
+              title="Customer Feedback"
+              subtitle="Detailed customer comments and sentiment analysis"
+              defaultExpanded={false}
+              badge="With Comments"
+              icon={<MessageSquare className="w-5 h-5" />}
+              previewContent={
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="text-right">
+                    <div className="font-semibold text-gray-900">
+                      {filteredData.filter(r => r.comment && r.comment.trim()).length}
+                    </div>
+                    <div className="text-xs text-gray-500">With Comments</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-semibold text-purple-600">
+                      {((filteredData.filter(r => r.comment && r.comment.trim()).length / filteredData.length) * 100).toFixed(0)}%
+                    </div>
+                    <div className="text-xs text-gray-500">Response Rate</div>
+                  </div>
+                </div>
+              }
+            >
+              <CustomerFeedbackTable data={filteredData} agents={agents} departments={departments} />
+            </CollapsibleSection>
           </div>
         </div>
       </div>

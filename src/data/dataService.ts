@@ -64,10 +64,25 @@ export const getDateRanges = () => {
       to: new Date(today.getTime() + 24 * 60 * 60 * 1000),
       label: 'Last 7 days'
     },
+    last30Days: {
+      from: new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000),
+      to: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+      label: 'Last 30 days'
+    },
+    last90Days: {
+      from: new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000),
+      to: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+      label: 'Last 90 days'
+    },
     thisMonth: {
       from: new Date(now.getFullYear(), now.getMonth(), 1),
       to: new Date(now.getFullYear(), now.getMonth() + 1, 1),
       label: 'This month'
+    },
+    lastMonth: {
+      from: new Date(now.getFullYear(), now.getMonth() - 1, 1),
+      to: new Date(now.getFullYear(), now.getMonth(), 1),
+      label: 'Last month'
     },
     thisYear: {
       from: new Date(now.getFullYear(), 0, 1),
