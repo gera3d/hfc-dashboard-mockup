@@ -123,7 +123,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
 
           {/* Middle Section - Label + Value */}
           <div className="flex-1">
-            <span className={`block text-sm text-gray-500 dark:text-gray-400 mb-2`} style={{ animationDelay: '250ms' }}>
+            <span className={`block text-sm text-gray-500 dark:text-gray-400 mb-2 ${isAnimating ? 'animate-fade-in' : ''}`} style={{ animationDelay: '250ms' }}>
               Customer Satisfaction
             </span>
             <h4 className={`font-bold text-title-xl transition-all duration-700 ${
@@ -133,7 +133,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
             }`}>
               {displayedFiveStarRate.toFixed(1)}%
             </h4>
-            <span className={`text-xs text-gray-500 mt-1 block`} style={{ animationDelay: '350ms' }}>5-star rate</span>
+            <span className={`text-xs text-gray-500 mt-1 block ${isAnimating ? 'animate-fade-in' : ''}`} style={{ animationDelay: '350ms' }}>5-star rate</span>
           </div>
 
           {/* Bottom Section - Trend */}
@@ -150,16 +150,21 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
 
         {/* 2. TOTAL REVIEWS */}
         <div 
-          className="flex flex-col rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]"
+          className={`flex flex-col rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] ${
+            isExiting ? 'animate-zoom-out' : ''
+          } ${
+            isAnimating ? 'animate-slide-in-up' : ''
+          }`}
+          style={isAnimating ? { animationDelay: '100ms' } : undefined}
         >
           {/* Top Section - Icon */}
-          <div className={`flex items-center justify-center w-12 h-12 mb-4 bg-blue-100 rounded-xl dark:bg-blue-900/20`} style={{ animationDelay: '250ms' }}>
+          <div className={`flex items-center justify-center w-12 h-12 mb-4 bg-blue-100 rounded-xl dark:bg-blue-900/20 ${isAnimating ? 'animate-slide-in-right' : ''}`} style={{ animationDelay: '250ms' }}>
             <MessageCircle className="text-blue-600 size-6 dark:text-blue-400" />
           </div>
 
           {/* Middle Section - Label + Value */}
           <div className="flex-1">
-            <span className={`block text-sm text-gray-500 dark:text-gray-400 mb-2`} style={{ animationDelay: '350ms' }}>
+            <span className={`block text-sm text-gray-500 dark:text-gray-400 mb-2 ${isAnimating ? 'animate-fade-in' : ''}`} style={{ animationDelay: '350ms' }}>
               Total Reviews
             </span>
             <h4 className="font-bold text-gray-800 text-title-xl dark:text-white/90 transition-all duration-500">
@@ -181,16 +186,21 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
 
         {/* 3. AVERAGE RATING */}
         <div 
-          className="flex flex-col rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]"
+          className={`flex flex-col rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] ${
+            isExiting ? 'animate-zoom-out' : ''
+          } ${
+            isAnimating ? 'animate-slide-in-up' : ''
+          }`}
+          style={isAnimating ? { animationDelay: '200ms' } : undefined}
         >
           {/* Top Section - Icon */}
-          <div className={`flex items-center justify-center w-12 h-12 mb-4 bg-amber-100 rounded-xl dark:bg-amber-900/20`} style={{ animationDelay: '350ms' }}>
+          <div className={`flex items-center justify-center w-12 h-12 mb-4 bg-amber-100 rounded-xl dark:bg-amber-900/20 ${isAnimating ? 'animate-slide-in-right' : ''}`} style={{ animationDelay: '350ms' }}>
             <Star className="text-amber-600 size-6 dark:text-amber-400 fill-amber-600 dark:fill-amber-400" />
           </div>
 
           {/* Middle Section - Label + Value */}
           <div className="flex-1">
-            <span className={`block text-sm text-gray-500 dark:text-gray-400 mb-2`} style={{ animationDelay: '450ms' }}>
+            <span className={`block text-sm text-gray-500 dark:text-gray-400 mb-2 ${isAnimating ? 'animate-fade-in' : ''}`} style={{ animationDelay: '450ms' }}>
               Average Rating
             </span>
             <h4 className="font-bold text-gray-800 text-title-xl dark:text-white/90 transition-all duration-500">
@@ -213,13 +223,18 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
         {/* 4. PROBLEM REVIEWS */}
         <div 
           className={`flex flex-col rounded-2xl border p-6 ${
+            isExiting ? 'animate-zoom-out' : ''
+          } ${
+            isAnimating ? 'animate-slide-in-up' : ''
+          } ${
             isProblemIncreasing 
               ? "border-red-300 bg-red-50 dark:border-red-900/50 dark:bg-red-900/10 animate-pulse-subtle" 
               : "border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
           }`}
+          style={isAnimating ? { animationDelay: '300ms' } : undefined}
         >
           {/* Top Section - Icon + Alert Badge */}
-          <div className={`flex items-start justify-between mb-4`} style={{ animationDelay: '450ms' }}>
+          <div className={`flex items-start justify-between mb-4 ${isAnimating ? 'animate-slide-in-right' : ''}`} style={{ animationDelay: '450ms' }}>
             <div className={`flex items-center justify-center w-12 h-12 rounded-xl ${
               isProblemIncreasing 
                 ? "bg-red-500 animate-shake" 
@@ -240,13 +255,13 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
 
           {/* Middle Section - Label + Value */}
           <div className="flex-1">
-            <span className={`block text-sm text-gray-500 dark:text-gray-400 mb-2`} style={{ animationDelay: '550ms' }}>
+            <span className={`block text-sm text-gray-500 dark:text-gray-400 mb-2 ${isAnimating ? 'animate-fade-in' : ''}`} style={{ animationDelay: '550ms' }}>
               Problem Reviews
             </span>
             <h4 className="font-bold text-gray-800 text-title-xl dark:text-white/90 transition-all duration-500">
               {displayedProblems}
             </h4>
-            <span className={`text-xs text-gray-500 mt-1 block`} style={{ animationDelay: '650ms' }}>1★+2★</span>
+            <span className={`text-xs text-gray-500 mt-1 block ${isAnimating ? 'animate-fade-in' : ''}`} style={{ animationDelay: '650ms' }}>1★+2★</span>
           </div>
 
           {/* Bottom Section - Trend */}
@@ -263,7 +278,12 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
 
         {/* 5. RATING DISTRIBUTION PIE CHART */}
         <div 
-          className="flex flex-col rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]"
+          className={`flex flex-col rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] ${
+            isExiting ? 'animate-zoom-out' : ''
+          } ${
+            isAnimating ? 'animate-slide-in-up' : ''
+          }`}
+          style={isAnimating ? { animationDelay: '400ms' } : undefined}
         >
           {/* Top Section - Header */}
           <div className="flex items-start justify-between mb-4">
@@ -373,5 +393,3 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
     </div>
   );
 }
-
-

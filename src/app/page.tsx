@@ -62,6 +62,7 @@ export default function Dashboard() {
   const [syncing, setSyncing] = useState(false)
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
   const [showAgentManager, setShowAgentManager] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
   
   const [filters, setFilters] = useState<Filters>({
     dateRange: dateRanges.thisYear, // Changed to show all data for the year
@@ -180,6 +181,15 @@ export default function Dashboard() {
     
     return filtered
   }, [filters, reviews])
+  
+  // Trigger animations when filters change
+  useEffect(() => {
+    if (!loading) { // Don't animate on initial load
+      setIsAnimating(true)
+      const timer = setTimeout(() => setIsAnimating(false), 1200)
+      return () => clearTimeout(timer)
+    }
+  }, [filters.dateRange, filters.selectedDepartments, filters.selectedAgents, filters.compareMode])
   
   // Calculate comparison data (previous period)
   const comparisonData = useMemo(() => {
@@ -505,7 +515,7 @@ export default function Dashboard() {
       
       <div className="max-w-6xl mx-auto px-6 sm:px-6 lg:px-8 -mt-8">
         {/* Hero Chart - Agent Performance Rankings */}
-        <div className="mb-8">
+        <div className={`mb-8 transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '0ms' }}>
           <AgentLeaderboard data={agentMetrics} limit={10} />
         </div>
         
@@ -517,40 +527,50 @@ export default function Dashboard() {
         />
         
         {/* Section Title - Stripe uses clear section titles */}
-        <div className="flex items-baseline justify-between mt-12 mb-6">
+        <div className={`flex items-baseline justify-between mt-12 mb-6 transition-all duration-800 ${isAnimating ? 'animate-fade-in' : ''}`} style={{ animationDelay: '200ms' }}>
           <h2 className="text-xl tracking-tight font-semibold text-[#0A2540]">Performance Insights</h2>
           <span className="text-sm text-[#6B7C93]">Strategic business metrics</span>
         </div>
         
         {/* Charts - Strategic 3-chart layout for insurance agency */}
         {/* Row 1: Satisfaction Trend - Most important metric */}
-        <div className="mb-6">
+        <div className={`mb-6 transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '100ms' }}>
           <SatisfactionTrend data={satisfactionTrendData} />
         </div>
         
         {/* Row 2: Department Comparison & Problem Spotlight */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-          <DepartmentComparison reviews={filteredData} departments={departments} />
-          <ProblemSpotlight reviews={filteredData} departments={departments} />
+          <div className={`transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '200ms' }}>
+            <DepartmentComparison reviews={filteredData} departments={departments} />
+          </div>
+          <div className={`transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '300ms' }}>
+            <ProblemSpotlight reviews={filteredData} departments={departments} />
+          </div>
         </div>
         
         {/* Section Title */}
-        <div className="flex items-baseline justify-between mt-12 mb-6">
+        <div className={`flex items-baseline justify-between mt-12 mb-6 transition-all duration-800 ${isAnimating ? 'animate-fade-in' : ''}`} style={{ animationDelay: '400ms' }}>
           <h2 className="text-xl tracking-tight font-semibold text-[#0A2540]">Detailed Reports</h2>
           <span className="text-sm text-[#6B7C93]">Tabular data</span>
         </div>
         
         {/* Data Tables - Stripe clean tables with proper spacing */}
         <div className="space-y-8">
-          <AgentTable 
-            data={agentMetrics} 
-            onAgentClick={handleAgentClick}
-            departments={departments}
-            onDepartmentChange={handleAgentDepartmentUpdate}
-            onCreateDepartment={handleCreateDepartment}
-          />
-          <ReviewTable data={filteredData} agents={agents} departments={departments} />
-          <CustomerFeedbackTable data={filteredData} agents={agents} departments={departments} />
+          <div className={`transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '500ms' }}>
+            <AgentTable 
+              data={agentMetrics} 
+              onAgentClick={handleAgentClick}
+              departments={departments}
+              onDepartmentChange={handleAgentDepartmentUpdate}
+              onCreateDepartment={handleCreateDepartment}
+            />
+          </div>
+          <div className={`transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '600ms' }}>
+            <ReviewTable data={filteredData} agents={agents} departments={departments} />
+          </div>
+          <div className={`transition-all duration-1000 ${isAnimating ? 'animate-slide-in-up' : ''}`} style={{ animationDelay: '700ms' }}>
+            <CustomerFeedbackTable data={filteredData} agents={agents} departments={departments} />
+          </div>
         </div>
       </div>
     </div>
