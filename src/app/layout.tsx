@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk, IBM_Plex_Mono } from 'next/font/google'
 import "./globals.css";
-import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
+import TopNav from '@/components/TopNav';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -37,9 +37,10 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable}`}>
       <body className="font-sans antialiased dark:bg-gray-900">
         <ThemeProvider>
-          <SidebarProvider>
+          <TopNav />
+          <main className="pt-20">
             {children}
-          </SidebarProvider>
+          </main>
         </ThemeProvider>
       </body>
     </html>

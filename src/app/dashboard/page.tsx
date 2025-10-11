@@ -5,9 +5,6 @@ import {
   loadReviews, 
   loadAgents, 
   loadDepartments,
-  refreshReviews,
-  refreshAgents,
-  refreshDepartments,
   getDateRanges,
   filterReviewsByDate,
   filterReviewsByDepartments,
@@ -21,13 +18,11 @@ import {
   Department,
   DateRange
 } from "@/data/dataService";
-import { syncFromGoogleSheets } from '@/data/googleSheetsService';
 import {
   applyAgentOverrides,
   mergeDepartments,
   saveAgentDepartment,
   saveCustomDepartment,
-  clearAllOverrides,
   getChangeCount
 } from '@/lib/localStorage';
 
@@ -40,8 +35,6 @@ import {
 } from '@/components/Charts';
 import { AgentTable, ReviewTable, CustomerFeedbackTable } from '@/components/DataTables';
 import GlobalFilters from '@/components/GlobalFilters';
-import { AgentDepartmentManager } from '@/components/AgentDepartmentManager';
-import KPITiles from '@/components/KPITiles';
 
 // TailAdmin dashboard components
 import { ReviewMetrics } from "@/components/dashboard/ReviewMetrics";
@@ -73,9 +66,6 @@ export default function DashboardPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
-  const [showAgentManager, setShowAgentManager] = useState(false);
   
   const [filters, setFilters] = useState<Filters>({
     dateRange: dateRanges.thisYear,
@@ -126,59 +116,7 @@ export default function DashboardPage() {
     loadData();
   }, []);
 
-  // Refresh data from local cache (fast)
-  const refreshData = async () => {
-    setLoading(true);
-    try {
-      const [reviewsData, agentsData, departmentsData] = await Promise.all([
-        refreshReviews(),
-        refreshAgents(),
-        refreshDepartments()
-      ]);
-      
-      const agentsWithOverrides = applyAgentOverrides(agentsData);
-      const departmentsWithCustom = mergeDepartments(departmentsData);
-      
-      const updatedReviews = reviewsData.map(review => {
-        const agent = agentsWithOverrides.find(a => a.id === review.agent_id);
-        if (agent && agent.department_id !== review.department_id) {
-          return { ...review, department_id: agent.department_id };
-        }
-        return review;
-      });
-      
-      setReviews(updatedReviews);
-      setAgents(agentsWithOverrides);
-      setDepartments(departmentsWithCustom);
-      setLastRefresh(new Date());
-      console.log('Data refreshed from local cache (with localStorage overrides)');
-    } catch (error) {
-      console.error('Error refreshing data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Sync from Google Sheets (slow, updates local cache)
-  const syncData = async () => {
-    setSyncing(true);
-    try {
-      const result = await syncFromGoogleSheets();
-      if (result.success) {
-        await refreshData();
-        alert(`✅ Data synced successfully!\n\nLast updated: ${result.lastUpdated}\n\nThe dashboard now shows the latest data from Google Sheets.`);
-      } else {
-        alert(`❌ Sync failed: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('Error syncing data:', error);
-      alert('❌ Failed to sync data from Google Sheets');
-    } finally {
-      setSyncing(false);
-    }
-  };
-
-  // Handle agent department updates
+  // Handle agent department updates (kept for table interactions)
   const handleAgentDepartmentUpdate = async (agentId: string, departmentId: string) => {
     try {
       saveAgentDepartment(agentId, departmentId);
@@ -229,17 +167,6 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Error creating department:', error);
       throw error;
-    }
-  };
-
-  const handleClearLocalChanges = async () => {
-    const changeCount = getChangeCount();
-    const message = `This will reset ${changeCount.agentChanges} agent assignments and ${changeCount.customDepartments} custom departments back to what's in your Google Sheet.\n\nAre you sure?`;
-    
-    if (confirm(message)) {
-      clearAllOverrides();
-      await refreshData();
-      alert('✅ Local changes cleared. Data reloaded from Google Sheets.');
     }
   };
 
@@ -353,10 +280,10 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6 bg-[#F6F9FC] min-h-screen pb-12">
-      {/* TailAdmin-style Header */}
-      <div className="bg-white border-b border-gray-200 dark:bg-gray-dark dark:border-gray-800 -mx-6 -mt-6 px-6 py-6 mb-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-6 bg-[#F6F9FC] min-h-screen pb-12 px-6">
+      {/* Clean Header */}
+      <div className="bg-white border-b border-gray-200 dark:bg-gray-dark dark:border-gray-800 -mx-6 px-6 py-6 mb-6">
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Analytics Dashboard
@@ -365,58 +292,6 @@ export default function DashboardPage() {
               Comprehensive review insights • {filteredData.length} reviews{getFilterSummary()}
             </p>
           </div>
-          
-          <div className="flex items-center gap-3">
-            <button
-              onClick={refreshData}
-              disabled={loading || syncing}
-              className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center gap-2"
-              title="Reload from local cache (fast)"
-            >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Loading...
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Refresh
-                </>
-              )}
-            </button>
-            <button
-              onClick={syncData}
-              disabled={loading || syncing}
-              className="px-3 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center gap-2"
-              title="Sync from Google Sheets (slow)"
-            >
-              {syncing ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Syncing...
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
-                  Sync
-                </>
-              )}
-            </button>
-            <button
-              onClick={() => setShowAgentManager(!showAgentManager)}
-              className="px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              {showAgentManager ? 'Hide' : 'Manage'} Agents
-            </button>
-          </div>
         </div>
       </div>
 
@@ -424,50 +299,6 @@ export default function DashboardPage() {
       <div className="-mx-6 px-6 bg-[#F6F9FC]">
         <GlobalFilters filters={filters} onFiltersChange={setFilters} />
       </div>
-
-      {/* Local Changes Indicator */}
-      {(() => {
-        const changeCount = getChangeCount();
-        const totalChanges = changeCount.agentChanges + changeCount.customDepartments;
-        if (totalChanges > 0) {
-          return (
-            <div className="p-3 bg-amber-50 border-l-4 border-amber-400 rounded flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <div>
-                  <p className="text-sm font-medium text-amber-900">
-                    💾 {totalChanges} Local Change{totalChanges > 1 ? 's' : ''} Saved
-                  </p>
-                  <p className="text-xs text-amber-700">
-                    {changeCount.agentChanges} agent assignment{changeCount.agentChanges !== 1 ? 's' : ''}, 
-                    {' '}{changeCount.customDepartments} custom department{changeCount.customDepartments !== 1 ? 's' : ''}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={handleClearLocalChanges}
-                className="px-3 py-1 text-xs font-medium text-amber-700 bg-amber-100 rounded hover:bg-amber-200 transition-colors"
-              >
-                Reset to Sheets
-              </button>
-            </div>
-          );
-        }
-        return null;
-      })()}
-
-      {/* Agent Department Manager - Collapsible */}
-      {showAgentManager && (
-        <div className="mb-6">
-          <AgentDepartmentManager
-            agents={agents}
-            departments={departments}
-            onUpdate={handleAgentDepartmentUpdate}
-          />
-        </div>
-      )}
 
       {/* KPI Metrics - Enhanced TailAdmin Style */}
       <EnhancedMetricsGrid 
