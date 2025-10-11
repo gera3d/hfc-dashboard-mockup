@@ -29,6 +29,28 @@
   --color-background-elevated: #FFFFFF;
   --color-background-subtle: #EAF0F9;
   --color-background-overlay: rgba(11, 31, 51, 0.08);
+  
+  /* Shadcn/ui CSS variables */
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 221 83% 34%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 221 83% 34%;
+  --radius: 0.5rem;
 }
 
 body {
@@ -342,6 +364,42 @@ body {
   animation: shake 0.5s ease-in-out;
 }
 
+/* ===== SPOTLIGHT THEATER MODE ANIMATIONS ===== */
+@keyframes spotlightGrow {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes burstGlow {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(2);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
 /* ===== HEALTH FOR CALIFORNIA (HFC) THEME ===== */
 .hfc {
   /* HFC Brand Colors - From Actual Website */
@@ -361,6 +419,33 @@ body {
   color: #1a1a1a;
 }
 
+/* ===== NAVIGATION SPECIFIC STYLES ===== */
+/* Ensure white text stays white in navigation */
+.hfc nav,
+.hfc nav * {
+  color: white !important;
+}
+
+.hfc nav button[class*="text-white"],
+.hfc nav span[class*="text-white"],
+.hfc nav div[class*="text-white"],
+.hfc nav h1, .hfc nav h2, .hfc nav h3, .hfc nav h4, .hfc nav h5, .hfc nav h6 {
+  color: white !important;
+}
+
+/* Gold text in navigation stays gold */
+.hfc nav [class*="text-"][class*="[#f5b942]"],
+.hfc nav *[style*="#f5b942"] {
+  color: #f5b942 !important;
+}
+
+/* Subdued white text in navigation */
+.hfc nav [class*="text-white/"],
+.hfc nav [class*="text-white\\/"] {
+  opacity: 0.7;
+}
+
+/* ===== GENERAL HFC STYLES ===== */
 .hfc body {
   background: #ffffff;
   color: #1a1a1a;
@@ -368,8 +453,8 @@ body {
 
 /* HFC Button Styles - Dark Blue with Gold Accents */
 .hfc .stripe-button-primary,
-.hfc button[class*="bg-indigo"],
-.hfc button[class*="bg-purple"] {
+.hfc button[class*="bg-indigo"]:not([data-period-selector]),
+.hfc button[class*="bg-purple"]:not([data-period-selector]) {
   background: var(--hfc-blue-primary) !important;
   color: white !important;
   border: none;
@@ -377,8 +462,8 @@ body {
 }
 
 .hfc .stripe-button-primary:hover,
-.hfc button[class*="bg-indigo"]:hover,
-.hfc button[class*="bg-purple"]:hover {
+.hfc button[class*="bg-indigo"]:hover:not([data-period-selector]),
+.hfc button[class*="bg-purple"]:hover:not([data-period-selector]) {
   background: #164166 !important;
   transform: translateY(-1px);
 }
@@ -431,9 +516,7 @@ body {
   color: var(--hfc-blue-primary) !important;
 }
 
-.hfc .text-gray-900 {
-  color: var(--hfc-blue-primary) !important;
-}
+/* Removed global .hfc .text-gray-900 override to allow proper contrast in dropdowns */
 
 .hfc .text-green-600,
 .hfc .text-emerald-600 {

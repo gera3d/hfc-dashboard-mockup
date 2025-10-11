@@ -62,6 +62,8 @@ interface Filters {
   compareMode: boolean
 }
 
+type SectionId = 'agent-rankings' | 'department-rankings' | 'problem-feedback' | 'detailed-analytics';
+
 export default function DashboardPage() {
   const router = useRouter();
   const { theme } = useTheme();
@@ -71,6 +73,7 @@ export default function DashboardPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedSection, setExpandedSection] = useState<SectionId | null>(null);
   
   const [filters, setFilters] = useState<Filters>({
     dateRange: dateRanges.thisYear,
@@ -79,6 +82,11 @@ export default function DashboardPage() {
     selectedSources: [],
     compareMode: false
   });
+
+  // Handle section toggle with accordion behavior
+  const handleSectionToggle = (sectionId: SectionId) => {
+    setExpandedSection(prev => prev === sectionId ? null : sectionId);
+  };
 
   // Load data on component mount
   useEffect(() => {
@@ -294,16 +302,14 @@ export default function DashboardPage() {
     >
       <div className="space-y-8 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 hfc:from-gray-50 hfc:via-gray-50 hfc:to-gray-50 min-h-screen pb-12 px-6">
         
-        {/* Beautiful Time Period Selector - Hidden in HFC theme */}
-        {theme !== 'hfc' && (
-          <TimePeriodSelector
-            selectedRange={filters.dateRange}
-            compareMode={filters.compareMode}
-            onRangeChange={(range) => setFilters(prev => ({ ...prev, dateRange: range }))}
-            onCompareModeChange={(enabled) => setFilters(prev => ({ ...prev, compareMode: enabled }))}
-            dateRanges={dateRanges}
-          />
-        )}
+        {/* Beautiful Time Period Selector - Now shown in all themes */}
+        <TimePeriodSelector
+          selectedRange={filters.dateRange}
+          compareMode={filters.compareMode}
+          onRangeChange={(range) => setFilters(prev => ({ ...prev, dateRange: range }))}
+          onCompareModeChange={(enabled) => setFilters(prev => ({ ...prev, compareMode: enabled }))}
+          dateRanges={dateRanges}
+        />
 
       {/* KPI Metrics - Enhanced TailAdmin Style */}
       <EnhancedMetricsGrid 
@@ -315,13 +321,30 @@ export default function DashboardPage() {
       {/* Unified Agent Rankings */}
       <div className="mt-8">
         <CollapsibleSection
+          sectionId="agent-rankings"
+          isExpanded={expandedSection === 'agent-rankings'}
+          onToggle={() => handleSectionToggle('agent-rankings')}
           title="Agent Performance Rankings"
           subtitle="Top performing agents by review volume and ratings"
-          defaultExpanded={true}
           badge="Top 10"
           icon={<Trophy className="w-5 h-5" />}
           previewContent={
-            <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-3 text-sm">
+              {/* Top Agent Image */}
+              {agentMetrics[0] && (() => {
+                const topAgent = agents.find(a => a.id === agentMetrics[0].agent_id);
+                return topAgent?.image_url ? (
+                  <img 
+                    src={topAgent.image_url} 
+                    alt={agentMetrics[0].agent_name}
+                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                    {agentMetrics[0].agent_name.charAt(0)}
+                  </div>
+                );
+              })()}
               <div className="text-right">
                 <div className="font-semibold text-gray-900 dark:text-white">
                   {agentMetrics[0]?.agent_name || 'N/A'}
@@ -344,25 +367,58 @@ export default function DashboardPage() {
       {/* Department Performance Rankings */}
       <div className="mt-8">
         <CollapsibleSection
+          sectionId="department-rankings"
+          isExpanded={expandedSection === 'department-rankings'}
+          onToggle={() => handleSectionToggle('department-rankings')}
           title="Department Performance Rankings"
           subtitle="Compare performance metrics across all departments"
-          defaultExpanded={false}
           badge={`${departments.length} depts`}
           icon={<Building2 className="w-5 h-5" />}
           previewContent={
             <div className="flex items-center gap-4 text-sm">
-              <div className="text-right">
-                <div className="font-semibold text-gray-900 dark:text-white">
-                  {departments.length}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">Departments</div>
-              </div>
-              <div className="text-right">
-                <div className="font-semibold text-indigo-600">
-                  {filteredData.length}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">Total Reviews</div>
-              </div>
+              {/* Top 3 Departments with their top agent */}
+              {departments.slice(0, 3).map((dept) => {
+                const deptReviews = filteredData.filter(r => r.department_id === dept.id);
+                const deptAgentMetrics = getAgentMetrics(deptReviews, agents, departments);
+                const topAgent = deptAgentMetrics[0];
+                const agent = topAgent ? agents.find(a => a.id === topAgent.agent_id) : null;
+                
+                return (
+                  <div key={dept.id} className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                    {agent?.image_url ? (
+                      <img 
+                        src={agent.image_url} 
+                        alt={topAgent?.agent_name || ''}
+                        className="w-9 h-9 rounded-full object-cover border-2 border-indigo-300"
+                        onError={(e) => {
+                          // Fallback if image fails to load
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const fallback = target.nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div 
+                      className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs"
+                      style={{ display: agent?.image_url ? 'none' : 'flex' }}
+                    >
+                      {topAgent?.agent_name?.charAt(0) || dept.name.charAt(0)}
+                    </div>
+                    <div className="text-left">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {dept.name}
+                      </div>
+                      <div className="font-semibold text-gray-900 dark:text-white text-xs">
+                        👑 {topAgent?.agent_name || 'No agents'}
+                      </div>
+                      <div className="text-xs text-indigo-600 font-medium">
+                        {topAgent?.total || 0} reviews
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           }
         >
@@ -373,9 +429,11 @@ export default function DashboardPage() {
       {/* Problem Feedback Section - Low-rated reviews with comments */}
       <div className="mt-8">
         <CollapsibleSection
+          sectionId="problem-feedback"
+          isExpanded={expandedSection === 'problem-feedback'}
+          onToggle={() => handleSectionToggle('problem-feedback')}
           title="Problem Feedback"
           subtitle="Low-rated reviews requiring attention"
-          defaultExpanded={false}
           badge="Critical"
           icon={<AlertTriangle className="w-5 h-5" />}
           previewContent={
@@ -402,9 +460,11 @@ export default function DashboardPage() {
       {/* Detailed Analytics Collapsible Section */}
       <div className="mt-8">
         <CollapsibleSection
+          sectionId="detailed-analytics"
+          isExpanded={expandedSection === 'detailed-analytics'}
+          onToggle={() => handleSectionToggle('detailed-analytics')}
           title="Detailed Analytics & Reports"
           subtitle="Comprehensive trends, charts, and data tables"
-          defaultExpanded={false}
           badge="Advanced"
           icon={<BarChart3 className="w-5 h-5" />}
           previewContent={
