@@ -300,7 +300,8 @@ export default function DashboardPage() {
       onCompareModeChange={(enabled) => setFilters(prev => ({ ...prev, compareMode: enabled }))}
       dateRanges={dateRanges}
     >
-      <div className="space-y-8 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 hfc:from-gray-50 hfc:via-gray-50 hfc:to-gray-50 min-h-screen pb-12 px-6">
+      {/* Centered Dashboard Container */}
+      <div className="max-w-7xl mx-auto space-y-8 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 hfc:from-gray-50 hfc:via-gray-50 hfc:to-gray-50 min-h-screen pb-12 px-6">
         
         {/* Beautiful Time Period Selector - Now shown in all themes */}
         <TimePeriodSelector
