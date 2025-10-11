@@ -61,7 +61,9 @@ export default function DepartmentPerformanceRankings({
             problemCount: agentProblems,
             avgRating: agentAvgRating
           };
-        }).sort((a, b) => b.totalReviews - a.totalReviews);
+        })
+        .filter(agent => agent.totalReviews > 0) // Only include agents with reviews
+        .sort((a, b) => b.totalReviews - a.totalReviews);
         
         const totalReviews = deptReviews.length;
         const fiveStarReviews = deptReviews.filter((r) => r.rating === 5).length;
