@@ -2,8 +2,7 @@
 
 import { useState, useMemo, use, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, User, Building2, Calendar, Star, TrendingUp } from 'lucide-react'
-import KPITiles from '@/components/KPITiles'
+import { ArrowLeft, Star, TrendingUp, TrendingDown, Award, AlertTriangle } from 'lucide-react'
 import { TimeSeriesChart } from '@/components/Charts'
 import { ReviewTable } from '@/components/DataTables'
 import { 
@@ -64,7 +63,7 @@ export default function AgentDetail({ params }: AgentDetailProps) {
   const agent = agents.find(a => a.id === agentId)
   const department = departments.find(d => d.id === agent?.department_id)
   
-  // Filter reviews for this agent - always call hooks in the same order
+  // Filter reviews for this agent
   const agentReviews = useMemo(() => {
     if (!agent) return []
     let filtered = filterReviewsByAgents(reviews, [agent.id])
@@ -72,11 +71,11 @@ export default function AgentDetail({ params }: AgentDetailProps) {
     return filtered
   }, [agent, selectedDateRange, reviews])
   
-  // Calculate metrics - always call hooks
+  // Calculate metrics
   const currentMetrics = calculateMetrics(agentReviews)
   const dailyMetrics = getDailyMetrics(agentReviews, selectedDateRange)
   
-  // Calculate comparison data (previous period) - always call hooks
+  // Calculate comparison data (previous period)
   const comparisonData = useMemo(() => {
     if (!agent) return calculateMetrics([])
     
@@ -90,17 +89,60 @@ export default function AgentDetail({ params }: AgentDetailProps) {
     previousFiltered = filterReviewsByDate(previousFiltered, previousDateRange)
     
     return calculateMetrics(previousFiltered)
-  }, [agent, selectedDateRange])
+  }, [agent, selectedDateRange, reviews])
   
-  // Early return after all hooks are called
+  // Get agent's lifetime stats
+  const lifetimeReviews = useMemo(() => {
+    if (!agent) return []
+    return filterReviewsByAgents(reviews, [agent.id])
+  }, [agent, reviews])
+  
+  const lifetimeMetrics = calculateMetrics(lifetimeReviews)
+  
+  // Calculate rating distribution
+  const ratingDistribution = useMemo(() => {
+    const dist = {
+      5: agentReviews.filter(r => r.rating === 5).length,
+      4: agentReviews.filter(r => r.rating === 4).length,
+      3: agentReviews.filter(r => r.rating === 3).length,
+      2: agentReviews.filter(r => r.rating === 2).length,
+      1: agentReviews.filter(r => r.rating === 1).length,
+    }
+    const total = agentReviews.length
+    return {
+      counts: dist,
+      percentages: {
+        5: total > 0 ? (dist[5] / total) * 100 : 0,
+        4: total > 0 ? (dist[4] / total) * 100 : 0,
+        3: total > 0 ? (dist[3] / total) * 100 : 0,
+        2: total > 0 ? (dist[2] / total) * 100 : 0,
+        1: total > 0 ? (dist[1] / total) * 100 : 0,
+      }
+    }
+  }, [agentReviews])
+  
+  // Calculate trends
+  const trends = useMemo(() => {
+    const ratingChange = currentMetrics.avg_rating - comparisonData.avg_rating
+    const volumeChange = currentMetrics.total - comparisonData.total
+    const fiveStarChange = currentMetrics.percent_5_star - comparisonData.percent_5_star
+    
+    return {
+      rating: { value: ratingChange, isPositive: ratingChange >= 0 },
+      volume: { value: volumeChange, isPositive: volumeChange >= 0 },
+      fiveStar: { value: fiveStarChange, isPositive: fiveStarChange >= 0 }
+    }
+  }, [currentMetrics, comparisonData])
+  
+  // Early return after all hooks
   if (!agent) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center bg-white rounded-2xl shadow-xl p-12">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Agent Not Found</h1>
           <button
-            onClick={() => router.push('/')}
-            className="text-blue-600 hover:text-blue-800"
+            onClick={() => router.push('/dashboard')}
+            className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
             Return to Dashboard
           </button>
@@ -108,78 +150,68 @@ export default function AgentDetail({ params }: AgentDetailProps) {
       </div>
     )
   }
-  
-  // Get agent's lifetime stats
-  const lifetimeReviews = filterReviewsByAgents(reviews, [agent.id])
-  const lifetimeMetrics = calculateMetrics(lifetimeReviews)
-  
-  // Find most recent review
-  const latestReview = lifetimeReviews
-    .sort((a, b) => new Date(b.review_ts).getTime() - new Date(a.review_ts).getTime())[0]
-  
+
+  const problemCount = agentReviews.filter(r => r.rating <= 2).length
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex items-center gap-4 mb-6">
-              <button
-                onClick={() => router.push('/')}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back to Dashboard
-              </button>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Hero Header */}
+      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="flex items-center gap-2 text-white/90 hover:text-white mb-6 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </button>
+          
+          <div className="flex items-start gap-8">
+            {/* Large Agent Avatar */}
+            <div className="relative">
+              <div className="w-32 h-32 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-white">
+                <img
+                  src={agent.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.display_name)}&background=4F46E5&color=fff&size=256`}
+                  alt={agent.display_name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.display_name)}&background=4F46E5&color=fff&size=256`;
+                  }}
+                />
+              </div>
+              {/* Lifetime 5-star badge */}
+              <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-yellow-900 rounded-full px-3 py-1 text-xs font-bold shadow-lg flex items-center gap-1">
+                <Star className="w-3 h-3 fill-current" />
+                {lifetimeMetrics.avg_rating.toFixed(2)}
+              </div>
             </div>
             
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-6">
-                {/* Agent Avatar */}
-                <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
-                  <User className="w-8 h-8 text-blue-600" />
-                </div>
-                
-                {/* Agent Info */}
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900">{agent.display_name}</h1>
-                  <div className="flex items-center gap-4 mt-2 text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Building2 className="w-4 h-4" />
-                      <span>{department?.name}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <User className="w-4 h-4" />
-                      <span>{agent.agent_key}</span>
-                    </div>
-                    {latestReview && (
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>Last review: {new Date(latestReview.review_ts).toLocaleDateString()}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+            {/* Agent Info */}
+            <div className="flex-1">
+              <h1 className="text-4xl font-bold mb-2">{agent.display_name}</h1>
+              <div className="flex items-center gap-4 text-white/90 mb-6">
+                <span className="text-lg">{department?.name}</span>
+                <span className="text-white/60">•</span>
+                <span>ID: {agent.agent_key}</span>
               </div>
               
-              {/* Lifetime Stats */}
-              <div className="text-right">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-blue-600">{lifetimeMetrics.total}</div>
-                    <div className="text-sm text-gray-600">Total Reviews</div>
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-center gap-1 text-2xl font-bold text-purple-600">
-                      <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                      {lifetimeMetrics.avg_rating.toFixed(2)}
-                    </div>
-                    <div className="text-sm text-gray-600">Avg Rating</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-green-600">{lifetimeMetrics.percent_5_star.toFixed(1)}%</div>
-                    <div className="text-sm text-gray-600">5-Star Rate</div>
-                  </div>
+              {/* Lifetime Stats Row */}
+              <div className="grid grid-cols-4 gap-4">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                  <div className="text-3xl font-bold">{lifetimeMetrics.total}</div>
+                  <div className="text-sm text-white/80">Total Reviews</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                  <div className="text-3xl font-bold">{lifetimeMetrics.avg_rating.toFixed(2)}★</div>
+                  <div className="text-sm text-white/80">Lifetime Avg</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                  <div className="text-3xl font-bold">{lifetimeMetrics.percent_5_star.toFixed(0)}%</div>
+                  <div className="text-sm text-white/80">5-Star Rate</div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                  <div className="text-3xl font-bold">{lifetimeReviews.filter(r => r.rating >= 4).length}</div>
+                  <div className="text-sm text-white/80">4-5 Star Reviews</div>
                 </div>
               </div>
             </div>
@@ -190,104 +222,181 @@ export default function AgentDetail({ params }: AgentDetailProps) {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Date Range Selector */}
-        <div className="bg-white rounded-2xl shadow-sm border p-6 mb-6">
-          <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-gray-700">Date Range:</span>
-            <div className="flex gap-2">
-              {Object.entries(dateRanges).map(([key, range]) => (
-                <button
-                  key={key}
-                  onClick={() => setSelectedDateRange(range)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    selectedDateRange.label === range.label
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {range.label}
-                </button>
-              ))}
+        <div className="bg-white rounded-xl shadow-sm border p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-semibold text-gray-700">Performance Period:</span>
+              <div className="flex gap-2">
+                {Object.entries(dateRanges).map(([key, range]) => (
+                  <button
+                    key={key}
+                    onClick={() => setSelectedDateRange(range)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      selectedDateRange.label === range.label
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {range.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="ml-auto text-sm text-gray-600">
+            <div className="text-sm font-medium text-gray-600">
               {agentReviews.length} reviews in selected period
             </div>
           </div>
         </div>
         
-        {/* KPI Tiles */}
-        <KPITiles 
-          metrics={currentMetrics} 
-          previousMetrics={comparisonData}
-          showComparison={true}
-        />
-        
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 mb-8">
-          <TimeSeriesChart data={dailyMetrics} />
-        </div>
-        
-        {/* Performance Insights */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-2xl shadow-sm border p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Insights</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                <div>
-                  <div className="text-sm font-medium text-green-800">5-Star Performance</div>
-                  <div className="text-xs text-green-600">Above department average</div>
-                </div>
-                <div className="flex items-center gap-1">
-                  <TrendingUp className="w-4 h-4 text-green-600" />
-                  <span className="text-sm font-bold text-green-700">{currentMetrics.percent_5_star.toFixed(1)}%</span>
-                </div>
+        {/* Key Metrics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Average Rating Card */}
+          <div className="bg-white rounded-xl shadow-sm border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-gray-600 uppercase">Average Rating</h3>
+              <Star className="w-5 h-5 text-yellow-400 fill-current" />
+            </div>
+            <div className="flex items-end gap-2 mb-2">
+              <div className="text-4xl font-bold text-gray-900">{currentMetrics.avg_rating.toFixed(2)}</div>
+              <div className="text-lg text-gray-400 mb-1">/ 5.00</div>
+            </div>
+            {trends.rating.value !== 0 && (
+              <div className={`flex items-center gap-1 text-sm font-medium ${trends.rating.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                {trends.rating.isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                {Math.abs(trends.rating.value).toFixed(2)} vs previous period
               </div>
-              
-              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                <div>
-                  <div className="text-sm font-medium text-blue-800">Review Volume</div>
-                  <div className="text-xs text-blue-600">Last {selectedDateRange.label?.toLowerCase()}</div>
-                </div>
-                <div className="text-sm font-bold text-blue-700">{currentMetrics.total} reviews</div>
+            )}
+          </div>
+
+          {/* Review Volume Card */}
+          <div className="bg-white rounded-xl shadow-sm border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-gray-600 uppercase">Review Volume</h3>
+              <Award className="w-5 h-5 text-indigo-600" />
+            </div>
+            <div className="flex items-end gap-2 mb-2">
+              <div className="text-4xl font-bold text-gray-900">{currentMetrics.total}</div>
+              <div className="text-lg text-gray-400 mb-1">reviews</div>
+            </div>
+            {trends.volume.value !== 0 && (
+              <div className={`flex items-center gap-1 text-sm font-medium ${trends.volume.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                {trends.volume.isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                {Math.abs(trends.volume.value)} vs previous period
               </div>
-              
-              <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                <div>
-                  <div className="text-sm font-medium text-purple-800">Average Rating</div>
-                  <div className="text-xs text-purple-600">Weighted average</div>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                  <span className="text-sm font-bold text-purple-700">{currentMetrics.avg_rating.toFixed(2)}</span>
-                </div>
+            )}
+          </div>
+
+          {/* 5-Star Rate Card */}
+          <div className="bg-white rounded-xl shadow-sm border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-gray-600 uppercase">5-Star Rate</h3>
+              <div className="flex items-center gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
+                ))}
               </div>
             </div>
+            <div className="flex items-end gap-2 mb-2">
+              <div className="text-4xl font-bold text-gray-900">{currentMetrics.percent_5_star.toFixed(1)}%</div>
+            </div>
+            {trends.fiveStar.value !== 0 && (
+              <div className={`flex items-center gap-1 text-sm font-medium ${trends.fiveStar.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                {trends.fiveStar.isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                {Math.abs(trends.fiveStar.value).toFixed(1)}% vs previous period
+              </div>
+            )}
           </div>
-          
-          <div className="bg-white rounded-2xl shadow-sm border p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-            <div className="space-y-3">
-              {agentReviews.slice(0, 5).map(review => (
-                <div key={review.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <Star className={`w-4 h-4 ${review.rating >= 4 ? 'text-green-500' : review.rating >= 3 ? 'text-yellow-500' : 'text-red-500'} fill-current`} />
-                    <span className="text-sm font-medium">{review.rating}</span>
+        </div>
+
+        {/* Rating Distribution & Problem Reviews */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Rating Distribution */}
+          <div className="bg-white rounded-xl shadow-sm border p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">Rating Distribution</h3>
+            <div className="space-y-4">
+              {[5, 4, 3, 2, 1].map((rating) => (
+                <div key={rating} className="flex items-center gap-4">
+                  <div className="flex items-center gap-1 w-16">
+                    <span className="text-sm font-medium text-gray-700">{rating}</span>
+                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
                   </div>
-                  <div className="flex-1">
-                    <div className="text-xs text-gray-500 mb-1">
-                      {new Date(review.review_ts).toLocaleDateString()} • {review.source}
-                    </div>
-                    <div className="text-sm text-gray-900">
-                      {review.comment ? (review.comment.length > 80 ? review.comment.substring(0, 80) + '...' : review.comment) : 'No comment'}
-                    </div>
+                  <div className="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-500 ${
+                        rating === 5 ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' :
+                        rating === 4 ? 'bg-gradient-to-r from-lime-400 to-lime-500' :
+                        rating === 3 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' :
+                        rating === 2 ? 'bg-gradient-to-r from-orange-400 to-orange-600' :
+                        'bg-gradient-to-r from-red-400 to-red-600'
+                      }`}
+                      style={{ width: `${ratingDistribution.percentages[rating as keyof typeof ratingDistribution.percentages]}%` }}
+                    />
+                  </div>
+                  <div className="w-20 text-right">
+                    <span className="text-sm font-bold text-gray-900">{ratingDistribution.counts[rating as keyof typeof ratingDistribution.counts]}</span>
+                    <span className="text-xs text-gray-500 ml-1">({ratingDistribution.percentages[rating as keyof typeof ratingDistribution.percentages].toFixed(0)}%)</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* Problem Reviews */}
+          <div className="bg-white rounded-xl shadow-sm border p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Problem Reviews</h3>
+              {problemCount > 0 && (
+                <div className="flex items-center gap-1 bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-semibold">
+                  <AlertTriangle className="w-4 h-4" />
+                  {problemCount}
+                </div>
+              )}
+            </div>
+            <div className="space-y-3">
+              {problemCount === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Award className="w-12 h-12 mx-auto mb-3 text-green-500" />
+                  <p className="font-medium">No problem reviews!</p>
+                  <p className="text-sm">Excellent performance in selected period</p>
+                </div>
+              ) : (
+                agentReviews
+                  .filter(r => r.rating <= 2)
+                  .slice(0, 5)
+                  .map(review => (
+                    <div key={review.id} className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Star className="w-4 h-4 text-red-500 fill-current" />
+                          <span className="text-sm font-bold text-red-700">{review.rating}</span>
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-xs text-gray-600 mb-1">
+                            {new Date(review.review_ts).toLocaleDateString()} • {review.source}
+                          </div>
+                          <div className="text-sm text-gray-900">
+                            {review.comment || 'No comment provided'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
         </div>
-        
+
+        {/* Performance Chart */}
+        <div className="bg-white rounded-xl shadow-sm border p-6 mb-8">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Performance Trend</h3>
+          <TimeSeriesChart data={dailyMetrics} />
+        </div>
+
         {/* Reviews Table */}
-        <ReviewTable data={agentReviews} agents={agents} departments={departments} />
+        <div className="bg-white rounded-xl shadow-sm border p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">All Reviews</h3>
+          <ReviewTable data={agentReviews} agents={agents} departments={departments} />
+        </div>
       </div>
     </div>
   )
