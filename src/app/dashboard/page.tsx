@@ -55,6 +55,7 @@ import EnhancedAgentRankings from "@/components/dashboard/EnhancedAgentRankings"
 import EnhancedMetricsGrid from "@/components/dashboard/EnhancedMetricsGrid";
 import ProblemFeedback from "@/components/dashboard/ProblemFeedback";
 import DepartmentPerformanceRankings from "@/components/dashboard/DepartmentPerformanceRankings";
+import UnifiedAgentRankings from "@/components/dashboard/UnifiedAgentRankings";
 
 interface Filters {
   dateRange: DateRange
@@ -475,9 +476,9 @@ export default function DashboardPage() {
         showComparison={filters.compareMode}
       />
 
-      {/* Hero Chart - Enhanced Agent Rankings */}
+      {/* Unified Agent Rankings */}
       <div className="mt-8">
-        <EnhancedAgentRankings data={agentMetrics} limit={10} />
+        <UnifiedAgentRankings data={agentMetrics} limit={10} />
       </div>
 
       {/* Department Performance Rankings */}
