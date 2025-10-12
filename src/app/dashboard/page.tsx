@@ -301,7 +301,19 @@ export default function DashboardPage() {
       dateRanges={dateRanges}
     >
       {/* Centered Dashboard Container */}
-      <div className="max-w-7xl mx-auto space-y-8 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 hfc:from-gray-50 hfc:via-gray-50 hfc:to-gray-50 min-h-screen pb-12 px-6">
+      <div className="max-w-7xl mx-auto space-y-8 min-h-screen pb-12 px-6">
+        
+        {/* HFC Dashboard Title - Only shown in HFC theme */}
+        {theme === 'hfc' && (
+          <div className="text-center pt-1 pb-1">
+            <h1 className="hfc-title-horizontal text-2xl md:text-3xl lg:text-4xl text-white tracking-tight">
+              <span className="font-extrabold">HEALTH</span> <span className="hfc-for-word">for</span> <span className="font-extrabold">CALIFORNIA</span>
+            </h1>
+            <p className="text-sm md:text-base text-white/90 mt-0.5 font-light">
+              Reviews Dashboard
+            </p>
+          </div>
+        )}
         
         {/* Beautiful Time Period Selector - Now shown in all themes */}
         <TimePeriodSelector

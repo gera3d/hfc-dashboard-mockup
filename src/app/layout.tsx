@@ -3,6 +3,8 @@ import { Inter, Space_Grotesk, IBM_Plex_Mono } from 'next/font/google'
 import "./globals.css";
 import { ThemeProvider } from '@/context/ThemeContext';
 import TopNav from '@/components/TopNav';
+import HFCFooter from '@/components/HFCFooter';
+import FloatingControls from '@/components/FloatingControls';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -34,13 +36,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable}`} suppressHydrationWarning>
-      <body className="font-sans antialiased dark:bg-gray-900" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${inter.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable}`}
+      suppressHydrationWarning
+    >
+      <body
+        className="font-sans antialiased dark:bg-gray-900"
+        suppressHydrationWarning
+      >
         <ThemeProvider>
           <TopNav />
           <main className="pt-16">
             {children}
           </main>
+          {/* HFC footer holds theme toggle and settings link for HFC theme only */}
+          <HFCFooter />
+          {/* Small floating controls (always present) so theme/settings are reachable */}
+          <FloatingControls />
         </ThemeProvider>
       </body>
     </html>

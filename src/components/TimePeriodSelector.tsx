@@ -35,7 +35,7 @@ export default function TimePeriodSelector({
   return (
     <div className={`relative rounded-2xl border-2 shadow-xl p-6 ${
       isHFC
-        ? 'bg-white border-[#1e5a8e]/20'
+        ? 'bg-transparent border-transparent'
         : 'bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 dark:from-gray-800 dark:via-gray-800/95 dark:to-gray-800 border-blue-100 dark:border-gray-700'
     }`}>
       {/* Decorative gradient blob */}

@@ -55,6 +55,10 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
 
   const healthStatus = getHealthStatus();
   const isProblemIncreasing = problemChange?.isPositive;
+  
+  // Detect big positive changes for celebration animations
+  const isSatisfactionSurging = satisfactionChange?.isPositive && parseFloat(satisfactionChange.value) >= 5; // 5%+ improvement
+  const isReviewsOnFire = totalChange?.isPositive && parseFloat(totalChange.value) >= 20; // 20%+ increase
 
   // Check if status is excellent for special styling
   const isExcellent = healthStatus.status === "Excellent";
@@ -106,6 +110,8 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
           {/* Top Section - Icon + Badge */}
           <div className="flex items-start justify-between mb-4">
             <div className={`flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-700 ${
+              isSatisfactionSurging ? 'animate-bounce-subtle' : ''
+            } ${
               isExcellent 
                 ? 'bg-green-500 shadow-lg shadow-green-200 dark:shadow-green-900/50' 
                 : 'bg-green-100 dark:bg-green-900/20'
@@ -116,9 +122,19 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
                   : 'text-green-600 dark:text-green-400'
               }`} />
             </div>
-            <Badge color={healthStatus.color as any}>
-              {healthStatus.status}
-            </Badge>
+            <div className="flex flex-col items-end gap-1">
+              <Badge color={healthStatus.color as any}>
+                {healthStatus.status}
+              </Badge>
+              {isSatisfactionSurging && (
+                <span 
+                  className="text-xs font-bold text-green-600 dark:text-green-400 animate-pulse cursor-help" 
+                  title="Amazing! Customer satisfaction jumped 5%+ compared to last period!"
+                >
+                  🚀 SURGE
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Middle Section - Label + Value */}
@@ -153,8 +169,20 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
           className="flex flex-col rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]"
         >
           {/* Top Section - Icon */}
-          <div className={`flex items-center justify-center w-12 h-12 mb-4 bg-blue-100 rounded-xl dark:bg-blue-900/20`} style={{ animationDelay: '250ms' }}>
-            <MessageCircle className="text-blue-600 size-6 dark:text-blue-400" />
+          <div className="flex items-start justify-between mb-4">
+            <div className={`flex items-center justify-center w-12 h-12 bg-blue-100 rounded-xl dark:bg-blue-900/20 ${
+              isReviewsOnFire ? 'animate-bounce-subtle' : ''
+            }`} style={{ animationDelay: '250ms' }}>
+              <MessageCircle className="text-blue-600 size-6 dark:text-blue-400" />
+            </div>
+            {isReviewsOnFire && (
+              <span 
+                className="text-2xl animate-pulse cursor-help" 
+                title="On fire! Review volume increased 20%+ compared to last period!"
+              >
+                🔥
+              </span>
+            )}
           </div>
 
           {/* Middle Section - Label + Value */}
@@ -193,9 +221,12 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
             <span className={`block text-sm text-gray-500 dark:text-gray-400 mb-2`} style={{ animationDelay: '450ms' }}>
               Average Rating
             </span>
-            <h4 className="font-bold text-gray-800 text-title-xl dark:text-white/90 transition-all duration-500">
-              {displayedAvgRating.toFixed(2)} ★
-            </h4>
+            <div className="flex items-baseline gap-1">
+              <h4 className="font-bold text-gray-800 text-title-xl dark:text-white/90 transition-all duration-500">
+                {displayedAvgRating.toFixed(2)}
+              </h4>
+              <span className="text-amber-500 text-2xl leading-none">★</span>
+            </div>
           </div>
 
           {/* Bottom Section - Trend */}

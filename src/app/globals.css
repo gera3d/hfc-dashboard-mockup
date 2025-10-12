@@ -64,6 +64,12 @@ body {
   letter-spacing: -0.01em; /* Subtle letter spacing adjustment */
 }
 
+/* HFC Theme - Blue gradient background */
+.hfc body {
+  background: linear-gradient(to bottom right, #1e5a8e, #2673b0) !important;
+  min-height: 100vh;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -493,7 +499,8 @@ body {
 }
 
 /* HFC Gradient Backgrounds - Minimal, clean */
-.hfc .bg-gradient-to-br {
+.hfc .bg-gradient-to-br.bg-white {
+  /* only force white if the utility explicitly includes full-white */
   background: white;
 }
 
@@ -505,6 +512,19 @@ body {
   background-color: #ffffff !important;
 }
 
+/* Keep small cards/capsules white via existing .hfc .bg-white rule above; no complex selectors here */
+
+.hfc main,
+.hfc .container,
+.hfc .max-w-7xl {
+  background-color: transparent !important;
+}
+
+/* Optional: slightly blur/soften the underlying gradient where the main container sits */
+.hfc .max-w-7xl {
+  backdrop-filter: blur(6px);
+}
+
 /* HFC Text Colors - Dark Blue Primary */
 .hfc .text-indigo-600,
 .hfc .text-indigo-700,
@@ -512,11 +532,23 @@ body {
   color: var(--hfc-blue-primary) !important;
 }
 
-.hfc h1, .hfc h2, .hfc h3, .hfc h4, .hfc h5, .hfc h6 {
-  color: var(--hfc-blue-primary) !important;
+/* Only make the main page title white, not all headings */
+.hfc .hfc-title-horizontal {
+  color: white !important;
 }
 
 /* Removed global .hfc .text-gray-900 override to allow proper contrast in dropdowns */
+
+/* Keep metric card text dark for readability */
+.hfc .text-gray-800 {
+  color: #1a1a1a !important;
+}
+
+/* Ensure metric numbers are dark on white cards */
+.hfc .bg-white h4,
+.hfc .bg-white .text-title-xl {
+  color: #1a1a1a !important;
+}
 
 .hfc .text-green-600,
 .hfc .text-emerald-600 {
@@ -587,10 +619,7 @@ body {
   color: #123656;
 }
 
-/* HFC Headings - Dark Blue */
-.hfc h1, .hfc h2, .hfc h3, .hfc h4, .hfc h5, .hfc h6 {
-  color: var(--hfc-blue-primary);
-}
+/* Remove duplicate heading override - let component styles control text color */
 
 /* HFC Chart Colors */
 .hfc [class*="stroke-indigo"],
@@ -650,7 +679,37 @@ body {
 .hfc main,
 .hfc .container,
 .hfc .max-w-7xl {
-  background-color: #f8f9fa;
+  /* Let the page-level gradient show through for HFC.
+     Individual cards and capsules that should remain white
+     use the `bg-white` utility which is preserved below. */
+  background-color: transparent !important;
+}
+
+/* Reduce top spacing in HFC so centered title sits closer to nav */
+.hfc main {
+  padding-top: 1rem !important; /* minimal top spacing */
+}
+
+/* HFC Dashboard Title - horizontal layout matching logo */
+.hfc .hfc-title-horizontal {
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+/* HEALTH and CALIFORNIA - bold sans-serif (extrabold = 800) */
+.hfc .hfc-title-horizontal .font-extrabold {
+  font-weight: 800;
+  color: white !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+/* "for" - lighter italic serif in gold, matching logo exactly */
+.hfc .hfc-title-horizontal .hfc-for-word {
+  color: #f5b942 !important;
+  font-style: italic;
+  font-weight: 400;
+  font-family: Georgia, 'Times New Roman', serif !important;
+  font-size: 0.85em; /* slightly smaller than HEALTH/CALIFORNIA */
 }
 
 /* HFC Navigation */
@@ -658,6 +717,19 @@ body {
   background: linear-gradient(to right, #1e5a8e, #2673b0, #1e5a8e) !important;
   border-bottom: 1px solid #164166 !important;
   box-shadow: 0 4px 12px rgba(30, 90, 142, 0.3) !important;
+}
+
+/* Make common sticky and header wrappers transparent in HFC theme so body gradient shows through */
+.hfc .sticky.top-0,
+.hfc .sticky {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+
+/* Ensure any large hero/header containers that used bg-white become transparent */
+.hfc [class*="bg-white"] > .max-w-6xl,
+.hfc .sticky .max-w-6xl {
+  background: transparent !important;
 }
 
 /* HFC Expandable Time Period Section */

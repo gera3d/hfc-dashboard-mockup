@@ -26,14 +26,8 @@ export default function DashboardLayout({
   
   return (
     <>
-      <TopNav 
-        selectedRange={selectedRange}
-        compareMode={compareMode}
-        onRangeChange={onRangeChange}
-        onCompareModeChange={onCompareModeChange}
-        dateRanges={dateRanges}
-      />
-      <main className={theme === 'hfc' ? 'pt-20' : 'pt-16'}>
+      <TopNav />
+      <main className={`${theme === 'hfc' ? 'pt-20 min-h-screen bg-transparent' : 'pt-16 bg-[#F6F9FC] dark:bg-gray-900'}`}>
         {children}
       </main>
     </>
