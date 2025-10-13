@@ -64,9 +64,9 @@ body {
   letter-spacing: -0.01em; /* Subtle letter spacing adjustment */
 }
 
-/* HFC Theme - Blue gradient background */
+/* HFC Theme - Blue radial gradient background with spotlight effect */
 .hfc body {
-  background: linear-gradient(to bottom right, #1e5a8e, #2673b0) !important;
+  background: radial-gradient(ellipse at center, #4a7ba7 0%, #3a6a94 40%, #1e3d5a 100%) !important;
   min-height: 100vh;
 }
 

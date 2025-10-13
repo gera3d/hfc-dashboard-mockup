@@ -96,39 +96,39 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
   
   return (
     <div className="space-y-6">
-      {/* ALL METRICS IN ONE ROW - PROPERLY BALANCED */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 md:gap-6">
+      {/* ALL METRICS - RESPONSIVE GRID: 2 cols mobile, 4 cols desktop (Rating Distribution moved to standalone widget) */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 md:gap-6">
         
         {/* 1. CUSTOMER SATISFACTION */}
         <div 
-          className={`relative flex flex-col rounded-2xl border p-6 ${
+          className={`relative flex flex-col rounded-lg sm:rounded-2xl border p-3 sm:p-6 ${
             isExcellent 
               ? 'border-green-300 bg-gradient-to-br from-green-50 to-white dark:border-green-700 dark:from-green-950/30 dark:to-gray-900 shadow-green-100 dark:shadow-green-900/20' 
               : 'border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]'
           }`}
         >
           {/* Top Section - Icon + Badge */}
-          <div className="flex items-start justify-between mb-4">
-            <div className={`flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-700 ${
+          <div className="flex items-start justify-between mb-2 sm:mb-4">
+            <div className={`flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl transition-all duration-700 ${
               isSatisfactionSurging ? 'animate-bounce-subtle' : ''
             } ${
               isExcellent 
                 ? 'bg-green-500 shadow-lg shadow-green-200 dark:shadow-green-900/50' 
                 : 'bg-green-100 dark:bg-green-900/20'
             }`}>
-              <ThumbsUp className={`size-6 transition-colors duration-700 ${
+              <ThumbsUp className={`size-4 sm:size-6 transition-colors duration-700 ${
                 isExcellent 
                   ? 'text-white' 
                   : 'text-green-600 dark:text-green-400'
               }`} />
             </div>
-            <div className="flex flex-col items-end gap-1">
+            <div className="flex flex-col items-end gap-0.5 sm:gap-1">
               <Badge color={healthStatus.color as any}>
-                {healthStatus.status}
+                <span className="text-[10px] sm:text-xs">{healthStatus.status}</span>
               </Badge>
               {isSatisfactionSurging && (
                 <span 
-                  className="text-xs font-bold text-green-600 dark:text-green-400 animate-pulse cursor-help" 
+                  className="text-[10px] sm:text-xs font-bold text-green-600 dark:text-green-400 animate-pulse cursor-help hidden sm:inline" 
                   title="Amazing! Customer satisfaction jumped 5%+ compared to last period!"
                 >
                   🚀 SURGE
@@ -139,45 +139,47 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
 
           {/* Middle Section - Label + Value */}
           <div className="flex-1">
-            <span className={`block text-sm text-gray-500 dark:text-gray-400 mb-2`} style={{ animationDelay: '250ms' }}>
+            <span className={`block text-[10px] sm:text-sm text-gray-500 dark:text-gray-400 mb-1 sm:mb-2`} style={{ animationDelay: '250ms' }}>
               Customer Satisfaction
             </span>
-            <h4 className={`font-bold text-title-xl transition-all duration-700 ${
+            <h4 className={`font-bold text-lg sm:text-title-xl transition-all duration-700 ${
               isExcellent 
                 ? 'text-green-600 dark:text-green-400' 
                 : 'text-gray-800 dark:text-white/90'
             }`}>
               {displayedFiveStarRate.toFixed(1)}%
             </h4>
-            <span className={`text-xs text-gray-500 mt-1 block`} style={{ animationDelay: '350ms' }}>5-star rate</span>
+            <span className={`text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1 block`} style={{ animationDelay: '350ms' }}>5-star rate</span>
           </div>
 
           {/* Bottom Section - Trend */}
           {satisfactionChange && (
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-1 sm:gap-2 mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-gray-100 dark:border-gray-800">
               <Badge color={satisfactionChange.isPositive ? "success" : "error"}>
-                {satisfactionChange.isPositive ? <ArrowUpIcon /> : <ArrowDownIcon />}
-                {satisfactionChange.value}%
+                <span className="text-[10px] sm:text-xs flex items-center gap-0.5">
+                  {satisfactionChange.isPositive ? <ArrowUpIcon /> : <ArrowDownIcon />}
+                  {satisfactionChange.value}%
+                </span>
               </Badge>
-              <span className="text-xs text-gray-500">vs last period</span>
+              <span className="text-[10px] sm:text-xs text-gray-500 hidden sm:inline">vs last period</span>
             </div>
           )}
         </div>
 
         {/* 2. TOTAL REVIEWS */}
         <div 
-          className="flex flex-col rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]"
+          className="flex flex-col rounded-lg sm:rounded-2xl border border-gray-200 bg-white p-3 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]"
         >
           {/* Top Section - Icon */}
-          <div className="flex items-start justify-between mb-4">
-            <div className={`flex items-center justify-center w-12 h-12 bg-blue-100 rounded-xl dark:bg-blue-900/20 ${
+          <div className="flex items-start justify-between mb-2 sm:mb-4">
+            <div className={`flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 bg-blue-100 rounded-lg sm:rounded-xl dark:bg-blue-900/20 ${
               isReviewsOnFire ? 'animate-bounce-subtle' : ''
             }`} style={{ animationDelay: '250ms' }}>
-              <MessageCircle className="text-blue-600 size-6 dark:text-blue-400" />
+              <MessageCircle className="text-blue-600 size-4 sm:size-6 dark:text-blue-400" />
             </div>
             {isReviewsOnFire && (
               <span 
-                className="text-2xl animate-pulse cursor-help" 
+                className="text-lg sm:text-2xl animate-pulse cursor-help hidden sm:inline" 
                 title="On fire! Review volume increased 20%+ compared to last period!"
               >
                 🔥
@@ -187,83 +189,87 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
 
           {/* Middle Section - Label + Value */}
           <div className="flex-1">
-            <span className={`block text-sm text-gray-500 dark:text-gray-400 mb-2`} style={{ animationDelay: '350ms' }}>
+            <span className={`block text-[10px] sm:text-sm text-gray-500 dark:text-gray-400 mb-1 sm:mb-2`} style={{ animationDelay: '350ms' }}>
               Total Reviews
             </span>
-            <h4 className="font-bold text-gray-800 text-title-xl dark:text-white/90 transition-all duration-500">
+            <h4 className="font-bold text-gray-800 text-lg sm:text-title-xl dark:text-white/90 transition-all duration-500">
               {displayedTotal.toLocaleString()}
             </h4>
           </div>
 
           {/* Bottom Section - Trend */}
           {totalChange && (
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-1 sm:gap-2 mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-gray-100 dark:border-gray-800">
               <Badge color={totalChange.isPositive ? "success" : "error"}>
-                {totalChange.isPositive ? <ArrowUpIcon /> : <ArrowDownIcon />}
-                {totalChange.value}%
+                <span className="text-[10px] sm:text-xs flex items-center gap-0.5">
+                  {totalChange.isPositive ? <ArrowUpIcon /> : <ArrowDownIcon />}
+                  {totalChange.value}%
+                </span>
               </Badge>
-              <span className="text-xs text-gray-500">vs last period</span>
+              <span className="text-[10px] sm:text-xs text-gray-500 hidden sm:inline">vs last period</span>
             </div>
           )}
         </div>
 
         {/* 3. AVERAGE RATING */}
         <div 
-          className="flex flex-col rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]"
+          className="flex flex-col rounded-lg sm:rounded-2xl border border-gray-200 bg-white p-3 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]"
         >
           {/* Top Section - Icon */}
-          <div className={`flex items-center justify-center w-12 h-12 mb-4 bg-amber-100 rounded-xl dark:bg-amber-900/20`} style={{ animationDelay: '350ms' }}>
-            <Star className="text-amber-600 size-6 dark:text-amber-400 fill-amber-600 dark:fill-amber-400" />
+          <div className={`flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 mb-2 sm:mb-4 bg-amber-100 rounded-lg sm:rounded-xl dark:bg-amber-900/20`} style={{ animationDelay: '350ms' }}>
+            <Star className="text-amber-600 size-4 sm:size-6 dark:text-amber-400 fill-amber-600 dark:fill-amber-400" />
           </div>
 
           {/* Middle Section - Label + Value */}
           <div className="flex-1">
-            <span className={`block text-sm text-gray-500 dark:text-gray-400 mb-2`} style={{ animationDelay: '450ms' }}>
+            <span className={`block text-[10px] sm:text-sm text-gray-500 dark:text-gray-400 mb-1 sm:mb-2`} style={{ animationDelay: '450ms' }}>
               Average Rating
             </span>
-            <div className="flex items-baseline gap-1">
-              <h4 className="font-bold text-gray-800 text-title-xl dark:text-white/90 transition-all duration-500">
+            <div className="flex items-baseline gap-0.5 sm:gap-1">
+              <h4 className="font-bold text-gray-800 text-lg sm:text-title-xl dark:text-white/90 transition-all duration-500">
                 {displayedAvgRating.toFixed(2)}
               </h4>
-              <span className="text-amber-500 text-2xl leading-none">★</span>
+              <span className="text-amber-500 text-lg sm:text-2xl leading-none">★</span>
             </div>
           </div>
 
           {/* Bottom Section - Trend */}
           {ratingChange && (
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-1 sm:gap-2 mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-gray-100 dark:border-gray-800">
               <Badge color={ratingChange.isPositive ? "success" : "error"}>
-                {ratingChange.isPositive ? <ArrowUpIcon /> : <ArrowDownIcon />}
-                {ratingChange.value}%
+                <span className="text-[10px] sm:text-xs flex items-center gap-0.5">
+                  {ratingChange.isPositive ? <ArrowUpIcon /> : <ArrowDownIcon />}
+                  {ratingChange.value}%
+                </span>
               </Badge>
-              <span className="text-xs text-gray-500">vs last period</span>
+              <span className="text-[10px] sm:text-xs text-gray-500 hidden sm:inline">vs last period</span>
             </div>
           )}
         </div>
 
         {/* 4. PROBLEM REVIEWS */}
         <div 
-          className={`flex flex-col rounded-2xl border p-6 ${
+          className={`flex flex-col rounded-lg sm:rounded-2xl border p-3 sm:p-6 ${
             isProblemIncreasing 
               ? "border-red-300 bg-red-50 dark:border-red-900/50 dark:bg-red-900/10 animate-pulse-subtle" 
               : "border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]"
           }`}
         >
           {/* Top Section - Icon + Alert Badge */}
-          <div className={`flex items-start justify-between mb-4`} style={{ animationDelay: '450ms' }}>
-            <div className={`flex items-center justify-center w-12 h-12 rounded-xl ${
+          <div className={`flex items-start justify-between mb-2 sm:mb-4`} style={{ animationDelay: '450ms' }}>
+            <div className={`flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl ${
               isProblemIncreasing 
                 ? "bg-red-500 animate-shake" 
                 : "bg-orange-100 dark:bg-orange-900/20"
             }`}>
-              <AlertTriangle className={`size-6 ${
+              <AlertTriangle className={`size-4 sm:size-6 ${
                 isProblemIncreasing 
                   ? "text-white" 
                   : "text-orange-600 dark:text-orange-400"
               }`} />
             </div>
             {isProblemIncreasing && (
-              <span className="text-xs font-bold text-red-600 dark:text-red-400 animate-pulse">
+              <span className="text-[10px] sm:text-xs font-bold text-red-600 dark:text-red-400 animate-pulse hidden sm:inline">
                 ⚠️ ALERT
               </span>
             )}
@@ -271,135 +277,29 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
 
           {/* Middle Section - Label + Value */}
           <div className="flex-1">
-            <span className={`block text-sm text-gray-500 dark:text-gray-400 mb-2`} style={{ animationDelay: '550ms' }}>
+            <span className={`block text-[10px] sm:text-sm text-gray-500 dark:text-gray-400 mb-1 sm:mb-2`} style={{ animationDelay: '550ms' }}>
               Problem Reviews
             </span>
-            <h4 className="font-bold text-gray-800 text-title-xl dark:text-white/90 transition-all duration-500">
+            <h4 className="font-bold text-gray-800 text-lg sm:text-title-xl dark:text-white/90 transition-all duration-500">
               {displayedProblems}
             </h4>
-            <span className={`text-xs text-gray-500 mt-1 block`} style={{ animationDelay: '650ms' }}>1★+2★</span>
+            <span className={`text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1 block`} style={{ animationDelay: '650ms' }}>1★+2★</span>
           </div>
 
           {/* Bottom Section - Trend */}
           {problemChange && (
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-1 sm:gap-2 mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-gray-100 dark:border-gray-800">
               <Badge color={problemChange.isNegative ? "success" : "error"}>
-                {problemChange.isPositive ? <ArrowUpIcon /> : <ArrowDownIcon />}
-                {problemChange.value}%
+                <span className="text-[10px] sm:text-xs flex items-center gap-0.5">
+                  {problemChange.isPositive ? <ArrowUpIcon /> : <ArrowDownIcon />}
+                  {problemChange.value}%
+                </span>
               </Badge>
-              <span className="text-xs text-gray-500">vs last period</span>
+              <span className="text-[10px] sm:text-xs text-gray-500 hidden sm:inline">vs last period</span>
             </div>
           )}
         </div>
 
-        {/* 5. RATING DISTRIBUTION PIE CHART */}
-        <div 
-          className="flex flex-col rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]"
-        >
-          {/* Top Section - Header */}
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <span className="block text-sm text-gray-500 dark:text-gray-400">
-                Rating Distribution
-              </span>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {positiveRate.toFixed(1)}% positive
-              </p>
-            </div>
-            <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
-              <BarChart3 className="text-gray-600 size-5 dark:text-gray-400" />
-            </div>
-          </div>
-
-          {/* Middle Section - Pie Chart */}
-          <div className="flex-1 flex items-center justify-center">
-            <svg viewBox="0 0 200 200" className="w-full max-w-[120px]">
-              {/* Calculate pie slices */}
-              {(() => {
-                const data = [
-                  { stars: 5, count: metrics.star_5, color: "#22c55e" },
-                  { stars: 4, count: metrics.star_4, color: "#3b82f6" },
-                  { stars: 3, count: metrics.star_3, color: "#eab308" },
-                  { stars: 2, count: metrics.star_2, color: "#f97316" },
-                  { stars: 1, count: metrics.star_1, color: "#ef4444" },
-                ];
-                
-                let cumulativePercent = 0;
-                
-                const getCoordinatesForPercent = (percent: number) => {
-                  const x = Math.cos(2 * Math.PI * percent);
-                  const y = Math.sin(2 * Math.PI * percent);
-                  return [x, y];
-                };
-
-                return data.map((item, index) => {
-                  const percentage = item.count / metrics.total;
-                  if (percentage === 0) return null;
-                  
-                  const [startX, startY] = getCoordinatesForPercent(cumulativePercent);
-                  cumulativePercent += percentage;
-                  const [endX, endY] = getCoordinatesForPercent(cumulativePercent);
-                  
-                  const largeArcFlag = percentage > 0.5 ? 1 : 0;
-                  
-                  const pathData = [
-                    `M 100 100`,
-                    `L ${100 + startX * 80} ${100 + startY * 80}`,
-                    `A 80 80 0 ${largeArcFlag} 1 ${100 + endX * 80} ${100 + endY * 80}`,
-                    `Z`,
-                  ].join(' ');
-
-                  return (
-                    <path
-                      key={index}
-                      d={pathData}
-                      fill={item.color}
-                      className="transition-all duration-300 hover:opacity-80"
-                    />
-                  );
-                });
-              })()}
-              
-              {/* Center circle for donut effect */}
-              <circle cx="100" cy="100" r="55" fill="white" className="dark:fill-gray-800" />
-              
-              {/* Center text */}
-              <text
-                x="100"
-                y="95"
-                textAnchor="middle"
-                className="text-2xl font-bold fill-gray-800 dark:fill-white"
-              >
-                {metrics.total.toLocaleString()}
-              </text>
-              <text
-                x="100"
-                y="112"
-                textAnchor="middle"
-                className="text-xs fill-gray-500 dark:fill-gray-400"
-              >
-                reviews
-              </text>
-            </svg>
-          </div>
-
-          {/* Compact Legend */}
-          <div className="flex justify-between gap-1 w-full text-xs">
-            {[
-              { stars: 5, color: "bg-green-500", count: metrics.star_5 },
-              { stars: 4, color: "bg-blue-500", count: metrics.star_4 },
-              { stars: 3, color: "bg-yellow-500", count: metrics.star_3 },
-              { stars: 2, color: "bg-orange-500", count: metrics.star_2 },
-              { stars: 1, color: "bg-red-500", count: metrics.star_1 },
-            ].map((item) => (
-              <div key={item.stars} className="flex flex-col items-center flex-1">
-                <div className={`w-2.5 h-2.5 ${item.color} rounded-full mb-1`} />
-                <span className="text-gray-600 dark:text-gray-400 font-medium text-xs">{item.stars}★</span>
-                <span className="text-gray-500 dark:text-gray-500 text-xs">{item.count}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );

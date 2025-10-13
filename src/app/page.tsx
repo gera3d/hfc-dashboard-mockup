@@ -525,18 +525,18 @@ export default function Dashboard() {
             badge="Top 10"
             icon={<Trophy className="w-5 h-5" />}
             previewContent={
-              <div className="flex items-center gap-4 text-sm">
-                <div className="text-right">
-                  <div className="font-semibold text-gray-900">
+              <div className="flex items-center gap-2 sm:gap-4 text-sm">
+                <div className="text-right min-w-0">
+                  <div className="font-semibold text-gray-900 text-xs sm:text-sm truncate">
                     {agentMetrics[0]?.agent_name || 'N/A'}
                   </div>
-                  <div className="text-xs text-gray-500">Top Agent</div>
+                  <div className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">Top Agent</div>
                 </div>
-                <div className="text-right">
-                  <div className="font-semibold text-green-600">
+                <div className="text-right min-w-0">
+                  <div className="font-semibold text-green-600 text-xs sm:text-sm">
                     {agentMetrics[0]?.percent_5_star?.toFixed(1) || '0'}%
                   </div>
-                  <div className="text-xs text-gray-500">5-Star Rate</div>
+                  <div className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">5-Star</div>
                 </div>
               </div>
             }
@@ -568,18 +568,18 @@ export default function Dashboard() {
               badge={`${satisfactionTrendData.length} days`}
               icon={<TrendingUp className="w-5 h-5" />}
               previewContent={
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="text-right">
-                    <div className="font-semibold text-gray-900">
+                <div className="flex items-center gap-2 sm:gap-4 text-sm">
+                  <div className="text-right min-w-0">
+                    <div className="font-semibold text-gray-900 text-xs sm:text-sm">
                       {currentMetrics.percent_5_star.toFixed(1)}%
                     </div>
-                    <div className="text-xs text-gray-500">5-Star Rate</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">5-Star</div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-semibold text-indigo-600">
+                  <div className="text-right min-w-0">
+                    <div className="font-semibold text-indigo-600 text-xs sm:text-sm">
                       {currentMetrics.avg_rating.toFixed(2)} ⭐
                     </div>
-                    <div className="text-xs text-gray-500">Avg Rating</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap hidden sm:block">Avg Rating</div>
                   </div>
                 </div>
               }
@@ -598,11 +598,11 @@ export default function Dashboard() {
                 badge={`${departments.length} depts`}
                 icon={<BarChart3 className="w-5 h-5" />}
                 previewContent={
-                  <div className="text-sm text-right">
-                    <div className="font-semibold text-gray-900">
-                      {departments.length} Departments
+                  <div className="text-sm text-right min-w-0">
+                    <div className="font-semibold text-gray-900 text-xs sm:text-sm">
+                      {departments.length}
                     </div>
-                    <div className="text-xs text-gray-500">Active</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">Depts</div>
                   </div>
                 }
               >
@@ -618,11 +618,11 @@ export default function Dashboard() {
                 badge="Critical"
                 icon={<AlertCircle className="w-5 h-5" />}
                 previewContent={
-                  <div className="text-sm text-right">
-                    <div className="font-semibold text-red-600">
+                  <div className="text-sm text-right min-w-0">
+                    <div className="font-semibold text-red-600 text-xs sm:text-sm">
                       {filteredData.filter(r => r.rating <= 2).length}
                     </div>
-                    <div className="text-xs text-gray-500">Low Ratings</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">Low</div>
                   </div>
                 }
               >
@@ -648,18 +648,18 @@ export default function Dashboard() {
               badge={`${agentMetrics.length} agents`}
               icon={<Users className="w-5 h-5" />}
               previewContent={
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="text-right">
-                    <div className="font-semibold text-gray-900">
+                <div className="flex items-center gap-2 sm:gap-4 text-sm">
+                  <div className="text-right min-w-0">
+                    <div className="font-semibold text-gray-900 text-xs sm:text-sm">
                       {agentMetrics.length}
                     </div>
-                    <div className="text-xs text-gray-500">Total Agents</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">Agents</div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-semibold text-indigo-600">
+                  <div className="text-right min-w-0">
+                    <div className="font-semibold text-indigo-600 text-xs sm:text-sm">
                       {agentMetrics.filter(a => a.percent_5_star >= 80).length}
                     </div>
-                    <div className="text-xs text-gray-500">High Performers</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap hidden sm:block">High Perf</div>
                   </div>
                 </div>
               }
@@ -683,18 +683,18 @@ export default function Dashboard() {
               badge={`${filteredData.length} reviews`}
               icon={<FileText className="w-5 h-5" />}
               previewContent={
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="text-right">
-                    <div className="font-semibold text-gray-900">
+                <div className="flex items-center gap-2 sm:gap-4 text-sm">
+                  <div className="text-right min-w-0">
+                    <div className="font-semibold text-gray-900 text-xs sm:text-sm">
                       {filteredData.length}
                     </div>
-                    <div className="text-xs text-gray-500">Total Reviews</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">Total</div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-semibold text-green-600">
+                  <div className="text-right min-w-0">
+                    <div className="font-semibold text-green-600 text-xs sm:text-sm">
                       {filteredData.filter(r => r.rating >= 4).length}
                     </div>
-                    <div className="text-xs text-gray-500">Positive</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">Positive</div>
                   </div>
                 </div>
               }
@@ -712,18 +712,18 @@ export default function Dashboard() {
               badge="With Comments"
               icon={<MessageSquare className="w-5 h-5" />}
               previewContent={
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="text-right">
-                    <div className="font-semibold text-gray-900">
+                <div className="flex items-center gap-2 sm:gap-4 text-sm">
+                  <div className="text-right min-w-0">
+                    <div className="font-semibold text-gray-900 text-xs sm:text-sm">
                       {filteredData.filter(r => r.comment && r.comment.trim()).length}
                     </div>
-                    <div className="text-xs text-gray-500">With Comments</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">Comments</div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-semibold text-purple-600">
+                  <div className="text-right min-w-0">
+                    <div className="font-semibold text-purple-600 text-xs sm:text-sm">
                       {((filteredData.filter(r => r.comment && r.comment.trim()).length / filteredData.length) * 100).toFixed(0)}%
                     </div>
-                    <div className="text-xs text-gray-500">Response Rate</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap hidden sm:block">Response</div>
                   </div>
                 </div>
               }

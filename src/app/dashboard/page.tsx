@@ -50,9 +50,14 @@ import { SourceDistributionChart } from "@/components/dashboard/SourceDistributi
 import { StarDistributionChart } from "@/components/dashboard/StarDistributionChart";
 import EnhancedAgentRankings from "@/components/dashboard/EnhancedAgentRankings";
 import EnhancedMetricsGrid from "@/components/dashboard/EnhancedMetricsGrid";
+import RatingDistributionWidget from "@/components/RatingDistributionWidget";
 import ProblemFeedback from "@/components/dashboard/ProblemFeedback";
 import DepartmentPerformanceRankings from "@/components/dashboard/DepartmentPerformanceRankings";
 import UnifiedAgentRankings from "@/components/dashboard/UnifiedAgentRankings";
+import { 
+  loadDisplayPreferences,
+  type DisplayPreferences 
+} from '@/lib/displayPreferences';
 
 interface Filters {
   dateRange: DateRange
@@ -82,6 +87,13 @@ export default function DashboardPage() {
     selectedSources: [],
     compareMode: false
   });
+
+  // Load display preferences from localStorage
+  const [displayPrefs, setDisplayPrefs] = useState<DisplayPreferences>({ showRatingDistribution: false });
+  
+  useEffect(() => {
+    setDisplayPrefs(loadDisplayPreferences());
+  }, []);
 
   // Handle section toggle with accordion behavior
   const handleSectionToggle = (sectionId: SectionId) => {
@@ -324,6 +336,15 @@ export default function DashboardPage() {
           dateRanges={dateRanges}
         />
 
+        {/* Rating Distribution Widget - Conditionally shown based on settings */}
+        {displayPrefs.showRatingDistribution && (
+          <RatingDistributionWidget 
+            metrics={currentMetrics} 
+            reviews={filteredData}
+            showDonut={true}
+          />
+        )}
+
       {/* KPI Metrics - Enhanced TailAdmin Style */}
       <EnhancedMetricsGrid 
         metrics={currentMetrics} 
@@ -342,33 +363,32 @@ export default function DashboardPage() {
           badge="Top 10"
           icon={<Trophy className="w-5 h-5" />}
           previewContent={
-            <div className="flex items-center gap-3 text-sm">
-              {/* Top Agent Image */}
+            <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 w-full sm:w-auto">
+              {/* Top Agent Avatar */}
               {agentMetrics[0] && (() => {
                 const topAgent = agents.find(a => a.id === agentMetrics[0].agent_id);
                 return topAgent?.image_url ? (
                   <img 
                     src={topAgent.image_url} 
                     alt={agentMetrics[0].agent_name}
-                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                    className="w-9 h-9 rounded-full object-cover border-2 border-indigo-300 flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
                     {agentMetrics[0].agent_name.charAt(0)}
                   </div>
                 );
               })()}
-              <div className="text-right">
-                <div className="font-semibold text-gray-900 dark:text-white">
-                  {agentMetrics[0]?.agent_name || 'N/A'}
+              <div className="text-left min-w-0 flex-1">
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Top Agent
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">Top Agent</div>
-              </div>
-              <div className="text-right">
-                <div className="font-semibold text-green-600">
-                  {agentMetrics[0]?.total || 0} reviews
+                <div className="font-semibold text-gray-900 dark:text-white text-xs truncate">
+                  👑 {agentMetrics[0]?.agent_name || 'N/A'}
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">{agentMetrics[0]?.avg_rating?.toFixed(2) || '0.00'}★</div>
+                <div className="text-xs text-indigo-600 font-medium">
+                  {agentMetrics[0]?.total || 0} reviews · {agentMetrics[0]?.avg_rating?.toFixed(2) || '0.00'}★
+                </div>
               </div>
             </div>
           }
@@ -388,7 +408,7 @@ export default function DashboardPage() {
           badge={`${departments.length} depts`}
           icon={<Building2 className="w-5 h-5" />}
           previewContent={
-            <div className="flex items-center gap-4 text-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 text-sm w-full">
               {/* Top 3 Departments with their top agent */}
               {departments.slice(0, 3).map((dept) => {
                 const deptReviews = filteredData.filter(r => r.department_id === dept.id);
@@ -397,12 +417,12 @@ export default function DashboardPage() {
                 const agent = topAgent ? agents.find(a => a.id === topAgent.agent_id) : null;
                 
                 return (
-                  <div key={dept.id} className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                  <div key={dept.id} className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 w-full sm:w-auto">
                     {agent?.image_url ? (
                       <img 
                         src={agent.image_url} 
                         alt={topAgent?.agent_name || ''}
-                        className="w-9 h-9 rounded-full object-cover border-2 border-indigo-300"
+                        className="w-9 h-9 rounded-full object-cover border-2 border-indigo-300 flex-shrink-0"
                         onError={(e) => {
                           // Fallback if image fails to load
                           const target = e.target as HTMLImageElement;
@@ -413,16 +433,16 @@ export default function DashboardPage() {
                       />
                     ) : null}
                     <div 
-                      className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs"
+                      className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0"
                       style={{ display: agent?.image_url ? 'none' : 'flex' }}
                     >
                       {topAgent?.agent_name?.charAt(0) || dept.name.charAt(0)}
                     </div>
-                    <div className="text-left">
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-left min-w-0 flex-1">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
                         {dept.name}
                       </div>
-                      <div className="font-semibold text-gray-900 dark:text-white text-xs">
+                      <div className="font-semibold text-gray-900 dark:text-white text-xs truncate">
                         👑 {topAgent?.agent_name || 'No agents'}
                       </div>
                       <div className="text-xs text-indigo-600 font-medium">
@@ -450,20 +470,52 @@ export default function DashboardPage() {
           badge="Critical"
           icon={<AlertTriangle className="w-5 h-5" />}
           previewContent={
-            <div className="flex items-center gap-4 text-sm">
-              <div className="text-right">
-                <div className="font-semibold text-red-600">
-                  {filteredData.filter(r => r.rating <= 2).length}
+            (() => {
+              const lowRatings = filteredData.filter(r => r.rating <= 2);
+              const withComments = lowRatings.filter(r => r.comment && r.comment.trim());
+              const mostRecentProblem = withComments.sort((a, b) => 
+                new Date(b.review_ts).getTime() - new Date(a.review_ts).getTime()
+              )[0];
+              
+              return (
+                <div className="flex items-start gap-4">
+                  {/* Stats */}
+                  <div className="flex items-center gap-4 text-sm flex-shrink-0">
+                    <div className="text-right">
+                      <div className="font-semibold text-red-600">
+                        {lowRatings.length}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Low Ratings</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-semibold text-orange-600">
+                        {withComments.length}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">With Comments</div>
+                    </div>
+                  </div>
+                  
+                  {/* Most Recent Issue Snippet */}
+                  {mostRecentProblem && (
+                    <div className="flex-1 min-w-0 border-l border-gray-300 dark:border-gray-700 pl-4">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-2">
+                        <span className="font-semibold">Latest Issue:</span>
+                        <span className="text-red-600 dark:text-red-400">
+                          {mostRecentProblem.rating}★
+                        </span>
+                        <span>•</span>
+                        <span className="font-medium">
+                          Agent {agents.find(a => a.id === mostRecentProblem.agent_id)?.display_name || mostRecentProblem.agent_id}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-700 dark:text-gray-300 italic line-clamp-2">
+                        "{mostRecentProblem.comment}"
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">Low Ratings</div>
-              </div>
-              <div className="text-right">
-                <div className="font-semibold text-orange-600">
-                  {filteredData.filter(r => r.rating <= 2 && r.comment && r.comment.trim()).length}
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">With Comments</div>
-              </div>
-            </div>
+              );
+            })()
           }
         >
           <ProblemFeedback reviews={filteredData} />

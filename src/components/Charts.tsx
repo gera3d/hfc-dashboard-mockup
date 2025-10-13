@@ -318,7 +318,7 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
         {/* Leaderboard Grid */}
         <div className="p-8">
           {/* Top 3 Podium */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             {chartData.slice(0, 3).map((agent, index) => {
               const badges = getBadges(agent, index)
               const trend = getTrendIndicator(agent)
@@ -328,13 +328,10 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
                 { bg: 'bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600', border: 'border-orange-400', text: 'text-orange-600', glow: 'shadow-orange-500/50', statBg: 'bg-gradient-to-br from-orange-50 to-red-50' }
               ][index]
               
-              // Make rank 1 span full width on large screens
-              const colSpan = index === 0 ? 'lg:col-span-12' : 'lg:col-span-6'
-              
               return (
                 <div
                   key={index}
-                  className={`${colSpan} group relative bg-white rounded-2xl border-2 ${rankColors.border} p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl ${rankColors.glow} cursor-pointer ${index === 0 ? 'lg:flex lg:items-center lg:gap-8' : ''}`}
+                  className={`group relative bg-white rounded-2xl border-2 ${rankColors.border} p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl ${rankColors.glow} cursor-pointer`}
                 >
                   {/* Rank Badge */}
                   <div className={`absolute -top-4 -left-4 w-12 h-12 ${rankColors.bg} rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg z-10 ${index === 0 ? 'animate-shine' : ''}`}>
@@ -349,13 +346,13 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
                   )}
                   
                   {/* Agent Avatar */}
-                  <div className={`flex flex-col items-center ${index === 0 ? 'lg:flex-shrink-0' : ''} mb-4`}>
+                  <div className={`flex flex-col items-center mb-4`}>
                     <div className={`relative mb-3 group-hover:scale-110 transition-transform duration-300`}>
                       <div className={`absolute inset-0 ${rankColors.bg} rounded-full blur-xl opacity-50`} />
                       <img 
                         src={agent.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name)}&background=4F46E5&color=fff&size=256`}
                         alt={agent.name}
-                        className={`relative ${index === 0 ? 'w-24 h-24' : 'w-20 h-20'} rounded-full object-cover border-4 ${rankColors.border} shadow-xl`}
+                        className={`relative ${index === 0 ? 'w-24 h-24' : 'w-20 h-20'} rounded-full object-cover object-center border-4 ${rankColors.border} shadow-xl`}
                         onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name)}&background=4F46E5&color=fff&size=256`}
                       />
                     </div>
@@ -370,24 +367,24 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
                   </div>
                   
                   {/* Stats - Premium Design with gradients and icons */}
-                  <div className={`space-y-3 ${index === 0 ? 'lg:flex-1 lg:grid lg:grid-cols-3 lg:gap-4 lg:space-y-0' : ''}`}>
+                  <div className="space-y-3">
                     <div className={`relative overflow-hidden flex items-center justify-between p-4 ${rankColors.statBg} rounded-xl border border-${index === 0 ? 'yellow' : index === 1 ? 'gray' : 'orange'}-200 shadow-md`}>
                       <div className="absolute top-0 right-0 text-6xl opacity-10">⭐</div>
-                      <div className="relative z-10">
+                      <div className="relative z-10 w-full">
                         <span className="text-xs text-[#6B7C93] font-semibold block mb-1">Rating</span>
                         <span className={`${index === 0 ? 'text-2xl' : 'text-lg'} font-bold text-[#0A2540]`}>{agent.rating.toFixed(2)}/5.00</span>
                       </div>
                     </div>
                     <div className={`relative overflow-hidden flex items-center justify-between p-4 ${rankColors.statBg} rounded-xl border border-${index === 0 ? 'yellow' : index === 1 ? 'gray' : 'orange'}-200 shadow-md`}>
                       <div className="absolute top-0 right-0 text-6xl opacity-10">📊</div>
-                      <div className="relative z-10">
+                      <div className="relative z-10 w-full">
                         <span className="text-xs text-[#6B7C93] font-semibold block mb-1">Reviews</span>
                         <span className={`${index === 0 ? 'text-2xl' : 'text-lg'} font-bold text-[#0A2540]`}>{agent.reviews}</span>
                       </div>
                     </div>
                     <div className={`relative overflow-hidden flex items-center justify-between p-4 ${rankColors.statBg} rounded-xl border border-${index === 0 ? 'yellow' : index === 1 ? 'gray' : 'orange'}-200 shadow-md`}>
                       <div className="absolute top-0 right-0 text-6xl opacity-10">💎</div>
-                      <div className="relative z-10">
+                      <div className="relative z-10 w-full">
                         <span className="text-xs text-[#6B7C93] font-semibold block mb-1">5-Star Rate</span>
                         <span className={`${index === 0 ? 'text-2xl' : 'text-lg'} font-bold text-[#0A2540]`}>{agent.percent_5_star.toFixed(0)}%</span>
                       </div>
@@ -395,7 +392,7 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
                   </div>
                   
                   {/* Badges with Tooltips */}
-                  <div className={`mt-4 flex flex-wrap gap-2 ${index === 0 ? 'lg:absolute lg:bottom-6 lg:right-6 lg:max-w-md' : ''}`}>
+                  <div className="mt-4 flex flex-wrap gap-2">
                     {badges.map((badge, i) => (
                       <div 
                         key={i} 
@@ -432,7 +429,7 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
 
           {/* Remaining Agents (4-10) with trend indicators */}
           {chartData.length > 3 && (
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {chartData.slice(3).map((agent, index) => {
                 const actualRank = index + 4
                 const badges = getBadges(agent, actualRank - 1)
@@ -441,62 +438,65 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
                 return (
                   <div
                     key={actualRank}
-                    className="group flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 transition-all duration-200 hover:border-blue-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer"
+                    className="group relative bg-white rounded-xl border border-gray-200 transition-all duration-200 hover:border-blue-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer overflow-hidden"
                   >
-                    {/* Rank */}
-                    <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center shadow-md">
-                      <span className="text-lg font-bold text-gray-600">{actualRank}</span>
-                    </div>
+                    {/* Colorful top bar */}
+                    <div className="h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
                     
-                    {/* Avatar */}
-                    <div className="flex-shrink-0">
-                      <img 
-                        src={agent.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name)}&background=4F46E5&color=fff&size=128`}
-                        alt={agent.name}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md group-hover:scale-110 transition-transform"
-                        onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name)}&background=4F46E5&color=fff&size=128`}
-                      />
-                    </div>
-                    
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline gap-2 mb-1">
-                        <h4 className="font-semibold text-[#0A2540] text-base truncate">{agent.name}</h4>
-                        <span className="text-xs text-[#6B7C93] truncate">{agent.department}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-sm">
-                        <span className="font-medium text-[#0A2540]">{agent.rating.toFixed(2)} ⭐</span>
-                        <span className="text-[#8896AB]">•</span>
-                        <span className="text-[#6B7C93]">{agent.reviews} reviews</span>
-                        <span className="text-[#8896AB]">•</span>
-                        <span className="text-[#6B7C93]">{agent.percent_5_star.toFixed(0)}% 5-star</span>
-                        <span className="text-[#8896AB]">•</span>
-                        {/* Trend Indicator */}
-                        <span className={`${trend.bg} px-2 py-0.5 rounded-full flex items-center gap-1`}>
-                          <span className="text-xs">{trend.icon}</span>
-                          <span className={`text-xs font-semibold ${trend.color}`}>{trend.text}</span>
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {/* Badges with Tooltips */}
-                    <div className="flex-shrink-0 flex gap-2">
-                      {badges.slice(0, 2).map((badge, i) => (
-                        <div 
-                          key={i} 
-                          className={`group/badge relative ${badge.color} text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md hover:scale-110 transition-transform cursor-help`}
-                          title={badge.tooltip}
-                        >
-                          <span>{badge.icon}</span>
-                          <span className="hidden sm:inline">{badge.label}</span>
-                          
-                          {/* Tooltip on Hover */}
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover/badge:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl z-50">
-                            {badge.tooltip}
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900" />
+                    {/* Card Content */}
+                    <div className="p-4">
+                      {/* Avatar and Rank */}
+                      <div className="flex justify-center mb-3">
+                        <div className="relative">
+                          <img 
+                            src={agent.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name)}&background=4F46E5&color=fff&size=128`}
+                            alt={agent.name}
+                            className="w-16 h-16 rounded-full object-cover object-center border-2 border-gray-200 shadow-md"
+                            onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.name)}&background=4F46E5&color=fff&size=128`}
+                          />
+                          {/* Rank badge */}
+                          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center border-2 border-white shadow-md">
+                            <span className="text-xs font-bold text-white">{actualRank}</span>
                           </div>
                         </div>
-                      ))}
+                      </div>
+                      
+                      {/* Name and Department */}
+                      <div className="text-center mb-3">
+                        <h4 className="font-semibold text-[#0A2540] text-sm truncate">{agent.name}</h4>
+                        <p className="text-xs text-[#6B7C93] truncate">{agent.department}</p>
+                      </div>
+                      
+                      {/* Stats Grid */}
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div>
+                          <div className="text-[10px] text-[#6B7C93] mb-0.5">Reviews</div>
+                          <div className="text-sm font-bold text-indigo-600">{agent.reviews}</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-[#6B7C93] mb-0.5">Rating</div>
+                          <div className="text-sm font-bold text-indigo-600">{agent.rating.toFixed(2)}★</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-[#6B7C93] mb-0.5">5-Star</div>
+                          <div className="text-sm font-bold text-indigo-600">{agent.percent_5_star.toFixed(0)}%</div>
+                        </div>
+                      </div>
+                      
+                      {/* Badges - Show only 1-2 most important */}
+                      {badges.length > 0 && (
+                        <div className="mt-3 flex justify-center gap-1">
+                          {badges.slice(0, 1).map((badge, i) => (
+                            <div 
+                              key={i} 
+                              className={`${badge.color} text-white text-[10px] font-semibold px-2 py-1 rounded-full flex items-center gap-0.5 shadow-sm`}
+                              title={badge.tooltip}
+                            >
+                              <span className="text-xs">{badge.icon}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )

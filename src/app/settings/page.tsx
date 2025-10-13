@@ -20,6 +20,11 @@ import {
 } from '@/lib/localStorage';
 import { AgentDepartmentManager } from '@/components/AgentDepartmentManager';
 import type { Agent, Department } from '@/data/dataService';
+import { 
+  loadDisplayPreferences, 
+  saveDisplayPreferences,
+  type DisplayPreferences 
+} from '@/lib/displayPreferences';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -29,6 +34,12 @@ export default function SettingsPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [showAgentManager, setShowAgentManager] = useState(false);
+  const [displayPrefs, setDisplayPrefs] = useState<DisplayPreferences>({ showRatingDistribution: false });
+
+  // Load display preferences
+  useEffect(() => {
+    setDisplayPrefs(loadDisplayPreferences());
+  }, []);
 
   // Load initial data
   useEffect(() => {
@@ -294,6 +305,40 @@ export default function SettingsPage() {
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Display Preferences Section */}
+        <div className="bg-white rounded-xl border-2 border-gray-200 shadow-sm mb-6">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900">Display Preferences</h2>
+            <p className="text-sm text-gray-500 mt-1">Customize how charts and widgets are displayed</p>
+          </div>
+          
+          <div className="p-6 space-y-4">
+            {/* Rating Distribution Widget Toggle */}
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 mb-1">Rating Distribution Widget</h3>
+                <p className="text-sm text-gray-600">Show the entire rating distribution section (donut chart, legend, and bar) on the dashboard</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={displayPrefs.showRatingDistribution}
+                  onChange={(e) => {
+                    const newPrefs = { ...displayPrefs, showRatingDistribution: e.target.checked };
+                    setDisplayPrefs(newPrefs);
+                    saveDisplayPreferences(newPrefs);
+                  }}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <span className="ml-3 text-sm font-medium text-gray-900">
+                  {displayPrefs.showRatingDistribution ? 'On' : 'Off'}
+                </span>
+              </label>
             </div>
           </div>
         </div>
