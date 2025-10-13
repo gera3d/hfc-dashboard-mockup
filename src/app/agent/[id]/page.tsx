@@ -156,7 +156,7 @@ export default function AgentDetail({ params }: AgentDetailProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Hero Header */}
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white">
+      <div className="bg-gradient-to-r from-[#0066cc] via-[#0077dd] to-[#0066cc] text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <button
             onClick={() => router.push('/dashboard')}
@@ -171,16 +171,16 @@ export default function AgentDetail({ params }: AgentDetailProps) {
             <div className="relative">
               <div className="w-32 h-32 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-white">
                 <img
-                  src={agent.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.display_name)}&background=4F46E5&color=fff&size=256`}
+                  src={agent.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.display_name)}&background=0066cc&color=fff&size=256`}
                   alt={agent.display_name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.display_name)}&background=4F46E5&color=fff&size=256`;
+                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.display_name)}&background=0066cc&color=fff&size=256`;
                   }}
                 />
               </div>
               {/* Lifetime 5-star badge */}
-              <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-yellow-900 rounded-full px-3 py-1 text-xs font-bold shadow-lg flex items-center gap-1">
+              <div className="absolute -bottom-2 -right-2 bg-[#00ca6f] text-white rounded-full px-3 py-1 text-xs font-bold shadow-lg flex items-center gap-1">
                 <Star className="w-3 h-3 fill-current" />
                 {lifetimeMetrics.avg_rating.toFixed(2)}
               </div>
@@ -197,21 +197,28 @@ export default function AgentDetail({ params }: AgentDetailProps) {
               
               {/* Lifetime Stats Row */}
               <div className="grid grid-cols-4 gap-4">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                  <div className="text-3xl font-bold">{lifetimeMetrics.total}</div>
-                  <div className="text-sm text-white/80">Total Reviews</div>
+                {/* Total Reviews */}
+                <div className="bg-white rounded-2xl p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                  <div className="text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeMetrics.total.toLocaleString()}</div>
+                  <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Total Reviews</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                  <div className="text-3xl font-bold">{lifetimeMetrics.avg_rating.toFixed(2)}★</div>
-                  <div className="text-sm text-white/80">Lifetime Avg</div>
+                {/* Lifetime Avg */}
+                <div className="bg-white rounded-2xl p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                  <div className="text-4xl font-black tabular-nums mb-1 flex items-baseline gap-1 text-[#0066cc]">
+                    {lifetimeMetrics.avg_rating.toFixed(2)}
+                    <Star className="size-5 fill-[#00ca6f] text-[#00ca6f] mb-1" />
+                  </div>
+                  <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Lifetime Avg</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                  <div className="text-3xl font-bold">{lifetimeMetrics.percent_5_star.toFixed(0)}%</div>
-                  <div className="text-sm text-white/80">5-Star Rate</div>
+                {/* 5-Star Rate */}
+                <div className="bg-white rounded-2xl p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                  <div className="text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeMetrics.percent_5_star.toFixed(0)}%</div>
+                  <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">5-Star Rate</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                  <div className="text-3xl font-bold">{lifetimeReviews.filter(r => r.rating >= 4).length}</div>
-                  <div className="text-sm text-white/80">4-5 Star Reviews</div>
+                {/* 4-5 Star Reviews */}
+                <div className="bg-white rounded-2xl p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                  <div className="text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeReviews.filter(r => r.rating >= 4).length.toLocaleString()}</div>
+                  <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">4-5 Star Reviews</div>
                 </div>
               </div>
             </div>
@@ -222,19 +229,19 @@ export default function AgentDetail({ params }: AgentDetailProps) {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Date Range Selector */}
-        <div className="bg-white rounded-xl shadow-sm border p-4 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-semibold text-gray-700">Performance Period:</span>
-              <div className="flex gap-2">
+        <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200/80 p-6 mb-6 hover:shadow-xl transition-shadow">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
+              <span className="text-sm font-bold text-gray-700 uppercase tracking-wide">Performance Period:</span>
+              <div className="flex gap-2 flex-wrap">
                 {Object.entries(dateRanges).map(([key, range]) => (
                   <button
                     key={key}
                     onClick={() => setSelectedDateRange(range)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
                       selectedDateRange.label === range.label
-                        ? 'bg-indigo-600 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-300/50 scale-105'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
                     }`}
                   >
                     {range.label}
@@ -242,7 +249,7 @@ export default function AgentDetail({ params }: AgentDetailProps) {
                 ))}
               </div>
             </div>
-            <div className="text-sm font-medium text-gray-600">
+            <div className="text-sm font-bold text-gray-600 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
               {agentReviews.length} reviews in selected period
             </div>
           </div>
@@ -251,58 +258,172 @@ export default function AgentDetail({ params }: AgentDetailProps) {
         {/* Key Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Average Rating Card */}
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-600 uppercase">Average Rating</h3>
-              <Star className="w-5 h-5 text-yellow-400 fill-current" />
+          <div className={`group relative flex flex-col rounded-2xl border-2 p-7 transition-all duration-500 cursor-pointer overflow-hidden
+            hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.99]
+            ${currentMetrics.avg_rating >= 4.8
+              ? 'border-amber-400/80 bg-gradient-to-br from-amber-100/80 via-white to-yellow-100/60 shadow-2xl shadow-amber-300/80'
+              : 'border-gray-300/70 bg-white shadow-lg hover:shadow-xl'
+          }`}>
+            {/* Premium gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/30 to-transparent pointer-events-none" />
+            
+            {/* Accent bar */}
+            <div className={`absolute top-0 left-0 right-0 h-2 transition-all duration-700 ${
+              currentMetrics.avg_rating >= 4.8 
+                ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 shadow-lg shadow-amber-500/60' 
+                : 'bg-gradient-to-r from-amber-300 via-amber-400 to-amber-300 opacity-0 group-hover:opacity-100'
+            }`} />
+            
+            <div className="flex items-center justify-between mb-5 relative z-10">
+              <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wider">Average Rating</h3>
+              <div className={`flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-500 ${
+                currentMetrics.avg_rating >= 4.8 
+                  ? 'bg-gradient-to-br from-amber-500 via-amber-600 to-yellow-600 shadow-xl shadow-amber-400/70 scale-105' 
+                  : 'bg-gradient-to-br from-amber-100 to-amber-100 group-hover:scale-105 group-hover:shadow-md'
+              }`}>
+                <Star className={`size-7 transition-all duration-500 ${
+                  currentMetrics.avg_rating >= 4.8 
+                    ? 'text-white fill-white drop-shadow-lg' 
+                    : 'text-amber-700 fill-amber-700'
+                }`} strokeWidth={2.5} />
+              </div>
             </div>
-            <div className="flex items-end gap-2 mb-2">
-              <div className="text-4xl font-bold text-gray-900">{currentMetrics.avg_rating.toFixed(2)}</div>
-              <div className="text-lg text-gray-400 mb-1">/ 5.00</div>
+            
+            <div className="flex-1 relative z-10">
+              <div className="flex items-end gap-2 mb-2">
+                <div className={`text-5xl font-black tabular-nums leading-none ${
+                  currentMetrics.avg_rating >= 4.8 
+                    ? 'text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-600 drop-shadow-sm' 
+                    : 'text-gray-900'
+                }`}>
+                  {currentMetrics.avg_rating.toFixed(2)}
+                </div>
+                <div className="text-xl font-semibold text-gray-400 mb-2">/ 5.00</div>
+              </div>
             </div>
+            
             {trends.rating.value !== 0 && (
-              <div className={`flex items-center gap-1 text-sm font-medium ${trends.rating.isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                {trends.rating.isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                {Math.abs(trends.rating.value).toFixed(2)} vs previous period
+              <div className={`flex items-center gap-2 mt-4 pt-4 border-t border-gray-100 relative z-10 text-sm font-bold ${
+                trends.rating.isPositive ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {trends.rating.isPositive ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                <span className={trends.rating.isPositive ? 'text-green-600' : 'text-red-600'}>
+                  {Math.abs(trends.rating.value).toFixed(2)}
+                </span>
+                <span className="text-gray-500 font-semibold">vs previous period</span>
               </div>
             )}
           </div>
 
           {/* Review Volume Card */}
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-600 uppercase">Review Volume</h3>
-              <Award className="w-5 h-5 text-indigo-600" />
+          <div className={`group relative flex flex-col rounded-2xl border-2 p-7 transition-all duration-500 cursor-pointer overflow-hidden
+            hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.99]
+            ${trends.volume.isPositive && Math.abs(trends.volume.value) >= 10
+              ? 'border-indigo-400/80 bg-gradient-to-br from-indigo-100/80 via-white to-purple-100/60 shadow-2xl shadow-indigo-300/80'
+              : 'border-gray-300/70 bg-white shadow-lg hover:shadow-xl'
+          }`}>
+            {/* Premium gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/30 to-transparent pointer-events-none" />
+            
+            {/* Accent bar */}
+            <div className={`absolute top-0 left-0 right-0 h-2 transition-all duration-700 ${
+              trends.volume.isPositive && Math.abs(trends.volume.value) >= 10
+                ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 shadow-lg shadow-indigo-500/60' 
+                : 'bg-gradient-to-r from-indigo-300 via-indigo-400 to-indigo-300 opacity-0 group-hover:opacity-100'
+            }`} />
+            
+            <div className="flex items-center justify-between mb-5 relative z-10">
+              <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wider">Review Volume</h3>
+              <div className={`flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-500 ${
+                trends.volume.isPositive && Math.abs(trends.volume.value) >= 10
+                  ? 'bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 shadow-xl shadow-indigo-400/70 scale-105' 
+                  : 'bg-gradient-to-br from-indigo-100 to-indigo-100 group-hover:scale-105 group-hover:shadow-md'
+              }`}>
+                <Award className={`size-7 transition-all duration-500 ${
+                  trends.volume.isPositive && Math.abs(trends.volume.value) >= 10
+                    ? 'text-white drop-shadow-lg' 
+                    : 'text-indigo-700'
+                }`} strokeWidth={2.5} />
+              </div>
             </div>
-            <div className="flex items-end gap-2 mb-2">
-              <div className="text-4xl font-bold text-gray-900">{currentMetrics.total}</div>
-              <div className="text-lg text-gray-400 mb-1">reviews</div>
+            
+            <div className="flex-1 relative z-10">
+              <div className="flex items-end gap-2 mb-2">
+                <div className={`text-5xl font-black tabular-nums leading-none ${
+                  trends.volume.isPositive && Math.abs(trends.volume.value) >= 10
+                    ? 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 drop-shadow-sm' 
+                    : 'text-gray-900'
+                }`}>
+                  {currentMetrics.total}
+                </div>
+                <div className="text-xl font-semibold text-gray-400 mb-2">reviews</div>
+              </div>
             </div>
+            
             {trends.volume.value !== 0 && (
-              <div className={`flex items-center gap-1 text-sm font-medium ${trends.volume.isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                {trends.volume.isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                {Math.abs(trends.volume.value)} vs previous period
+              <div className={`flex items-center gap-2 mt-4 pt-4 border-t border-gray-100 relative z-10 text-sm font-bold ${
+                trends.volume.isPositive ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {trends.volume.isPositive ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                <span className={trends.volume.isPositive ? 'text-green-600' : 'text-red-600'}>
+                  {Math.abs(trends.volume.value)}
+                </span>
+                <span className="text-gray-500 font-semibold">vs previous period</span>
               </div>
             )}
           </div>
 
           {/* 5-Star Rate Card */}
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-600 uppercase">5-Star Rate</h3>
+          <div className={`group relative flex flex-col rounded-2xl border-2 p-7 transition-all duration-500 cursor-pointer overflow-hidden
+            hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.99]
+            ${currentMetrics.percent_5_star >= 90
+              ? 'border-green-400/80 bg-gradient-to-br from-green-100/80 via-white to-emerald-100/60 shadow-2xl shadow-green-300/80'
+              : 'border-gray-300/70 bg-white shadow-lg hover:shadow-xl'
+          }`}>
+            {/* Premium gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/30 to-transparent pointer-events-none" />
+            
+            {/* Accent bar */}
+            <div className={`absolute top-0 left-0 right-0 h-2 transition-all duration-700 ${
+              currentMetrics.percent_5_star >= 90
+                ? 'bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-500 shadow-lg shadow-green-500/60' 
+                : 'bg-gradient-to-r from-green-300 via-green-400 to-green-300 opacity-0 group-hover:opacity-100'
+            }`} />
+            
+            <div className="flex items-center justify-between mb-5 relative z-10">
+              <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wider">5-Star Rate</h3>
               <div className="flex items-center gap-0.5">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
+                  <Star key={i} className={`w-4 h-4 transition-all duration-500 ${
+                    currentMetrics.percent_5_star >= 90
+                      ? 'text-green-600 fill-green-600'
+                      : 'text-yellow-400 fill-yellow-400'
+                  }`} />
                 ))}
               </div>
             </div>
-            <div className="flex items-end gap-2 mb-2">
-              <div className="text-4xl font-bold text-gray-900">{currentMetrics.percent_5_star.toFixed(1)}%</div>
+            
+            <div className="flex-1 relative z-10">
+              <div className="flex items-baseline gap-1 mb-2">
+                <div className={`text-5xl font-black tabular-nums leading-none ${
+                  currentMetrics.percent_5_star >= 90
+                    ? 'text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-emerald-600 to-green-600 drop-shadow-sm' 
+                    : 'text-gray-900'
+                }`}>
+                  {currentMetrics.percent_5_star.toFixed(1)}%
+                </div>
+              </div>
             </div>
+            
             {trends.fiveStar.value !== 0 && (
-              <div className={`flex items-center gap-1 text-sm font-medium ${trends.fiveStar.isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                {trends.fiveStar.isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                {Math.abs(trends.fiveStar.value).toFixed(1)}% vs previous period
+              <div className={`flex items-center gap-2 mt-4 pt-4 border-t border-gray-100 relative z-10 text-sm font-bold ${
+                trends.fiveStar.isPositive ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {trends.fiveStar.isPositive ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                <span className={trends.fiveStar.isPositive ? 'text-green-600' : 'text-red-600'}>
+                  {Math.abs(trends.fiveStar.value).toFixed(1)}%
+                </span>
+                <span className="text-gray-500 font-semibold">vs previous period</span>
               </div>
             )}
           </div>
@@ -311,30 +432,30 @@ export default function AgentDetail({ params }: AgentDetailProps) {
         {/* Rating Distribution & Problem Reviews */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Rating Distribution */}
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Rating Distribution</h3>
+          <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200/80 p-7 hover:shadow-xl transition-all duration-300">
+            <h3 className="text-xl font-black text-gray-900 mb-6 uppercase tracking-wide">Rating Distribution</h3>
             <div className="space-y-4">
               {[5, 4, 3, 2, 1].map((rating) => (
                 <div key={rating} className="flex items-center gap-4">
-                  <div className="flex items-center gap-1 w-16">
-                    <span className="text-sm font-medium text-gray-700">{rating}</span>
-                    <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                  <div className="flex items-center gap-1.5 w-16">
+                    <span className="text-sm font-bold text-gray-900">{rating}</span>
+                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                   </div>
-                  <div className="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="flex-1 h-8 bg-gray-100 rounded-full overflow-hidden shadow-inner">
                     <div 
-                      className={`h-full transition-all duration-500 ${
-                        rating === 5 ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' :
-                        rating === 4 ? 'bg-gradient-to-r from-lime-400 to-lime-500' :
-                        rating === 3 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' :
-                        rating === 2 ? 'bg-gradient-to-r from-orange-400 to-orange-600' :
-                        'bg-gradient-to-r from-red-400 to-red-600'
+                      className={`h-full transition-all duration-700 shadow-md ${
+                        rating === 5 ? 'bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600' :
+                        rating === 4 ? 'bg-gradient-to-r from-lime-400 via-lime-500 to-lime-500' :
+                        rating === 3 ? 'bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-500' :
+                        rating === 2 ? 'bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600' :
+                        'bg-gradient-to-r from-red-400 via-red-500 to-red-600'
                       }`}
                       style={{ width: `${ratingDistribution.percentages[rating as keyof typeof ratingDistribution.percentages]}%` }}
                     />
                   </div>
-                  <div className="w-20 text-right">
-                    <span className="text-sm font-bold text-gray-900">{ratingDistribution.counts[rating as keyof typeof ratingDistribution.counts]}</span>
-                    <span className="text-xs text-gray-500 ml-1">({ratingDistribution.percentages[rating as keyof typeof ratingDistribution.percentages].toFixed(0)}%)</span>
+                  <div className="w-24 text-right">
+                    <span className="text-base font-black text-gray-900">{ratingDistribution.counts[rating as keyof typeof ratingDistribution.counts]}</span>
+                    <span className="text-sm text-gray-500 font-semibold ml-2">({ratingDistribution.percentages[rating as keyof typeof ratingDistribution.percentages].toFixed(0)}%)</span>
                   </div>
                 </div>
               ))}
@@ -342,39 +463,41 @@ export default function AgentDetail({ params }: AgentDetailProps) {
           </div>
 
           {/* Problem Reviews */}
-          <div className="bg-white rounded-xl shadow-sm border p-6">
+          <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200/80 p-7 hover:shadow-xl transition-all duration-300">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Problem Reviews</h3>
+              <h3 className="text-xl font-black text-gray-900 uppercase tracking-wide">Problem Reviews</h3>
               {problemCount > 0 && (
-                <div className="flex items-center gap-1 bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-semibold">
-                  <AlertTriangle className="w-4 h-4" />
+                <div className="flex items-center gap-1.5 bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-black shadow-md">
+                  <AlertTriangle className="w-5 h-5" />
                   {problemCount}
                 </div>
               )}
             </div>
             <div className="space-y-3">
               {problemCount === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Award className="w-12 h-12 mx-auto mb-3 text-green-500" />
-                  <p className="font-medium">No problem reviews!</p>
-                  <p className="text-sm">Excellent performance in selected period</p>
+                <div className="text-center py-12 text-gray-500">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl shadow-green-300/50">
+                    <Award className="w-10 h-10 text-white" strokeWidth={2.5} />
+                  </div>
+                  <p className="font-black text-gray-900 text-lg mb-1">No problem reviews!</p>
+                  <p className="text-sm font-semibold text-gray-500">Excellent performance in selected period</p>
                 </div>
               ) : (
                 agentReviews
                   .filter(r => r.rating <= 2)
                   .slice(0, 5)
                   .map(review => (
-                    <div key={review.id} className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div key={review.id} className="p-4 bg-red-50 border-2 border-red-200 rounded-xl hover:shadow-md transition-shadow">
                       <div className="flex items-start gap-3">
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <Star className="w-4 h-4 text-red-500 fill-current" />
-                          <span className="text-sm font-bold text-red-700">{review.rating}</span>
+                        <div className="flex items-center gap-1.5 mt-0.5 bg-red-600 text-white px-2 py-1 rounded-lg shadow-md">
+                          <Star className="w-4 h-4 fill-current" />
+                          <span className="text-sm font-black">{review.rating}</span>
                         </div>
                         <div className="flex-1">
-                          <div className="text-xs text-gray-600 mb-1">
+                          <div className="text-xs font-semibold text-gray-600 mb-2">
                             {new Date(review.review_ts).toLocaleDateString()} • {review.source}
                           </div>
-                          <div className="text-sm text-gray-900">
+                          <div className="text-sm font-medium text-gray-900">
                             {review.comment || 'No comment provided'}
                           </div>
                         </div>
@@ -387,14 +510,14 @@ export default function AgentDetail({ params }: AgentDetailProps) {
         </div>
 
         {/* Performance Chart */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Performance Trend</h3>
+        <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200/80 p-7 mb-8 hover:shadow-xl transition-all duration-300">
+          <h3 className="text-xl font-black text-gray-900 mb-6 uppercase tracking-wide">Performance Trend</h3>
           <TimeSeriesChart data={dailyMetrics} />
         </div>
 
         {/* Reviews Table */}
-        <div className="bg-white rounded-xl shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">All Reviews</h3>
+        <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200/80 p-7 hover:shadow-xl transition-all duration-300">
+          <h3 className="text-xl font-black text-gray-900 mb-6 uppercase tracking-wide">All Reviews</h3>
           <ReviewTable data={agentReviews} agents={agents} departments={departments} />
         </div>
       </div>
