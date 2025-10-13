@@ -110,6 +110,12 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
       return;
     }
     
+    // Reset to 0 first for the animation effect
+    setDisplayedFiveStarRate(0);
+    setDisplayedTotal(0);
+    setDisplayedAvgRating(0);
+    setDisplayedProblems(0);
+    
     const duration = 1800; // Slightly longer for more elegance
     const steps = 100; // More steps for ultra-smooth motion
     const stepDuration = duration / steps;

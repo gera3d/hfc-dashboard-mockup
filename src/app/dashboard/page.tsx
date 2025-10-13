@@ -39,6 +39,7 @@ import { AgentTable, ReviewTable, CustomerFeedbackTable } from '@/components/Dat
 import TimePeriodSelector from '@/components/TimePeriodSelector';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
 import DashboardLayout from '@/components/DashboardLayout';
+import { AnimatedPreview } from '@/components/AnimatedPreview';
 
 // TailAdmin dashboard components
 import { ReviewMetrics } from "@/components/dashboard/ReviewMetrics";
@@ -363,37 +364,69 @@ export default function DashboardPage() {
           badge="Top 10"
           icon={<Trophy className="w-5 h-5" />}
           previewContent={
-            <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 w-full sm:w-auto">
-              {/* Top Agent Avatar */}
-              {agentMetrics[0] && (() => {
-                const topAgent = agents.find(a => a.id === agentMetrics[0].agent_id);
-                return topAgent?.image_url ? (
-                  <img 
-                    src={topAgent.image_url} 
-                    alt={agentMetrics[0].agent_name}
-                    className="w-9 h-9 rounded-full object-cover border-2 border-indigo-300 flex-shrink-0"
-                  />
-                ) : (
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
-                    {agentMetrics[0].agent_name.charAt(0)}
+            agentMetrics[0] && (
+              <AnimatedPreview key={`preview-agent-${filters.dateRange.label}`} direction="left">
+                {(() => {
+                  const topAgent = agents.find(a => a.id === agentMetrics[0].agent_id);
+                  const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(agentMetrics[0].agent_name)}&background=0066cc&color=fff&size=256`;
+                  
+                  return (
+                    <button 
+                      className="w-full rounded-xl border-2 border-yellow-400 bg-white hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 relative overflow-hidden cursor-pointer text-left"
+                    >
+                  {/* Thin gold accent strip at top */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 to-amber-500 z-0" />
+                  
+                  <div className="flex items-center gap-3 p-3 relative">
+                    {/* Avatar with rank badge */}
+                    <div className="relative flex-shrink-0">
+                      <div className="h-16 w-16 rounded-full border-2 border-yellow-400 shadow-md bg-white overflow-hidden">
+                        <img
+                          src={topAgent?.image_url || fallbackUrl}
+                          alt={agentMetrics[0].agent_name}
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = fallbackUrl;
+                          }}
+                        />
+                      </div>
+                      {/* Rank badge - white text */}
+                      <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-yellow-500 flex items-center justify-center text-sm font-black text-white border-2 border-white shadow-lg">
+                        1
+                      </div>
+                    </div>
+                    
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[10px] font-bold text-[#0066cc] uppercase tracking-wide mb-0.5">
+                        👑 TOP AGENT
+                      </div>
+                      <div className="font-black text-gray-900 text-base truncate mb-0.5">
+                        {agentMetrics[0].agent_name}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs font-bold">
+                        <span className="text-[#0066cc]">{agentMetrics[0].total} reviews</span>
+                        <span className="text-gray-400">•</span>
+                        <span className="text-[#0066cc]">{agentMetrics[0].avg_rating.toFixed(2)}★</span>
+                      </div>
+                      {/* Rating bar */}
+                      <div className="mt-1.5 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-[#00ca6f]" style={{ width: `${agentMetrics[0].percent_5_star}%` }} />
+                      </div>
+                    </div>
                   </div>
-                );
-              })()}
-              <div className="text-left min-w-0 flex-1">
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Top Agent
-                </div>
-                <div className="font-semibold text-gray-900 dark:text-white text-xs truncate">
-                  👑 {agentMetrics[0]?.agent_name || 'N/A'}
-                </div>
-                <div className="text-xs text-indigo-600 font-medium">
-                  {agentMetrics[0]?.total || 0} reviews · {agentMetrics[0]?.avg_rating?.toFixed(2) || '0.00'}★
-                </div>
-              </div>
-            </div>
+                </button>
+              );
+            })()}
+              </AnimatedPreview>
+            )
           }
         >
-          <UnifiedAgentRankings data={agentMetrics} limit={10} />
+          <UnifiedAgentRankings 
+            key={`agent-rankings-${filters.dateRange.label}`}
+            data={agentMetrics} 
+            limit={10} 
+          />
         </CollapsibleSection>
       </div>
 
@@ -408,54 +441,84 @@ export default function DashboardPage() {
           badge={`${departments.length} depts`}
           icon={<Building2 className="w-5 h-5" />}
           previewContent={
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 text-sm w-full">
-              {/* Top 3 Departments with their top agent */}
-              {departments.slice(0, 3).map((dept) => {
+            <AnimatedPreview key={`dept-preview-${filters.dateRange.label}`} direction="right">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 text-sm w-full">
+                {/* Top 3 Departments with their top agent */}
+                {departments.slice(0, 3).map((dept, index) => {
                 const deptReviews = filteredData.filter(r => r.department_id === dept.id);
                 const deptAgentMetrics = getAgentMetrics(deptReviews, agents, departments);
                 const topAgent = deptAgentMetrics[0];
                 const agent = topAgent ? agents.find(a => a.id === topAgent.agent_id) : null;
+                const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(topAgent?.agent_name || dept.name)}&background=0066cc&color=fff&size=256`;
+                
+                // Determine border and accent colors based on rank
+                const rankColors = [
+                  { border: 'border-yellow-400', accent: 'from-yellow-400 to-amber-500', badge: 'bg-yellow-500' },
+                  { border: 'border-gray-400', accent: 'from-gray-400 to-gray-500', badge: 'bg-gray-400' },
+                  { border: 'border-orange-400', accent: 'from-orange-400 to-orange-600', badge: 'bg-orange-500' }
+                ];
+                const colors = rankColors[index] || rankColors[0];
                 
                 return (
-                  <div key={dept.id} className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 w-full sm:w-auto">
-                    {agent?.image_url ? (
-                      <img 
-                        src={agent.image_url} 
-                        alt={topAgent?.agent_name || ''}
-                        className="w-9 h-9 rounded-full object-cover border-2 border-indigo-300 flex-shrink-0"
-                        onError={(e) => {
-                          // Fallback if image fails to load
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const fallback = target.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                    <div 
-                      className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0"
-                      style={{ display: agent?.image_url ? 'none' : 'flex' }}
-                    >
-                      {topAgent?.agent_name?.charAt(0) || dept.name.charAt(0)}
+                  <button 
+                    key={`preview-dept-${dept.id}-${filters.dateRange.label}-${index}`}
+                    className={`w-full sm:flex-1 rounded-xl border-2 ${colors.border} bg-white hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 relative overflow-hidden cursor-pointer text-left`}
+                  >
+                    {/* Thin accent strip at top */}
+                    <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${colors.accent} z-0`} />
+                    
+                    <div className="flex items-center gap-3 p-3 relative">
+                      {/* Avatar with rank badge */}
+                      <div className="relative flex-shrink-0">
+                        <div className={`h-16 w-16 rounded-full border-2 ${colors.border} shadow-md bg-white overflow-hidden`}>
+                          <img
+                            src={agent?.image_url || fallbackUrl}
+                            alt={topAgent?.agent_name || dept.name}
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src = fallbackUrl;
+                            }}
+                          />
+                        </div>
+                        {/* Rank badge */}
+                        <div className={`absolute -bottom-1 -right-1 h-7 w-7 rounded-full ${colors.badge} flex items-center justify-center text-sm font-black text-white border-2 border-white shadow-lg`}>
+                          {index + 1}
+                        </div>
+                      </div>
+                      
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[10px] font-bold text-[#0066cc] uppercase tracking-wide mb-0.5 truncate">
+                          {dept.name}
+                        </div>
+                        <div className="font-black text-gray-900 dark:text-white text-base truncate mb-0.5">
+                          {topAgent?.agent_name || 'No agents'}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs font-bold">
+                          <span className="text-[#0066cc]">{topAgent?.total || 0} reviews</span>
+                        </div>
+                        {/* Rating bar */}
+                        {topAgent && (
+                          <div className="mt-1.5 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-[#00ca6f]" style={{ width: `${topAgent.percent_5_star}%` }} />
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-left min-w-0 flex-1">
-                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                        {dept.name}
-                      </div>
-                      <div className="font-semibold text-gray-900 dark:text-white text-xs truncate">
-                        👑 {topAgent?.agent_name || 'No agents'}
-                      </div>
-                      <div className="text-xs text-indigo-600 font-medium">
-                        {topAgent?.total || 0} reviews
-                      </div>
-                    </div>
-                  </div>
+                  </button>
                 );
               })}
-            </div>
+              </div>
+            </AnimatedPreview>
           }
         >
-          <DepartmentPerformanceRankings reviews={filteredData} departments={departments} agents={agents} limit={10} />
+          <DepartmentPerformanceRankings 
+            key={`dept-rankings-${filters.dateRange.label}`}
+            reviews={filteredData} 
+            departments={departments} 
+            agents={agents} 
+            limit={10} 
+          />
         </CollapsibleSection>
       </div>
 
@@ -481,34 +544,34 @@ export default function DashboardPage() {
                 <div className="flex items-start gap-4">
                   {/* Stats */}
                   <div className="flex items-center gap-4 text-sm flex-shrink-0">
-                    <div className="text-right">
-                      <div className="font-semibold text-red-600">
+                    <div className="text-center px-3 py-2 bg-red-50 rounded-xl border-2 border-red-200">
+                      <div className="font-black text-red-600 text-lg">
                         {lowRatings.length}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">Low Ratings</div>
+                      <div className="text-xs text-red-700 font-bold uppercase tracking-wide">Low Ratings</div>
                     </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-orange-600">
+                    <div className="text-center px-3 py-2 bg-orange-50 rounded-xl border-2 border-orange-200">
+                      <div className="font-black text-orange-600 text-lg">
                         {withComments.length}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">With Comments</div>
+                      <div className="text-xs text-orange-700 font-bold uppercase tracking-wide">With Comments</div>
                     </div>
                   </div>
                   
                   {/* Most Recent Issue Snippet */}
                   {mostRecentProblem && (
-                    <div className="flex-1 min-w-0 border-l border-gray-300 dark:border-gray-700 pl-4">
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-2">
-                        <span className="font-semibold">Latest Issue:</span>
-                        <span className="text-red-600 dark:text-red-400">
+                    <div className="flex-1 min-w-0 border-l-4 border-red-300 dark:border-red-700 pl-4">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-2 font-bold">
+                        <span className="font-black uppercase tracking-wide">Latest Issue:</span>
+                        <span className="text-red-600 dark:text-red-400 font-black">
                           {mostRecentProblem.rating}★
                         </span>
                         <span>•</span>
-                        <span className="font-medium">
+                        <span className="font-black">
                           Agent {agents.find(a => a.id === mostRecentProblem.agent_id)?.display_name || mostRecentProblem.agent_id}
                         </span>
                       </div>
-                      <div className="text-sm text-gray-700 dark:text-gray-300 italic line-clamp-2">
+                      <div className="text-sm text-gray-700 dark:text-gray-300 italic line-clamp-2 font-medium">
                         "{mostRecentProblem.comment}"
                       </div>
                     </div>
@@ -534,17 +597,17 @@ export default function DashboardPage() {
           icon={<BarChart3 className="w-5 h-5" />}
           previewContent={
             <div className="flex items-center gap-4 text-sm">
-              <div className="text-right">
-                <div className="font-semibold text-gray-900 dark:text-white">
+              <div className="text-center px-4 py-2 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border-2 border-purple-200">
+                <div className="font-black text-purple-600 text-lg">
                   {satisfactionTrendData.length}
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">Days Tracked</div>
+                <div className="text-xs text-purple-700 font-bold uppercase tracking-wide">Days Tracked</div>
               </div>
-              <div className="text-right">
-                <div className="font-semibold text-purple-600">
+              <div className="text-center px-4 py-2 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border-2 border-indigo-200">
+                <div className="font-black text-indigo-600 text-lg">
                   6 Charts
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">4 Tables</div>
+                <div className="text-xs text-indigo-700 font-bold uppercase tracking-wide">4 Tables</div>
               </div>
             </div>
           }

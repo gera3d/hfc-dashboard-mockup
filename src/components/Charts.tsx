@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { 
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -83,12 +83,12 @@ const RATING_COLORS = ['#FF4A4C', '#FF8A4C', '#FFB020', '#8BC34A', '#00CA6F']
 
 export function TimeSeriesChart({ data }: TimeSeriesChartProps) {
   return (
-    <div className="bg-white rounded-md border border-[#E3E8EE] p-6 mb-6 transition-all duration-150 hover:shadow-soft">
+    <div className="bg-white rounded-2xl border-2 border-gray-300 p-6 mb-6 transition-all duration-300 hover:shadow-2xl hover:border-[#0066cc]">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[#0A2540] tracking-tight">
+        <h3 className="text-xl font-black text-gray-900 tracking-tight">
           Review Trends Over Time
         </h3>
-        <p className="text-sm text-[#6B7C93] mt-1">
+        <p className="text-sm text-gray-600 mt-1 font-medium">
           Track daily review volume and rating distribution
         </p>
       </div>
@@ -129,11 +129,11 @@ export function TimeSeriesChart({ data }: TimeSeriesChartProps) {
               formatter={(value: number, name: string) => {
                 const labels: Record<string, string> = {
                   total: 'Total Reviews',
-                  star_5: '5★ Reviews',
-                  star_4: '4★ Reviews',
-                  star_3: '3★ Reviews',
-                  star_2: '2★ Reviews',
-                  star_1: '1★ Reviews'
+                  star_5: '5? Reviews',
+                  star_4: '4? Reviews',
+                  star_3: '3? Reviews',
+                  star_2: '2? Reviews',
+                  star_1: '1? Reviews'
                 }
                 return [value, labels[name] || name]
               }}
@@ -159,7 +159,7 @@ export function TimeSeriesChart({ data }: TimeSeriesChartProps) {
               dataKey="star_5" 
               stroke="#00CA6F" 
               strokeWidth={2}
-              name="5★ Reviews"
+              name="5? Reviews"
               dot={false}
               activeDot={{ r: 4, stroke: '#00CA6F', strokeWidth: 2, fill: '#FFFFFF' }}
             />
@@ -168,7 +168,7 @@ export function TimeSeriesChart({ data }: TimeSeriesChartProps) {
               dataKey="star_1" 
               stroke="#FF4A4C" 
               strokeWidth={2}
-              name="1★ Reviews"
+              name="1? Reviews"
               dot={false}
               activeDot={{ r: 4, stroke: '#FF4A4C', strokeWidth: 2, fill: '#FFFFFF' }}
             />
@@ -181,7 +181,7 @@ export function TimeSeriesChart({ data }: TimeSeriesChartProps) {
 
 export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
   // DEBUG: Log what data this component receives
-  console.log('🎯 AgentLeaderboard RECEIVED data prop:', {
+  console.log('?? AgentLeaderboard RECEIVED data prop:', {
     totalAgents: data.length,
     first5: data.slice(0, 5).map(a => ({ name: a.agent_name, total: a.total, rating: a.avg_rating }))
   });
@@ -189,7 +189,7 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
   // Only show agents with reviews, SORT by total reviews descending
   const chartData = data
     .filter(agent => agent.total > 0)
-    .sort((a, b) => b.total - a.total)  // ✅ SORT BY REVIEW COUNT DESCENDING
+    .sort((a, b) => b.total - a.total)  // ? SORT BY REVIEW COUNT DESCENDING
     .slice(0, limit)
     .map(agent => ({
       name: agent.agent_name,
@@ -201,7 +201,7 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
     }))
   
   // DEBUG: Log what chartData looks like after transformation
-  console.log('📊 AgentLeaderboard chartData after transformation:', {
+  console.log('?? AgentLeaderboard chartData after transformation:', {
     totalInChart: chartData.length,
     first5: chartData.slice(0, 5).map(c => ({ name: c.name, reviews: c.reviews, rating: c.rating }))
   });
@@ -215,13 +215,13 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
   const getBadges = (agent: typeof chartData[0], rank: number) => {
     const badges: Array<{ icon: string; label: string; color: string; tooltip: string }> = []
     
-    if (rank === 0) badges.push({ icon: '👑', label: 'Top Performer', color: 'bg-gradient-to-r from-yellow-400 to-yellow-600', tooltip: 'Highest overall performance' })
-    if (agent.rating >= 4.9) badges.push({ icon: '⭐', label: 'Quality Star', color: 'bg-gradient-to-r from-green-400 to-green-600', tooltip: '4.9+ star rating' })
-    else if (agent.rating >= 4.5) badges.push({ icon: '✨', label: 'Excellent', color: 'bg-gradient-to-r from-blue-400 to-blue-600', tooltip: '4.5+ star rating' })
-    else if (agent.rating < 4.0) badges.push({ icon: '🎯', label: 'Needs Coaching', color: 'bg-gradient-to-r from-orange-400 to-orange-600', tooltip: 'Below 4.0 - coaching recommended' })
+    if (rank === 0) badges.push({ icon: '??', label: 'Top Performer', color: 'bg-gradient-to-r from-yellow-400 to-yellow-600', tooltip: 'Highest overall performance' })
+    if (agent.rating >= 4.9) badges.push({ icon: '?', label: 'Quality Star', color: 'bg-gradient-to-r from-green-400 to-green-600', tooltip: '4.9+ star rating' })
+    else if (agent.rating >= 4.5) badges.push({ icon: '?', label: 'Excellent', color: 'bg-gradient-to-r from-blue-400 to-blue-600', tooltip: '4.5+ star rating' })
+    else if (agent.rating < 4.0) badges.push({ icon: '??', label: 'Needs Coaching', color: 'bg-gradient-to-r from-orange-400 to-orange-600', tooltip: 'Below 4.0 - coaching recommended' })
     
-    if (agent.reviews >= 50) badges.push({ icon: '🏆', label: 'Volume Champion', color: 'bg-gradient-to-r from-purple-400 to-purple-600', tooltip: '50+ reviews handled' })
-    if (agent.percent_5_star >= 95) badges.push({ icon: '💎', label: 'Customer Favorite', color: 'bg-gradient-to-r from-cyan-400 to-cyan-600', tooltip: '95%+ gave 5 stars' })
+    if (agent.reviews >= 50) badges.push({ icon: '??', label: 'Volume Champion', color: 'bg-gradient-to-r from-purple-400 to-purple-600', tooltip: '50+ reviews handled' })
+    if (agent.percent_5_star >= 95) badges.push({ icon: '??', label: 'Customer Favorite', color: 'bg-gradient-to-r from-cyan-400 to-cyan-600', tooltip: '95%+ gave 5 stars' })
     
     return badges
   }
@@ -229,9 +229,9 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
   // Calculate trend indicator (comparing to team average)
   const getTrendIndicator = (agent: typeof chartData[0]) => {
     const delta = agent.rating - teamAvgRating
-    if (delta > 0.2) return { icon: '📈', text: `+${delta.toFixed(1)} vs avg`, color: 'text-green-600', bg: 'bg-green-50' }
-    if (delta < -0.2) return { icon: '📉', text: `${delta.toFixed(1)} vs avg`, color: 'text-red-600', bg: 'bg-red-50' }
-    return { icon: '➡️', text: 'On target', color: 'text-blue-600', bg: 'bg-blue-50' }
+    if (delta > 0.2) return { icon: '??', text: `+${delta.toFixed(1)} vs avg`, color: 'text-green-600', bg: 'bg-green-50' }
+    if (delta < -0.2) return { icon: '??', text: `${delta.toFixed(1)} vs avg`, color: 'text-red-600', bg: 'bg-red-50' }
+    return { icon: '??', text: 'On target', color: 'text-blue-600', bg: 'bg-blue-50' }
   }
   
   // If no data, show empty state
@@ -308,7 +308,7 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
           {/* Dynamic Insights Banner - Enhanced with pulsing animation */}
           <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-500 rounded-lg">
             <p className="text-sm text-[#0A2540] font-medium flex items-center gap-2">
-              <span className="text-lg animate-pulse">💡</span> 
+              <span className="text-lg animate-pulse">??</span> 
               <span><span className="font-bold">{chartData[0]?.name}</span> is leading with {chartData[0]?.rating.toFixed(2)} stars across {chartData[0]?.reviews} reviews
               {chartData[0]?.percent_5_star >= 95 && ' and an exceptional 5-star rate!'}</span>
             </p>
@@ -341,7 +341,7 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
                   {/* Crown Icon for #1 */}
                   {index === 0 && (
                     <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-4xl animate-bounce">
-                      👑
+                      ??
                     </div>
                   )}
                   
@@ -369,21 +369,21 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
                   {/* Stats - Premium Design with gradients and icons */}
                   <div className="space-y-3">
                     <div className={`relative overflow-hidden flex items-center justify-between p-4 ${rankColors.statBg} rounded-xl border border-${index === 0 ? 'yellow' : index === 1 ? 'gray' : 'orange'}-200 shadow-md`}>
-                      <div className="absolute top-0 right-0 text-6xl opacity-10">⭐</div>
+                      <div className="absolute top-0 right-0 text-6xl opacity-10">?</div>
                       <div className="relative z-10 w-full">
                         <span className="text-xs text-[#6B7C93] font-semibold block mb-1">Rating</span>
                         <span className={`${index === 0 ? 'text-2xl' : 'text-lg'} font-bold text-[#0A2540]`}>{agent.rating.toFixed(2)}/5.00</span>
                       </div>
                     </div>
                     <div className={`relative overflow-hidden flex items-center justify-between p-4 ${rankColors.statBg} rounded-xl border border-${index === 0 ? 'yellow' : index === 1 ? 'gray' : 'orange'}-200 shadow-md`}>
-                      <div className="absolute top-0 right-0 text-6xl opacity-10">📊</div>
+                      <div className="absolute top-0 right-0 text-6xl opacity-10">??</div>
                       <div className="relative z-10 w-full">
                         <span className="text-xs text-[#6B7C93] font-semibold block mb-1">Reviews</span>
                         <span className={`${index === 0 ? 'text-2xl' : 'text-lg'} font-bold text-[#0A2540]`}>{agent.reviews}</span>
                       </div>
                     </div>
                     <div className={`relative overflow-hidden flex items-center justify-between p-4 ${rankColors.statBg} rounded-xl border border-${index === 0 ? 'yellow' : index === 1 ? 'gray' : 'orange'}-200 shadow-md`}>
-                      <div className="absolute top-0 right-0 text-6xl opacity-10">💎</div>
+                      <div className="absolute top-0 right-0 text-6xl opacity-10">??</div>
                       <div className="relative z-10 w-full">
                         <span className="text-xs text-[#6B7C93] font-semibold block mb-1">5-Star Rate</span>
                         <span className={`${index === 0 ? 'text-2xl' : 'text-lg'} font-bold text-[#0A2540]`}>{agent.percent_5_star.toFixed(0)}%</span>
@@ -420,7 +420,7 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
             <div className="flex items-center gap-4 mb-6">
               <div className="flex-1 h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent" />
               <div className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-bold rounded-full shadow-lg flex items-center gap-2">
-                <span>🌟</span>
+                <span>??</span>
                 <span>Rising Stars</span>
               </div>
               <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-200 to-transparent" />
@@ -475,7 +475,7 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
                         </div>
                         <div>
                           <div className="text-[10px] text-[#6B7C93] mb-0.5">Rating</div>
-                          <div className="text-sm font-bold text-indigo-600">{agent.rating.toFixed(2)}★</div>
+                          <div className="text-sm font-bold text-indigo-600">{agent.rating.toFixed(2)}?</div>
                         </div>
                         <div>
                           <div className="text-[10px] text-[#6B7C93] mb-0.5">5-Star</div>
@@ -519,12 +519,12 @@ export function RatingDistribution({ reviews }: RatingDistributionProps) {
   }))
 
   return (
-    <div className="bg-white rounded-md border border-[#E3E8EE] p-6 mb-6 transition-all duration-150 hover:shadow-soft">
+    <div className="bg-white rounded-2xl border-2 border-gray-300 p-6 mb-6 transition-all duration-300 hover:shadow-2xl hover:border-[#0066cc]">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[#0A2540] tracking-tight">
+        <h3 className="text-xl font-black text-gray-900 tracking-tight">
           Rating Distribution
         </h3>
-        <p className="text-sm text-[#6B7C93] mt-1">
+        <p className="text-sm text-gray-600 mt-1 font-medium">
           Breakdown of all reviews by star rating
         </p>
       </div>
@@ -581,12 +581,12 @@ export function DepartmentPerformance({ reviews, departments }: DepartmentPerfor
   }).sort((a, b) => b.total - a.total)
 
   return (
-    <div className="bg-white rounded-md border border-[#E3E8EE] p-6 mb-6 transition-all duration-150 hover:shadow-soft">
+    <div className="bg-white rounded-2xl border-2 border-gray-300 p-6 mb-6 transition-all duration-300 hover:shadow-2xl hover:border-[#0066cc]">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[#0A2540] tracking-tight">
+        <h3 className="text-xl font-black text-gray-900 tracking-tight">
           Department Performance
         </h3>
-        <p className="text-sm text-[#6B7C93] mt-1">
+        <p className="text-sm text-gray-600 mt-1 font-medium">
           Review volume and ratings by department
         </p>
       </div>
@@ -622,7 +622,7 @@ export function DepartmentPerformance({ reviews, departments }: DepartmentPerfor
               formatter={(value: number, name: string) => {
                 if (name === 'total') return [value, 'Total Reviews']
                 if (name === 'avg_rating') return [value.toFixed(2), 'Avg Rating']
-                if (name === 'five_star_rate') return [`${value.toFixed(1)}%`, '5★ Rate']
+                if (name === 'five_star_rate') return [`${value.toFixed(1)}%`, '5? Rate']
                 return [value, name]
               }}
             />
@@ -652,12 +652,12 @@ export function SourceBreakdown({ reviews }: SourceBreakdownProps) {
   ]
 
   return (
-    <div className="bg-white rounded-md border border-[#E3E8EE] p-6 mb-6 transition-all duration-150 hover:shadow-soft">
+    <div className="bg-white rounded-2xl border-2 border-gray-300 p-6 mb-6 transition-all duration-300 hover:shadow-2xl hover:border-[#0066cc]">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[#0A2540] tracking-tight">
+        <h3 className="text-xl font-black text-gray-900 tracking-tight">
           Review Source Breakdown
         </h3>
-        <p className="text-sm text-[#6B7C93] mt-1">
+        <p className="text-sm text-gray-600 mt-1 font-medium">
           Where your reviews are coming from
         </p>
       </div>
@@ -698,16 +698,16 @@ export function SourceBreakdown({ reviews }: SourceBreakdownProps) {
 // Satisfaction Trend Area Chart
 export function SatisfactionTrend({ data }: SatisfactionTrendProps) {
   return (
-    <div className="bg-white rounded-md border border-[#E3E8EE] p-6 mb-6 transition-all duration-150 hover:shadow-soft">
+    <div className="bg-white rounded-2xl border-2 border-gray-300 p-6 mb-6 transition-all duration-300 hover:shadow-2xl hover:border-[#0066cc]">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[#0A2540] tracking-tight">
+        <h3 className="text-xl font-black text-gray-900 tracking-tight">
           Customer Satisfaction Trend
         </h3>
-        <p className="text-sm text-[#6B7C93] mt-1">
+        <p className="text-sm text-gray-600 mt-1 font-medium">
           Track overall customer satisfaction over time
         </p>
         <div className="mt-3 p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
-          <p className="text-xs text-[#0A2540] font-medium mb-1">💡 Why This Matters</p>
+          <p className="text-xs text-[#0A2540] font-medium mb-1">?? Why This Matters</p>
           <p className="text-xs text-[#425466]">
             In insurance, happy customers renew policies and refer others. Track this trend to ensure your 
             service quality stays competitive. The red benchmark line shows the 80% industry standard.
@@ -813,16 +813,16 @@ export function DepartmentComparison({ reviews, departments }: DepartmentCompari
   console.log('DepartmentComparison - Chart data:', deptData)
 
   return (
-    <div className="bg-white rounded-md border border-[#E3E8EE] p-6 mb-6 transition-all duration-150 hover:shadow-soft">
+    <div className="bg-white rounded-2xl border-2 border-gray-300 p-6 mb-6 transition-all duration-300 hover:shadow-2xl hover:border-[#0066cc]">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[#0A2540] tracking-tight">
+        <h3 className="text-xl font-black text-gray-900 tracking-tight">
           Department Performance Comparison
         </h3>
-        <p className="text-sm text-[#6B7C93] mt-1">
+        <p className="text-sm text-gray-600 mt-1 font-medium">
           Compare insurance product lines across volume and quality
         </p>
         <div className="mt-3 p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
-          <p className="text-xs text-[#0A2540] font-medium mb-1">💡 Why This Matters</p>
+          <p className="text-xs text-[#0A2540] font-medium mb-1">?? Why This Matters</p>
           <p className="text-xs text-[#425466]">
             Different insurance products (Auto, Home, Health, Life) have different service challenges. 
             Identify which product lines need process improvements or additional training resources.
@@ -911,7 +911,7 @@ export function AgentRadar({ agents, limit = 6 }: AgentRadarProps) {
   const topAgents = agents.slice(0, limit)
   
   // Prepare data for radar chart
-  const metrics = ['Total Reviews', 'Avg Rating', '5★ Rate', 'Response Rate']
+  const metrics = ['Total Reviews', 'Avg Rating', '5? Rate', 'Response Rate']
   const radarData = metrics.map(metric => {
     const dataPoint: any = { metric }
     topAgents.forEach(agent => {
@@ -921,7 +921,7 @@ export function AgentRadar({ agents, limit = 6 }: AgentRadarProps) {
         dataPoint[agent.agent_name] = (agent.total / maxTotal) * 100
       } else if (metric === 'Avg Rating') {
         dataPoint[agent.agent_name] = (agent.avg_rating / 5) * 100
-      } else if (metric === '5★ Rate') {
+      } else if (metric === '5? Rate') {
         dataPoint[agent.agent_name] = agent.percent_5_star
       } else if (metric === 'Response Rate') {
         // Placeholder - you can calculate actual response rate if you have comment data
@@ -932,12 +932,12 @@ export function AgentRadar({ agents, limit = 6 }: AgentRadarProps) {
   })
 
   return (
-    <div className="bg-white rounded-md border border-[#E3E8EE] p-6 mb-6 transition-all duration-150 hover:shadow-soft">
+    <div className="bg-white rounded-2xl border-2 border-gray-300 p-6 mb-6 transition-all duration-300 hover:shadow-2xl hover:border-[#0066cc]">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[#0A2540] tracking-tight">
+        <h3 className="text-xl font-black text-gray-900 tracking-tight">
           Top Agent Performance Radar
         </h3>
-        <p className="text-sm text-[#6B7C93] mt-1">
+        <p className="text-sm text-gray-600 mt-1 font-medium">
           Multi-dimensional performance comparison
         </p>
       </div>
@@ -1006,12 +1006,12 @@ export function ReviewVelocity({ reviews }: ReviewVelocityProps) {
     })
 
   return (
-    <div className="bg-white rounded-md border border-[#E3E8EE] p-6 mb-6 transition-all duration-150 hover:shadow-soft">
+    <div className="bg-white rounded-2xl border-2 border-gray-300 p-6 mb-6 transition-all duration-300 hover:shadow-2xl hover:border-[#0066cc]">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[#0A2540] tracking-tight">
+        <h3 className="text-xl font-black text-gray-900 tracking-tight">
           Review Velocity
         </h3>
-        <p className="text-sm text-[#6B7C93] mt-1">
+        <p className="text-sm text-gray-600 mt-1 font-medium">
           Week-over-week growth rate (last 12 weeks)
         </p>
       </div>
@@ -1094,16 +1094,16 @@ export function ProblemSpotlight({ reviews, departments }: ProblemSpotlightProps
   console.log('ProblemSpotlight - Chart data:', deptData)
 
   return (
-    <div className="bg-white rounded-md border border-[#E3E8EE] p-6 mb-6 transition-all duration-150 hover:shadow-soft">
+    <div className="bg-white rounded-2xl border-2 border-gray-300 p-6 mb-6 transition-all duration-300 hover:shadow-2xl hover:border-[#0066cc]">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-[#0A2540] tracking-tight">
+        <h3 className="text-xl font-black text-gray-900 tracking-tight">
           Problem Spotlight: Low Ratings by Department
         </h3>
-        <p className="text-sm text-[#6B7C93] mt-1">
+        <p className="text-sm text-gray-600 mt-1 font-medium">
           Identify departments with highest concentration of 1-2 star reviews
         </p>
         <div className="mt-3 p-3 bg-red-50 border-l-4 border-red-400 rounded">
-          <p className="text-xs text-[#0A2540] font-medium mb-1">🚨 Why This Matters</p>
+          <p className="text-xs text-[#0A2540] font-medium mb-1">?? Why This Matters</p>
           <p className="text-xs text-[#425466]">
             In insurance, bad reviews hurt retention and reputation. Departments with {'>'} 10% low ratings (shown in red) 
             need immediate attention. These are compliance risks and indicate broken processes that need fixing now.

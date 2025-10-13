@@ -31,27 +31,27 @@ export function CollapsibleSection({
 
   return (
     <div 
-      className={`bg-white rounded-xl border transition-all duration-300 overflow-hidden ${
+      className={`bg-white rounded-2xl border-2 transition-all duration-300 overflow-hidden ${
         isExpanded 
-          ? 'border-indigo-200 shadow-lg' 
-          : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+          ? 'border-[#0066cc] shadow-2xl ring-4 ring-[#0066cc]/10' 
+          : 'border-gray-300 hover:border-[#0066cc] hover:shadow-xl'
       }`}
     >
       {/* Header - Always Visible */}
       <button
         onClick={onToggle}
-        className={`w-full px-4 sm:px-6 py-3 sm:py-4 transition-all duration-200 ${
+        className={`w-full px-4 sm:px-6 py-4 sm:py-5 transition-all duration-200 ${
           isExpanded 
-            ? 'bg-gray-50 rounded-t-xl' 
-            : 'hover:bg-gray-50 rounded-xl'
+            ? 'bg-gradient-to-r from-[#0066cc]/5 to-[#00ca6f]/5 rounded-t-2xl' 
+            : 'hover:bg-gray-50 rounded-2xl'
         }`}
       >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 w-full">
-          <div className="flex items-center gap-2 sm:gap-4 w-full sm:flex-1 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:flex-1 min-w-0">
             {/* Icon */}
             {icon && (
               <div 
-                className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-white bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md"
+                className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-[#0066cc] bg-[#0066cc]/10 border border-[#0066cc]/20"
               >
                 {icon}
               </div>
@@ -60,17 +60,17 @@ export function CollapsibleSection({
             {/* Title & Subtitle */}
             <div className="text-left flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                <h3 className="text-base sm:text-lg font-bold text-[#0066cc]">
                   {title}
                 </h3>
                 {badge && (
-                  <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700 whitespace-nowrap flex-shrink-0">
+                  <span className="px-2.5 py-0.5 text-[10px] sm:text-xs font-bold rounded-full bg-[#0066cc]/10 text-[#0066cc] border border-[#0066cc]/20 whitespace-nowrap flex-shrink-0">
                     {badge}
                   </span>
                 )}
               </div>
               {subtitle && (
-                <p className="text-xs sm:text-sm mt-0.5 text-gray-500 hidden sm:block">
+                <p className="text-xs sm:text-sm mt-0.5 text-gray-600 font-normal hidden sm:block">
                   {subtitle}
                 </p>
               )}
@@ -81,8 +81,8 @@ export function CollapsibleSection({
               <div 
                 className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${
                   isExpanded 
-                    ? 'bg-indigo-600 text-white' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-[#0066cc] text-white' 
+                    : 'bg-white text-[#0066cc] border-2 border-[#0066cc]/30 hover:bg-gray-50'
                 }`}
                 style={{
                   transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -105,8 +105,8 @@ export function CollapsibleSection({
             <div 
               className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 ${
                 isExpanded 
-                  ? 'bg-indigo-600 text-white' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-[#0066cc] text-white' 
+                  : 'bg-white text-[#0066cc] border-2 border-[#0066cc]/30 hover:bg-gray-50'
               }`}
               style={{
                 transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -128,7 +128,7 @@ export function CollapsibleSection({
         }}
       >
         <div ref={innerContentRef}>
-          <div className="px-4 sm:px-6 pb-4 sm:pb-6 pt-3 sm:pt-4 border-t border-gray-100">
+          <div className="px-4 sm:px-6 pb-5 sm:pb-6 pt-4 sm:pt-5 border-t-2 border-gray-200 bg-gradient-to-b from-gray-50/50 to-white">
             {children}
           </div>
         </div>

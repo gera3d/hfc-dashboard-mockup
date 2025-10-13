@@ -23,11 +23,11 @@ export default function UnifiedAgentRankings({ data, limit = 10 }: UnifiedAgentR
   if (sortedData.length === 0) {
     return (
       <div className="relative mb-8 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-white to-purple-50/50 rounded-2xl" />
-        <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl border-2 border-blue-100 shadow-2xl p-12 text-center">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0066cc]/5 via-white to-[#00ca6f]/5 rounded-2xl" />
+        <div className="relative bg-white rounded-2xl border-2 border-gray-300 shadow-lg p-12 text-center">
           <div className="text-6xl mb-4">👥</div>
-          <h3 className="text-2xl font-bold text-[#0A2540] mb-3">No Agent Data</h3>
-          <p className="text-[#6B7C93]">No agents have reviews in the selected date range.</p>
+          <h3 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">No Agent Data</h3>
+          <p className="text-gray-600 font-medium">No agents have reviews in the selected date range.</p>
         </div>
       </div>
     );
@@ -43,27 +43,38 @@ export default function UnifiedAgentRankings({ data, limit = 10 }: UnifiedAgentR
       {/* Top 3 Podium Layout - ALL HORIZONTAL */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
         {/* #1 */}
-        <AgentCard 
-          agent={topAgent}
-          rank={1}
-          medal="gold"
-          featured={true}
-          onClick={() => router.push(`/agent/${topAgent.agent_id}`)}
-        />
+        <div 
+          key={topAgent.agent_id}
+          className="animate-in slide-in-from-left-12 fade-in duration-500"
+          style={{ animationDelay: '0ms' }}
+        >
+          <AgentCard 
+            agent={topAgent}
+            rank={1}
+            medal="gold"
+            featured={true}
+            onClick={() => router.push(`/agent/${topAgent.agent_id}`)}
+          />
+        </div>
         
         {/* #2 and #3 - Now horizontal alongside #1 */}
         {runnerUps.map((agent, idx) => {
           const rank = idx + 2;
           const medal = idx === 0 ? 'silver' : 'bronze';
           return (
-            <AgentCard
+            <div
               key={agent.agent_id}
-              agent={agent}
-              rank={rank}
-              medal={medal}
-              runnerUp={true}
-              onClick={() => router.push(`/agent/${agent.agent_id}`)}
-            />
+              className="animate-in slide-in-from-left-12 fade-in duration-500"
+              style={{ animationDelay: `${(idx + 1) * 100}ms` }}
+            >
+              <AgentCard
+                agent={agent}
+                rank={rank}
+                medal={medal}
+                runnerUp={true}
+                onClick={() => router.push(`/agent/${agent.agent_id}`)}
+              />
+            </div>
           );
         })}
       </div>
@@ -71,26 +82,31 @@ export default function UnifiedAgentRankings({ data, limit = 10 }: UnifiedAgentR
       {/* Rising Stars - #4+ Compact Grid */}
       {risingStars.length > 0 && (
         <div>
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex items-center justify-between animate-in fade-in duration-300" style={{ animationDelay: '300ms' }}>
             <div>
-              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Rising Stars</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{risingStars.length} more top performers</p>
+              <h3 className="text-lg font-black text-[#0066cc] tracking-tight">Rising Stars</h3>
+              <p className="text-sm text-gray-600 font-medium">{risingStars.length} more top performers</p>
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Team Avg: <span className="font-semibold text-gray-700 dark:text-gray-300">{teamAvgRating.toFixed(2)}★</span>
+            <div className="text-sm text-gray-600">
+              Team Avg: <span className="font-black text-[#0066cc]">{teamAvgRating.toFixed(2)}★</span>
             </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {risingStars.map((agent, idx) => {
               const rank = idx + 4;
               return (
-                <AgentCard
+                <div
                   key={agent.agent_id}
-                  agent={agent}
-                  rank={rank}
-                  compact={true}
-                  onClick={() => router.push(`/agent/${agent.agent_id}`)}
-                />
+                  className="animate-in slide-in-from-bottom-8 fade-in duration-500"
+                  style={{ animationDelay: `${400 + idx * 50}ms` }}
+                >
+                  <AgentCard
+                    agent={agent}
+                    rank={rank}
+                    compact={true}
+                    onClick={() => router.push(`/agent/${agent.agent_id}`)}
+                  />
+                </div>
               );
             })}
           </div>
@@ -124,45 +140,45 @@ function AgentCard({ agent, rank, medal, featured = false, runnerUp = false, com
   // Featured Card (for #1) - Clean design with popping avatar
   if (featured) {
     return (
-      <div className="relative pt-20 pb-4">
+      <div className="relative pt-16 pb-4">
         <button
           onClick={onClick}
-          className="w-full rounded-2xl border-2 border-gray-200 bg-white hover:shadow-xl transition-all cursor-pointer text-left p-5 relative z-0 overflow-visible h-full"
+          className="w-full rounded-2xl border-2 border-gray-300 bg-white hover:shadow-2xl hover:border-[#0066cc] transition-all duration-300 cursor-pointer text-left p-6 pt-14 relative z-0 overflow-visible h-full"
         >
           {/* Gold top bar - positioned to show behind avatar */}
-          <div className="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-t-2xl z-0" />
+          <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-t-2xl z-0" />
           
           {/* Content with higher z-index */}
           <div className="relative z-10">
             {/* Name and Department with Crown */}
             <div className="text-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1 tracking-tight">
                 👑 {agent.agent_name}
               </h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400">{agent.department_name}</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">{agent.department_name}</p>
             </div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-3 gap-2 mb-4">
-              <div className="text-center">
-                <div className="text-[10px] text-gray-600 mb-1 font-medium">Reviews</div>
-                <div className="text-lg font-bold text-indigo-600">{agent.total}</div>
+              <div className="text-center bg-[#0066cc]/5 rounded-lg py-2">
+                <div className="text-[9px] text-gray-600 mb-1 font-bold uppercase tracking-wide">Reviews</div>
+                <div className="text-base font-black text-[#0066cc]">{agent.total}</div>
               </div>
-              <div className="text-center">
-                <div className="text-[10px] text-gray-600 mb-1 font-medium">Rating</div>
-                <div className="text-lg font-bold text-indigo-600">{agent.avg_rating.toFixed(2)}★</div>
+              <div className="text-center bg-[#0066cc]/5 rounded-lg py-2">
+                <div className="text-[9px] text-gray-600 mb-1 font-bold uppercase tracking-wide">Rating</div>
+                <div className="text-base font-black text-[#0066cc]">{agent.avg_rating.toFixed(2)}★</div>
               </div>
-              <div className="text-center">
-                <div className="text-[10px] text-gray-600 mb-1 font-medium">5-Star</div>
-                <div className="text-lg font-bold text-indigo-600">{agent.percent_5_star.toFixed(0)}%</div>
+              <div className="text-center bg-[#0066cc]/5 rounded-lg py-2">
+                <div className="text-[9px] text-gray-600 mb-1 font-bold uppercase tracking-wide">5-Star</div>
+                <div className="text-base font-black text-[#00ca6f]">{agent.percent_5_star.toFixed(0)}%</div>
               </div>
             </div>
             
             {/* Rating Distribution */}
             <div>
-              <div className="text-[10px] text-gray-600 mb-1.5 font-semibold">Rating Distribution</div>
-              <div className="flex h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div className="bg-emerald-500" style={{ width: `${agent.percent_5_star}%` }} />
+              <div className="text-[9px] text-gray-600 mb-2 font-bold uppercase tracking-wide">Rating Distribution</div>
+              <div className="flex h-2.5 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
+                <div className="bg-[#00ca6f]" style={{ width: `${agent.percent_5_star}%` }} />
                 <div className="bg-lime-400" style={{ width: `${20}%` }} />
                 <div className="bg-yellow-400" style={{ width: `${10}%` }} />
                 <div className="bg-orange-400" style={{ width: `${5}%` }} />
@@ -173,9 +189,9 @@ function AgentCard({ agent, rank, medal, featured = false, runnerUp = false, com
         </button>
         
         {/* Popping avatar at top center */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20">
           <div className="relative">
-            <div className="h-24 w-24 rounded-full border-3 border-white shadow-xl bg-gray-100 overflow-hidden">
+            <div className="h-24 w-24 rounded-full border-4 border-white shadow-2xl bg-gray-100 overflow-hidden">
               <img
                 src={agent.image_url || fallbackUrl}
                 alt={agent.agent_name}
@@ -187,7 +203,7 @@ function AgentCard({ agent, rank, medal, featured = false, runnerUp = false, com
               />
             </div>
             {/* Rank badge */}
-            <div className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full bg-yellow-500 flex items-center justify-center text-base font-bold text-white border-3 border-white shadow-lg">
+            <div className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-lg font-black text-white border-4 border-white shadow-xl">
               1
             </div>
           </div>
@@ -203,45 +219,45 @@ function AgentCard({ agent, rank, medal, featured = false, runnerUp = false, com
     const medalEmoji = medal === 'silver' ? '🥈' : '🥉';
     
     return (
-      <div className="relative pt-20 pb-4">
+      <div className="relative pt-16 pb-4">
         <button
           onClick={onClick}
-          className="w-full rounded-xl border-2 border-gray-200 bg-white hover:shadow-lg transition-all cursor-pointer text-left p-5 relative z-0 overflow-visible h-full"
+          className="w-full rounded-2xl border-2 border-gray-300 bg-white hover:shadow-2xl hover:border-[#0066cc] transition-all duration-300 cursor-pointer text-left p-6 pt-14 relative z-0 overflow-visible h-full"
         >
           {/* Medal top bar - positioned behind avatar */}
-          <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${accentColor} rounded-t-xl z-0`} />
+          <div className={`absolute top-0 left-0 right-0 h-3 bg-gradient-to-r ${accentColor} rounded-t-2xl z-0`} />
           
           {/* Content with higher z-index */}
           <div className="relative z-10">
             {/* Name and Department with Medal */}
             <div className="text-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+              <h3 className="text-lg font-black text-gray-900 dark:text-white mb-1 tracking-tight">
                 {medalEmoji} {agent.agent_name}
               </h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400">{agent.department_name}</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">{agent.department_name}</p>
             </div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-3 gap-2 mb-4">
-              <div className="text-center">
-                <div className="text-[10px] text-gray-600 mb-1 font-medium">Reviews</div>
-                <div className="text-lg font-bold text-indigo-600">{agent.total}</div>
+              <div className="text-center bg-[#0066cc]/5 rounded-lg py-2">
+                <div className="text-[9px] text-gray-600 mb-1 font-bold uppercase tracking-wide">Reviews</div>
+                <div className="text-base font-black text-[#0066cc]">{agent.total}</div>
               </div>
-              <div className="text-center">
-                <div className="text-[10px] text-gray-600 mb-1 font-medium">Rating</div>
-                <div className="text-lg font-bold text-indigo-600">{agent.avg_rating.toFixed(2)}★</div>
+              <div className="text-center bg-[#0066cc]/5 rounded-lg py-2">
+                <div className="text-[9px] text-gray-600 mb-1 font-bold uppercase tracking-wide">Rating</div>
+                <div className="text-base font-black text-[#0066cc]">{agent.avg_rating.toFixed(2)}★</div>
               </div>
-              <div className="text-center">
-                <div className="text-[10px] text-gray-600 mb-1 font-medium">5-Star</div>
-                <div className="text-lg font-bold text-indigo-600">{agent.percent_5_star.toFixed(0)}%</div>
+              <div className="text-center bg-[#0066cc]/5 rounded-lg py-2">
+                <div className="text-[9px] text-gray-600 mb-1 font-bold uppercase tracking-wide">5-Star</div>
+                <div className="text-base font-black text-[#00ca6f]">{agent.percent_5_star.toFixed(0)}%</div>
               </div>
             </div>
             
             {/* Rating Distribution */}
             <div>
-              <div className="text-[10px] text-gray-600 mb-1.5 font-semibold">Rating Distribution</div>
-              <div className="flex h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div className="bg-emerald-500" style={{ width: `${agent.percent_5_star}%` }} />
+              <div className="text-[9px] text-gray-600 mb-2 font-bold uppercase tracking-wide">Rating Distribution</div>
+              <div className="flex h-2.5 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
+                <div className="bg-[#00ca6f]" style={{ width: `${agent.percent_5_star}%` }} />
                 <div className="bg-lime-400" style={{ width: `${20}%` }} />
                 <div className="bg-yellow-400" style={{ width: `${10}%` }} />
                 <div className="bg-orange-400" style={{ width: `${5}%` }} />
@@ -252,9 +268,9 @@ function AgentCard({ agent, rank, medal, featured = false, runnerUp = false, com
         </button>
         
         {/* Popping avatar at top center */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20">
           <div className="relative">
-            <div className="h-24 w-24 rounded-full border-3 border-white shadow-xl bg-gray-100 overflow-hidden">
+            <div className="h-24 w-24 rounded-full border-4 border-white shadow-2xl bg-gray-100 overflow-hidden">
               <img
                 src={agent.image_url || fallbackUrl}
                 alt={agent.agent_name}
@@ -266,7 +282,7 @@ function AgentCard({ agent, rank, medal, featured = false, runnerUp = false, com
               />
             </div>
             {/* Rank badge */}
-            <div className={`absolute -bottom-1 -right-1 h-8 w-8 rounded-full ${badgeBg} flex items-center justify-center text-base font-bold text-white border-3 border-white shadow-lg`}>
+            <div className={`absolute -bottom-2 -right-2 h-9 w-9 rounded-full ${badgeBg} flex items-center justify-center text-base font-black text-white border-4 border-white shadow-xl`}>
               {rank}
             </div>
           </div>
@@ -280,16 +296,16 @@ function AgentCard({ agent, rank, medal, featured = false, runnerUp = false, com
     <div className="w-full">
       <button
         onClick={onClick}
-        className="w-full rounded-lg border border-gray-200 bg-white hover:shadow-lg transition-all cursor-pointer text-left overflow-hidden"
+        className="w-full rounded-xl border-2 border-gray-300 bg-white hover:shadow-xl hover:border-[#0066cc] transition-all duration-300 cursor-pointer text-left overflow-hidden"
       >
         {/* Colorful top bar */}
-        <div className="h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+        <div className="h-2 bg-gradient-to-r from-[#0066cc] via-[#0088dd] to-[#00ca6f]" />
         
         {/* Avatar section - larger, centered */}
         <div className="p-4 pb-3">
           <div className="flex justify-center mb-3">
             <div className="relative">
-              <div className="h-20 w-20 rounded-full border-2 border-gray-200 bg-white overflow-hidden shadow-md">
+              <div className="h-20 w-20 rounded-full border-2 border-gray-300 bg-white overflow-hidden shadow-md">
                 <img
                   src={agent.image_url || fallbackUrl}
                   alt={agent.agent_name}
@@ -300,37 +316,37 @@ function AgentCard({ agent, rank, medal, featured = false, runnerUp = false, com
                 />
               </div>
               {/* Rank badge only - removed blue dot */}
-              <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-indigo-600 flex items-center justify-center border-2 border-white shadow-md">
-                <span className="text-xs font-bold text-white">{rank}</span>
+              <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-white border-2 border-[#0066cc] flex items-center justify-center shadow-lg">
+                <span className="text-xs font-black text-[#0066cc]">{rank}</span>
               </div>
             </div>
           </div>
           
           {/* Name and Department - centered */}
           <div className="text-center mb-3">
-            <h4 className="text-sm font-bold text-gray-900 dark:text-white leading-tight mb-1">{agent.agent_name}</h4>
-            <p className="text-[10px] text-gray-600 dark:text-gray-400 leading-tight">{agent.department_name}</p>
+            <h4 className="text-sm font-black text-gray-900 dark:text-white leading-tight mb-1 tracking-tight">{agent.agent_name}</h4>
+            <p className="text-[10px] text-gray-600 dark:text-gray-400 leading-tight font-medium">{agent.department_name}</p>
           </div>
 
           {/* Stats Grid - properly aligned */}
           <div className="grid grid-cols-3 gap-2 mb-3">
-            <div className="text-center">
-              <div className="text-[9px] text-gray-600 dark:text-gray-400 uppercase mb-1 font-medium">Reviews</div>
-              <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{agent.total}</div>
+            <div className="text-center bg-[#0066cc]/5 rounded-lg py-1.5">
+              <div className="text-[9px] text-gray-600 dark:text-gray-400 uppercase mb-0.5 font-bold tracking-wide">Reviews</div>
+              <div className="text-sm font-black text-[#0066cc] dark:text-indigo-400">{agent.total}</div>
             </div>
-            <div className="text-center">
-              <div className="text-[9px] text-gray-600 dark:text-gray-400 uppercase mb-1 font-medium">Rating</div>
-              <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{agent.avg_rating.toFixed(2)}★</div>
+            <div className="text-center bg-[#0066cc]/5 rounded-lg py-1.5">
+              <div className="text-[9px] text-gray-600 dark:text-gray-400 uppercase mb-0.5 font-bold tracking-wide">Rating</div>
+              <div className="text-sm font-black text-[#0066cc] dark:text-indigo-400">{agent.avg_rating.toFixed(2)}★</div>
             </div>
-            <div className="text-center">
-              <div className="text-[9px] text-gray-600 dark:text-gray-400 uppercase mb-1 font-medium">5-Star</div>
-              <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{agent.percent_5_star.toFixed(0)}%</div>
+            <div className="text-center bg-[#0066cc]/5 rounded-lg py-1.5">
+              <div className="text-[9px] text-gray-600 dark:text-gray-400 uppercase mb-0.5 font-bold tracking-wide">5-Star</div>
+              <div className="text-sm font-black text-[#00ca6f] dark:text-indigo-400">{agent.percent_5_star.toFixed(0)}%</div>
             </div>
           </div>
           
           {/* Rating Distribution - aligned */}
-          <div className="flex h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div className="bg-emerald-500" style={{ width: `${agent.percent_5_star}%` }} />
+          <div className="flex h-2 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
+            <div className="bg-[#00ca6f]" style={{ width: `${agent.percent_5_star}%` }} />
             <div className="bg-lime-400" style={{ width: `${20}%` }} />
             <div className="bg-yellow-400" style={{ width: `${10}%` }} />
             <div className="bg-orange-400" style={{ width: `${5}%` }} />
