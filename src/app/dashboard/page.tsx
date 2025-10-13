@@ -596,18 +596,57 @@ export default function DashboardPage() {
           badge="Advanced"
           icon={<BarChart3 className="w-5 h-5" />}
           previewContent={
-            <div className="flex items-center gap-4 text-sm">
-              <div className="text-center px-4 py-2 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border-2 border-purple-200">
-                <div className="font-black text-purple-600 text-lg">
-                  {satisfactionTrendData.length}
+            <div className="flex items-center gap-4 w-full">
+              {/* Rating Distribution */}
+              <div className="flex-1 rounded-xl border-2 border-blue-300 bg-white hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+                {/* Thin accent strip at top */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 to-indigo-500 z-0" />
+                
+                <div className="p-4 relative">
+                  <div className="text-[10px] font-bold text-[#0066cc] uppercase tracking-wide mb-2">
+                    Rating Distribution
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    {[5, 4, 3, 2, 1].map((star) => {
+                      const count = filteredData.filter(r => r.rating === star).length;
+                      const total = filteredData.length;
+                      const percent = total > 0 ? Math.round((count / total) * 100) : 0;
+                      return (
+                        <div key={star} className="text-center">
+                          <div className="text-xl font-black text-gray-900">{percent}%</div>
+                          <div className="text-xs text-gray-500 font-semibold">{star}★</div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="text-xs text-purple-700 font-bold uppercase tracking-wide">Days Tracked</div>
               </div>
-              <div className="text-center px-4 py-2 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border-2 border-indigo-200">
-                <div className="font-black text-indigo-600 text-lg">
-                  6 Charts
+
+              {/* Top Departments */}
+              <div className="flex-1 rounded-xl border-2 border-green-300 bg-white hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+                {/* Thin accent strip at top */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-400 to-emerald-500 z-0" />
+                
+                <div className="p-4 relative">
+                  <div className="text-[10px] font-bold text-[#0066cc] uppercase tracking-wide mb-2">
+                    Top Departments
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    {departments.slice(0, 3).map((dept) => {
+                      const deptReviews = filteredData.filter(r => r.department_id === dept.id);
+                      const avgRating = deptReviews.length > 0 
+                        ? deptReviews.reduce((sum, r) => sum + r.rating, 0) / deptReviews.length 
+                        : 0;
+                      const color = avgRating >= 4.5 ? 'text-[#00ca6f]' : avgRating >= 4.0 ? 'text-[#0066cc]' : 'text-yellow-600';
+                      return (
+                        <div key={dept.id} className="text-center flex-1">
+                          <div className="text-xs text-gray-600 font-semibold mb-1 truncate">{dept.name}</div>
+                          <div className={`text-xl font-black ${color}`}>{avgRating.toFixed(1)}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="text-xs text-indigo-700 font-bold uppercase tracking-wide">4 Tables</div>
               </div>
             </div>
           }
