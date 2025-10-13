@@ -5,6 +5,7 @@ import { ArrowDownIcon, ArrowUpIcon } from "@/icons";
 import { Star, MessageCircle, Award, AlertTriangle, ThumbsUp, TrendingUp, TrendingDown, BarChart3, Sparkles, ChevronRight } from "lucide-react";
 import { MetricsSummary } from "@/data/dataService";
 import { useEffect, useState, useRef } from "react";
+import AnimatedNumber from "@/components/AnimatedNumber";
 
 interface EnhancedMetricsGridProps {
   metrics: MetricsSummary;
@@ -13,23 +14,10 @@ interface EnhancedMetricsGridProps {
 }
 
 export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComparison }: EnhancedMetricsGridProps) {
-  // State for smooth count-up animations
-  const [displayedFiveStarRate, setDisplayedFiveStarRate] = useState(0);
-  const [displayedTotal, setDisplayedTotal] = useState(0);
-  const [displayedAvgRating, setDisplayedAvgRating] = useState(0);
-  const [displayedProblems, setDisplayedProblems] = useState(0);
-  
   // Animation state for staggered entrance
   const [isVisible, setIsVisible] = useState(false);
   
-  // Reduced motion preference
-  const prefersReducedMotion = useRef(false);
-  
   useEffect(() => {
-    // Check for reduced motion preference
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    prefersReducedMotion.current = mediaQuery.matches;
-    
     // Trigger entrance animation
     setIsVisible(true);
   }, []);
@@ -99,52 +87,6 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
   // Check if status is excellent for special styling
   const isExcellent = healthStatus.status === "Excellent";
   
-  // Count-up animation with staggered timing
-  useEffect(() => {
-    if (prefersReducedMotion.current) {
-      // Skip animation for reduced motion preference
-      setDisplayedFiveStarRate(fiveStarRate);
-      setDisplayedTotal(metrics.total);
-      setDisplayedAvgRating(metrics.avg_rating);
-      setDisplayedProblems(problemReviews);
-      return;
-    }
-    
-    // Reset to 0 first for the animation effect
-    setDisplayedFiveStarRate(0);
-    setDisplayedTotal(0);
-    setDisplayedAvgRating(0);
-    setDisplayedProblems(0);
-    
-    const duration = 1800; // Slightly longer for more elegance
-    const steps = 100; // More steps for ultra-smooth motion
-    const stepDuration = duration / steps;
-    
-    let currentStep = 0;
-    const interval = setInterval(() => {
-      currentStep++;
-      const progress = currentStep / steps;
-      // Elegant ease-out curve
-      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-      
-      setDisplayedFiveStarRate(fiveStarRate * easeOutQuart);
-      setDisplayedTotal(Math.floor(metrics.total * easeOutQuart));
-      setDisplayedAvgRating(metrics.avg_rating * easeOutQuart);
-      setDisplayedProblems(Math.floor(problemReviews * easeOutQuart));
-      
-      if (currentStep >= steps) {
-        clearInterval(interval);
-        // Set final values to ensure precision
-        setDisplayedFiveStarRate(fiveStarRate);
-        setDisplayedTotal(metrics.total);
-        setDisplayedAvgRating(metrics.avg_rating);
-        setDisplayedProblems(problemReviews);
-      }
-    }, stepDuration);
-    
-    return () => clearInterval(interval);
-  }, [fiveStarRate, metrics.total, metrics.avg_rating, problemReviews]);
-  
   // Mini sparkline component for trends
   const TrendSparkline = ({ change }: { change: any }) => {
     if (!change) return null;
@@ -184,7 +126,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
           }}
           role="button"
           tabIndex={0}
-          aria-label={`Customer Satisfaction: ${displayedFiveStarRate.toFixed(1)}% - ${healthStatus.status}`}
+          aria-label={`Customer Satisfaction: ${fiveStarRate.toFixed(1)}% - ${healthStatus.status}`}
         >
           {/* Premium gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/30 to-transparent pointer-events-none" />
@@ -237,7 +179,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
                   ? 'text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-emerald-600 to-green-600 dark:from-green-400 dark:via-emerald-400 dark:to-green-400 drop-shadow-sm' 
                   : 'text-gray-900 dark:text-white'
               }`}>
-                {displayedFiveStarRate.toFixed(1)}
+                <AnimatedNumber value={fiveStarRate} decimals={1} duration={800} />
                 <span className="text-2xl sm:text-3xl ml-0.5">%</span>
               </h4>
               {satisfactionChange && <TrendSparkline change={satisfactionChange} />}
@@ -290,7 +232,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
           }}
           role="button"
           tabIndex={0}
-          aria-label={`Total Reviews: ${displayedTotal.toLocaleString()}`}
+          aria-label={`Total Reviews: ${metrics.total.toLocaleString()}`}
         >
           {/* Premium gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/30 to-transparent pointer-events-none" />
@@ -331,7 +273,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
                   ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-700 to-blue-600 dark:from-blue-400 dark:via-blue-500 dark:to-blue-400 drop-shadow-sm' 
                   : 'text-gray-900 dark:text-white'
               }`}>
-                {displayedTotal.toLocaleString()}
+                <AnimatedNumber value={metrics.total} decimals={0} duration={800} />
               </h4>
               {totalChange && <TrendSparkline change={totalChange} />}
             </div>
@@ -378,7 +320,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
           }}
           role="button"
           tabIndex={0}
-          aria-label={`Average Rating: ${displayedAvgRating.toFixed(2)} out of 5`}
+          aria-label={`Average Rating: ${metrics.avg_rating.toFixed(2)} out of 5`}
         >
           {/* Premium gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/30 to-transparent pointer-events-none" />
@@ -424,7 +366,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
                   ? 'text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-600 dark:from-amber-400 dark:via-yellow-400 dark:to-amber-400 drop-shadow-sm' 
                   : 'text-gray-900 dark:text-white'
               }`}>
-                {displayedAvgRating.toFixed(2)}
+                <AnimatedNumber value={metrics.avg_rating} decimals={2} duration={800} />
               </h4>
               <Star className={`size-6 sm:size-7 ${
                 metrics.avg_rating >= 4.8 ? 'text-amber-600 fill-amber-600 dark:text-amber-400 dark:fill-amber-400' : 'text-amber-500 fill-amber-500 dark:text-amber-400 dark:fill-amber-400'
@@ -479,7 +421,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
           }}
           role="button"
           tabIndex={0}
-          aria-label={`Problem Reviews: ${displayedProblems} - ${isProblemIncreasing ? 'Alert Increasing' : problemReviews === 0 ? 'All Clear' : 'Review Required'}`}
+          aria-label={`Problem Reviews: ${problemReviews} - ${isProblemIncreasing ? 'Alert Increasing' : problemReviews === 0 ? 'All Clear' : 'Review Required'}`}
         >
           {/* Premium gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/30 to-transparent pointer-events-none" />
@@ -569,7 +511,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
                   ? 'text-gray-900 dark:text-white'
                   : 'text-gray-500 dark:text-gray-400'
               }`}>
-                {displayedProblems}
+                <AnimatedNumber value={problemReviews} decimals={0} duration={800} />
               </h4>
               {problemChange && problemReviews > 0 && <TrendSparkline change={problemChange} />}
             </div>

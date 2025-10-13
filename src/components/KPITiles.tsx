@@ -2,6 +2,7 @@
 
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { MetricsSummary } from '@/data/dataService'
+import AnimatedNumber from './AnimatedNumber'
 
 interface KPITilesProps {
   metrics: MetricsSummary
@@ -68,11 +69,24 @@ function KPITile({ label, value, previousValue, showComparison, format = 'number
   
   const color = getColor()
   
+  // Determine if value is numeric and get proper decimals
+  const numericValue = typeof value === 'number' ? value : 0;
+  const decimals = format === 'decimal' ? 2 : format === 'percentage' ? 1 : 0;
+  
   return (
     <div className="bg-white rounded-md border border-[#E3E8EE] p-5 transition-all duration-150 hover:shadow-soft">
       <div className="text-xs font-medium text-[#8898AA] mb-1 tracking-wide">{label}</div>
       <div className="text-3xl font-semibold tracking-tight text-[#0A2540] leading-tight">
-        {formatValue(value, format)}
+        {typeof value === 'number' ? (
+          <AnimatedNumber 
+            value={numericValue} 
+            decimals={decimals}
+            suffix={format === 'percentage' ? '%' : ''}
+            duration={600}
+          />
+        ) : (
+          formatValue(value, format)
+        )}
       </div>
       
       {delta && (

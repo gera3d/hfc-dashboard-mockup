@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from 'next/navigation';
 import { Trophy, Building2, AlertTriangle, BarChart3 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import AnimatedNumber from '@/components/AnimatedNumber';
 import { 
   loadReviews, 
   loadAgents, 
@@ -613,7 +614,9 @@ export default function DashboardPage() {
                       const percent = total > 0 ? Math.round((count / total) * 100) : 0;
                       return (
                         <div key={star} className="text-center">
-                          <div className="text-xl font-black text-gray-900">{percent}%</div>
+                          <div className="text-xl font-black text-gray-900">
+                            <AnimatedNumber value={percent} decimals={0} duration={600} suffix="%" />
+                          </div>
                           <div className="text-xs text-gray-500 font-semibold">{star}★</div>
                         </div>
                       );
@@ -641,7 +644,9 @@ export default function DashboardPage() {
                       return (
                         <div key={dept.id} className="text-center flex-1">
                           <div className="text-xs text-gray-600 font-semibold mb-1 truncate">{dept.name}</div>
-                          <div className={`text-xl font-black ${color}`}>{avgRating.toFixed(1)}</div>
+                          <div className={`text-xl font-black ${color}`}>
+                            <AnimatedNumber value={avgRating} decimals={1} duration={600} />
+                          </div>
                         </div>
                       );
                     })}
