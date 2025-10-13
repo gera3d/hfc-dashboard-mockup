@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Trophy, Building2, AlertTriangle, BarChart3 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import AnimatedNumber from '@/components/AnimatedNumber';
+import FadeInSection from '@/components/FadeInSection';
 import { 
   loadReviews, 
   loadAgents, 
@@ -330,36 +331,43 @@ export default function DashboardPage() {
         )}
         
         {/* Beautiful Time Period Selector - Now shown in all themes */}
-        <TimePeriodSelector
-          selectedRange={filters.dateRange}
-          compareMode={filters.compareMode}
-          onRangeChange={(range) => setFilters(prev => ({ ...prev, dateRange: range }))}
-          onCompareModeChange={(enabled) => setFilters(prev => ({ ...prev, compareMode: enabled }))}
-          dateRanges={dateRanges}
-        />
+        <FadeInSection delay={50} direction="down" duration={500}>
+          <TimePeriodSelector
+            selectedRange={filters.dateRange}
+            compareMode={filters.compareMode}
+            onRangeChange={(range) => setFilters(prev => ({ ...prev, dateRange: range }))}
+            onCompareModeChange={(enabled) => setFilters(prev => ({ ...prev, compareMode: enabled }))}
+            dateRanges={dateRanges}
+          />
+        </FadeInSection>
 
         {/* Rating Distribution Widget - Conditionally shown based on settings */}
         {displayPrefs.showRatingDistribution && (
-          <RatingDistributionWidget 
-            metrics={currentMetrics} 
-            reviews={filteredData}
-            showDonut={true}
-          />
+          <FadeInSection delay={250} direction="up" duration={500}>
+            <RatingDistributionWidget 
+              metrics={currentMetrics} 
+              reviews={filteredData}
+              showDonut={true}
+            />
+          </FadeInSection>
         )}
 
       {/* KPI Metrics - Enhanced TailAdmin Style */}
-      <EnhancedMetricsGrid 
-        metrics={currentMetrics} 
-        previousMetrics={comparisonData}
-        showComparison={filters.compareMode}
-      />
+      <FadeInSection delay={400} direction="up" duration={500}>
+        <EnhancedMetricsGrid 
+          metrics={currentMetrics} 
+          previousMetrics={comparisonData}
+          showComparison={filters.compareMode}
+        />
+      </FadeInSection>
 
       {/* Unified Agent Rankings */}
-      <div className="mt-8">
-        <CollapsibleSection
-          sectionId="agent-rankings"
-          isExpanded={expandedSection === 'agent-rankings'}
-          onToggle={() => handleSectionToggle('agent-rankings')}
+      <FadeInSection delay={800} direction="up" duration={500}>
+        <div className="mt-8">
+          <CollapsibleSection
+            sectionId="agent-rankings"
+            isExpanded={expandedSection === 'agent-rankings'}
+            onToggle={() => handleSectionToggle('agent-rankings')}
           title="Agent Performance Rankings"
           subtitle="Top performing agents by review volume and ratings"
           badge="Top 10"
@@ -429,12 +437,14 @@ export default function DashboardPage() {
             limit={10} 
           />
         </CollapsibleSection>
-      </div>
+        </div>
+      </FadeInSection>
 
       {/* Department Performance Rankings */}
-      <div className="mt-8">
-        <CollapsibleSection
-          sectionId="department-rankings"
+      <FadeInSection delay={1100} direction="up" duration={500}>
+        <div className="mt-8">
+          <CollapsibleSection
+            sectionId="department-rankings"
           isExpanded={expandedSection === 'department-rankings'}
           onToggle={() => handleSectionToggle('department-rankings')}
           title="Department Performance Rankings"
@@ -521,13 +531,15 @@ export default function DashboardPage() {
             limit={10} 
           />
         </CollapsibleSection>
-      </div>
+        </div>
+      </FadeInSection>
 
       {/* Problem Feedback Section - Low-rated reviews with comments */}
-      <div className="mt-8">
-        <CollapsibleSection
-          sectionId="problem-feedback"
-          isExpanded={expandedSection === 'problem-feedback'}
+      <FadeInSection delay={1400} direction="up" duration={500}>
+        <div className="mt-8">
+          <CollapsibleSection
+            sectionId="problem-feedback"
+            isExpanded={expandedSection === 'problem-feedback'}
           onToggle={() => handleSectionToggle('problem-feedback')}
           title="Problem Feedback"
           subtitle="Low-rated reviews requiring attention"
@@ -584,14 +596,16 @@ export default function DashboardPage() {
         >
           <ProblemFeedback reviews={filteredData} />
         </CollapsibleSection>
-      </div>
+        </div>
+      </FadeInSection>
 
       {/* Detailed Analytics Collapsible Section */}
-      <div className="mt-8">
-        <CollapsibleSection
-          sectionId="detailed-analytics"
-          isExpanded={expandedSection === 'detailed-analytics'}
-          onToggle={() => handleSectionToggle('detailed-analytics')}
+      <FadeInSection delay={1700} direction="up" duration={500}>
+        <div className="mt-8">
+          <CollapsibleSection
+            sectionId="detailed-analytics"
+            isExpanded={expandedSection === 'detailed-analytics'}
+            onToggle={() => handleSectionToggle('detailed-analytics')}
           title="Detailed Analytics & Reports"
           subtitle="Comprehensive trends, charts, and data tables"
           badge="Advanced"
@@ -710,7 +724,8 @@ export default function DashboardPage() {
             </div>
           </div>
         </CollapsibleSection>
-      </div>
+        </div>
+      </FadeInSection>
       </div>
     </DashboardLayout>
   );

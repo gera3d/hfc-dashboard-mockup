@@ -14,12 +14,25 @@ interface EnhancedMetricsGridProps {
 }
 
 export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComparison }: EnhancedMetricsGridProps) {
-  // Animation state for staggered entrance
-  const [isVisible, setIsVisible] = useState(false);
+  // Individual animation states for each card
+  const [card1Visible, setCard1Visible] = useState(false);
+  const [card2Visible, setCard2Visible] = useState(false);
+  const [card3Visible, setCard3Visible] = useState(false);
+  const [card4Visible, setCard4Visible] = useState(false);
   
   useEffect(() => {
-    // Trigger entrance animation
-    setIsVisible(true);
+    // Stagger each card with 150ms delay
+    const timer1 = setTimeout(() => setCard1Visible(true), 100);
+    const timer2 = setTimeout(() => setCard2Visible(true), 250);
+    const timer3 = setTimeout(() => setCard3Visible(true), 400);
+    const timer4 = setTimeout(() => setCard4Visible(true), 550);
+    
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+      clearTimeout(timer4);
+    };
   }, []);
   
   // Calculate key metrics
@@ -115,7 +128,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
         {/* 1. CUSTOMER SATISFACTION - Primary Metric for Business Owner */}
         <div 
           className={`group relative flex flex-col rounded-xl sm:rounded-2xl border-2 p-5 sm:p-7 transition-all duration-500 cursor-pointer overflow-hidden
-            ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
+            ${card1Visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
             hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.99]
             ${isExcellent 
               ? 'border-green-400/80 bg-gradient-to-br from-green-100/80 via-white to-emerald-100/60 dark:border-green-500/70 dark:from-green-900/50 dark:via-gray-800 dark:to-emerald-900/40 shadow-2xl shadow-green-300/80 dark:shadow-green-700/60' 
@@ -221,7 +234,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
         {/* 2. TOTAL REVIEWS - Volume Indicator */}
         <div 
           className={`group relative flex flex-col rounded-xl sm:rounded-2xl border-2 p-5 sm:p-7 transition-all duration-500 cursor-pointer overflow-hidden
-            ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
+            ${card2Visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
             hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.99]
             ${isReviewsOnFire
               ? 'border-blue-400/80 bg-gradient-to-br from-blue-100/80 via-white to-orange-100/50 dark:border-blue-500/70 dark:from-blue-900/50 dark:via-gray-800 dark:to-orange-900/30 shadow-2xl shadow-blue-300/80 dark:shadow-blue-700/60'
@@ -309,7 +322,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
         {/* 3. AVERAGE RATING - Quality Metric */}
         <div 
           className={`group relative flex flex-col rounded-xl sm:rounded-2xl border-2 p-5 sm:p-7 transition-all duration-500 cursor-pointer overflow-hidden
-            ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
+            ${card3Visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
             hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.99]
             ${metrics.avg_rating >= 4.8
               ? 'border-amber-400/80 bg-gradient-to-br from-amber-100/80 via-white to-yellow-100/60 dark:border-amber-500/70 dark:from-amber-900/50 dark:via-gray-800 dark:to-yellow-900/40 shadow-2xl shadow-amber-300/80 dark:shadow-amber-700/60'
@@ -406,7 +419,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
         {/* 4. PROBLEM REVIEWS - Critical Alert Metric */}
         <div 
           className={`group relative flex flex-col rounded-xl sm:rounded-2xl border-2 p-5 sm:p-7 transition-all duration-500 cursor-pointer overflow-hidden
-            ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
+            ${card4Visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
             hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.99]
             ${isProblemIncreasing 
               ? "border-red-500/90 bg-gradient-to-br from-red-100/90 via-white to-red-100/70 dark:border-red-500/80 dark:from-red-900/60 dark:via-gray-800 dark:to-red-900/50 shadow-2xl shadow-red-400/90 dark:shadow-red-700/70" 
