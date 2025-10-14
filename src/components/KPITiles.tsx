@@ -3,6 +3,7 @@
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { MetricsSummary } from '@/data/dataService'
 import AnimatedNumber from './AnimatedNumber'
+import { useState, useEffect, useRef } from 'react'
 
 interface KPITilesProps {
   metrics: MetricsSummary
@@ -114,58 +115,126 @@ function KPITile({ label, value, previousValue, showComparison, format = 'number
 }
 
 export default function KPITiles({ metrics, previousMetrics, showComparison }: KPITilesProps) {
+  const [currentMetrics, setCurrentMetrics] = useState(metrics);
+  const [oldMetrics, setOldMetrics] = useState(metrics);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const prevMetricsRef = useRef(metrics);
+  
+  useEffect(() => {
+    // Detect when metrics change (time period switch)
+    if (prevMetricsRef.current.total !== metrics.total || 
+        prevMetricsRef.current.avg_rating !== metrics.avg_rating) {
+      
+      // Store old metrics for exit animation
+      setOldMetrics(currentMetrics);
+      setIsTransitioning(true);
+      
+      // After brief delay, update to new metrics (for entrance animation)
+      setTimeout(() => {
+        setCurrentMetrics(metrics);
+      }, 50);
+      
+      // Clean up transition state after animations complete
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 800);
+    }
+    prevMetricsRef.current = metrics;
+  }, [metrics, currentMetrics]);
+  
+  const renderTiles = (metricsData: MetricsSummary, isExiting: boolean) => {
+    const getCardAnimation = (index: number) => {
+      const delay = index * 50; // 50ms stagger
+      return isExiting ? 'animate-slide-out-left' : (isTransitioning ? 'animate-slide-in-right' : '');
+    };
+    
+    const getCardStyle = (index: number) => ({
+      animationDelay: `${index * 50}ms`
+    });
+    
+    return (
+      <>
+        <div className={getCardAnimation(0)} style={getCardStyle(0)}>
+          <KPITile
+            label="1★ Reviews"
+            value={metricsData.star_1}
+            previousValue={previousMetrics?.star_1}
+            showComparison={showComparison}
+            colorClass="text-red-600"
+          />
+        </div>
+        <div className={getCardAnimation(1)} style={getCardStyle(1)}>
+          <KPITile
+            label="2★ Reviews"
+            value={metricsData.star_2}
+            previousValue={previousMetrics?.star_2}
+            showComparison={showComparison}
+            colorClass="text-orange-600"
+          />
+        </div>
+        <div className={getCardAnimation(2)} style={getCardStyle(2)}>
+          <KPITile
+            label="3★ Reviews"
+            value={metricsData.star_3}
+            previousValue={previousMetrics?.star_3}
+            showComparison={showComparison}
+            colorClass="text-yellow-600"
+          />
+        </div>
+        <div className={getCardAnimation(3)} style={getCardStyle(3)}>
+          <KPITile
+            label="4★ Reviews"
+            value={metricsData.star_4}
+            previousValue={previousMetrics?.star_4}
+            showComparison={showComparison}
+            colorClass="text-lime-600"
+          />
+        </div>
+        <div className={getCardAnimation(4)} style={getCardStyle(4)}>
+          <KPITile
+            label="5★ Reviews"
+            value={metricsData.star_5}
+            previousValue={previousMetrics?.star_5}
+            showComparison={showComparison}
+            colorClass="text-green-600"
+          />
+        </div>
+        <div className={getCardAnimation(5)} style={getCardStyle(5)}>
+          <KPITile
+            label="Total Reviews"
+            value={metricsData.total}
+            previousValue={previousMetrics?.total}
+            showComparison={showComparison}
+            colorClass="text-blue-600"
+          />
+        </div>
+        <div className={getCardAnimation(6)} style={getCardStyle(6)}>
+          <KPITile
+            label="Average Rating"
+            value={metricsData.avg_rating}
+            previousValue={previousMetrics?.avg_rating}
+            showComparison={showComparison}
+            format="decimal"
+            colorClass="text-purple-600"
+          />
+        </div>
+      </>
+    );
+  };
+  
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      <KPITile
-        label="1★ Reviews"
-        value={metrics.star_1}
-        previousValue={previousMetrics?.star_1}
-        showComparison={showComparison}
-        colorClass="text-red-600"
-      />
-      <KPITile
-        label="2★ Reviews"
-        value={metrics.star_2}
-        previousValue={previousMetrics?.star_2}
-        showComparison={showComparison}
-        colorClass="text-orange-600"
-      />
-      <KPITile
-        label="3★ Reviews"
-        value={metrics.star_3}
-        previousValue={previousMetrics?.star_3}
-        showComparison={showComparison}
-        colorClass="text-yellow-600"
-      />
-      <KPITile
-        label="4★ Reviews"
-        value={metrics.star_4}
-        previousValue={previousMetrics?.star_4}
-        showComparison={showComparison}
-        colorClass="text-lime-600"
-      />
-      <KPITile
-        label="5★ Reviews"
-        value={metrics.star_5}
-        previousValue={previousMetrics?.star_5}
-        showComparison={showComparison}
-        colorClass="text-green-600"
-      />
-      <KPITile
-        label="Total Reviews"
-        value={metrics.total}
-        previousValue={previousMetrics?.total}
-        showComparison={showComparison}
-        colorClass="text-blue-600"
-      />
-      <KPITile
-        label="Average Rating"
-        value={metrics.avg_rating}
-        previousValue={previousMetrics?.avg_rating}
-        showComparison={showComparison}
-        format="decimal"
-        colorClass="text-purple-600"
-      />
+    <div className="relative min-h-[120px] mb-8">
+      {/* OLD TILES - Exiting */}
+      {isTransitioning && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 absolute inset-0 w-full pointer-events-none">
+          {renderTiles(oldMetrics, true)}
+        </div>
+      )}
+      
+      {/* NEW TILES - Entering */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {renderTiles(currentMetrics, false)}
+      </div>
     </div>
-  )
+  );
 }

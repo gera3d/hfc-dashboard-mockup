@@ -930,3 +930,34 @@ body {
 .hfc .text-indigo-600 {
   color: var(--hfc-blue-primary) !important;
 }
+
+/* Minority Report style card transitions */
+@keyframes slideOutLeft {
+  0% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-150%) scale(0.3);
+    opacity: 0;
+  }
+}
+
+@keyframes slideInRight {
+  0% {
+    transform: translateX(150%) scale(0.3);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-slide-out-left {
+  animation: slideOutLeft 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.35s cubic-bezier(0, 0, 0.2, 1) forwards;
+}

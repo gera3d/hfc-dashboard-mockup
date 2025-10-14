@@ -14,26 +14,32 @@ interface EnhancedMetricsGridProps {
 }
 
 export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComparison }: EnhancedMetricsGridProps) {
-  // Individual animation states for each card
-  const [card1Visible, setCard1Visible] = useState(false);
-  const [card2Visible, setCard2Visible] = useState(false);
-  const [card3Visible, setCard3Visible] = useState(false);
-  const [card4Visible, setCard4Visible] = useState(false);
+  const [currentMetrics, setCurrentMetrics] = useState(metrics);
+  const [oldMetrics, setOldMetrics] = useState(metrics);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const prevMetricsRef = useRef(metrics);
   
   useEffect(() => {
-    // Stagger each card with 150ms delay
-    const timer1 = setTimeout(() => setCard1Visible(true), 100);
-    const timer2 = setTimeout(() => setCard2Visible(true), 250);
-    const timer3 = setTimeout(() => setCard3Visible(true), 400);
-    const timer4 = setTimeout(() => setCard4Visible(true), 550);
-    
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-      clearTimeout(timer4);
-    };
-  }, []);
+    // Detect when metrics change (time period switch)
+    if (prevMetricsRef.current.total !== metrics.total || 
+        prevMetricsRef.current.avg_rating !== metrics.avg_rating) {
+      
+      // Store old metrics for exit animation
+      setOldMetrics(currentMetrics);
+      setIsTransitioning(true);
+      
+      // After brief delay, update to new metrics (for entrance animation)
+      setTimeout(() => {
+        setCurrentMetrics(metrics);
+      }, 50);
+      
+      // Clean up transition state after animations complete
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 800);
+    }
+    prevMetricsRef.current = metrics;
+  }, [metrics, currentMetrics]);
   
   // Calculate key metrics
   const fiveStarRate = (metrics.star_5 / metrics.total) * 100;
@@ -122,21 +128,72 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
   
   return (
     <div className="space-y-6">
-      {/* ALL METRICS - RESPONSIVE GRID: 2 cols mobile, 4 cols desktop */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 md:gap-6">
+      {/* Container with relative positioning for overlay */}
+      <div className="relative min-h-[200px]">
         
-        {/* 1. CUSTOMER SATISFACTION - Primary Metric for Business Owner */}
+        {/* OLD CARDS - Exiting to left with stagger */}
+        {isTransitioning && (
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 md:gap-6 absolute inset-0 w-full pointer-events-none">
+            {renderCards(oldMetrics, true)}
+          </div>
+        )}
+        
+        {/* NEW CARDS - Entering from right with stagger */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 md:gap-6">
+          {renderCards(currentMetrics, false)}
+        </div>
+      </div>
+    </div>
+  );
+  
+  function renderCards(metricsData: MetricsSummary, isExiting: boolean) {
+    const fiveStarRate = (metricsData.star_5 / metricsData.total) * 100;
+    const problemReviews = metricsData.star_1 + metricsData.star_2;
+    const positiveReviews = metricsData.star_4 + metricsData.star_5;
+    
+    const prevFiveStarRate = previousMetrics ? (previousMetrics.star_5 / previousMetrics.total) * 100 : null;
+    const prevProblemReviews = previousMetrics ? previousMetrics.star_1 + previousMetrics.star_2 : null;
+    
+    const satisfactionChange = getChange(fiveStarRate, prevFiveStarRate);
+    const totalChange = getChange(metricsData.total, previousMetrics?.total || null);
+    const ratingChange = getChange(metricsData.avg_rating, previousMetrics?.avg_rating || null);
+    const problemChange = getChange(problemReviews, prevProblemReviews);
+    
+    const healthStatus = getHealthStatus();
+    const isExcellent = fiveStarRate >= 90;
+    const isReviewsOnFire = metricsData.total > 100;
+    const isProblemIncreasing = problemChange && problemChange.isPositive;
+    
+    // Animation classes with staggered delays
+    const getCardAnimation = (index: number) => {
+      const delay = index * 60; // 60ms stagger between cards
+      if (isExiting) {
+        return `animate-slide-out-left opacity-100`;
+      } else if (isTransitioning) {
+        return `animate-slide-in-right opacity-0`;
+      }
+      return 'opacity-100';
+    };
+    
+    const getCardStyle = (index: number) => {
+      const delay = index * 60;
+      return {
+        animationDelay: `${delay}ms`
+      };
+    };
+    
+    return (
+      <>
+        {/* 1. CUSTOMER SATISFACTION */}
         <div 
-          className={`group relative flex flex-col rounded-xl sm:rounded-2xl border-2 p-5 sm:p-7 transition-all duration-500 cursor-pointer overflow-hidden
-            ${card1Visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
+          className={`group relative flex flex-col rounded-xl sm:rounded-2xl border-2 p-5 sm:p-7 transition-all cursor-pointer overflow-hidden
+            ${getCardAnimation(0)}
             hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.99]
             ${isExcellent 
               ? 'border-green-400/80 bg-gradient-to-br from-green-100/80 via-white to-emerald-100/60 dark:border-green-500/70 dark:from-green-900/50 dark:via-gray-800 dark:to-emerald-900/40 shadow-2xl shadow-green-300/80 dark:shadow-green-700/60' 
               : 'border-gray-300/70 bg-white dark:border-gray-600/60 dark:bg-gray-800/70 hover:border-green-300/70 dark:hover:border-green-600/60 hover:shadow-xl shadow-md'
           }`}
-          style={{ 
-            transitionDelay: '0ms'
-          }}
+          style={getCardStyle(0)}
           role="button"
           tabIndex={0}
           aria-label={`Customer Satisfaction: ${fiveStarRate.toFixed(1)}% - ${healthStatus.status}`}
@@ -233,19 +290,17 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
 
         {/* 2. TOTAL REVIEWS - Volume Indicator */}
         <div 
-          className={`group relative flex flex-col rounded-xl sm:rounded-2xl border-2 p-5 sm:p-7 transition-all duration-500 cursor-pointer overflow-hidden
-            ${card2Visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
+          className={`group relative flex flex-col rounded-xl sm:rounded-2xl border-2 p-5 sm:p-7 transition-all cursor-pointer overflow-hidden
+            ${getCardAnimation(1)}
             hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.99]
             ${isReviewsOnFire
               ? 'border-blue-400/80 bg-gradient-to-br from-blue-100/80 via-white to-orange-100/50 dark:border-blue-500/70 dark:from-blue-900/50 dark:via-gray-800 dark:to-orange-900/30 shadow-2xl shadow-blue-300/80 dark:shadow-blue-700/60'
               : 'border-gray-300/70 bg-white dark:border-gray-600/60 dark:bg-gray-800/70 hover:border-blue-300/70 dark:hover:border-blue-600/60 hover:shadow-xl shadow-md'
           }`}
-          style={{ 
-            transitionDelay: '100ms'
-          }}
+          style={getCardStyle(1)}
           role="button"
           tabIndex={0}
-          aria-label={`Total Reviews: ${metrics.total.toLocaleString()}`}
+          aria-label={`Total Reviews: ${metricsData.total.toLocaleString()}`}
         >
           {/* Premium gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/30 to-transparent pointer-events-none" />
@@ -321,19 +376,17 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
 
         {/* 3. AVERAGE RATING - Quality Metric */}
         <div 
-          className={`group relative flex flex-col rounded-xl sm:rounded-2xl border-2 p-5 sm:p-7 transition-all duration-500 cursor-pointer overflow-hidden
-            ${card3Visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
+          className={`group relative flex flex-col rounded-xl sm:rounded-2xl border-2 p-5 sm:p-7 transition-all cursor-pointer overflow-hidden
+            ${getCardAnimation(2)}
             hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.99]
-            ${metrics.avg_rating >= 4.8
+            ${metricsData.avg_rating >= 4.8
               ? 'border-amber-400/80 bg-gradient-to-br from-amber-100/80 via-white to-yellow-100/60 dark:border-amber-500/70 dark:from-amber-900/50 dark:via-gray-800 dark:to-yellow-900/40 shadow-2xl shadow-amber-300/80 dark:shadow-amber-700/60'
               : 'border-gray-300/70 bg-white dark:border-gray-600/60 dark:bg-gray-800/70 hover:border-amber-300/70 dark:hover:border-amber-600/60 hover:shadow-xl shadow-md'
           }`}
-          style={{ 
-            transitionDelay: '200ms'
-          }}
+          style={getCardStyle(2)}
           role="button"
           tabIndex={0}
-          aria-label={`Average Rating: ${metrics.avg_rating.toFixed(2)} out of 5`}
+          aria-label={`Average Rating: ${metricsData.avg_rating.toFixed(2)} out of 5`}
         >
           {/* Premium gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/30 to-transparent pointer-events-none" />
@@ -418,8 +471,8 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
 
         {/* 4. PROBLEM REVIEWS - Critical Alert Metric */}
         <div 
-          className={`group relative flex flex-col rounded-xl sm:rounded-2xl border-2 p-5 sm:p-7 transition-all duration-500 cursor-pointer overflow-hidden
-            ${card4Visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
+          className={`group relative flex flex-col rounded-xl sm:rounded-2xl border-2 p-5 sm:p-7 transition-all cursor-pointer overflow-hidden
+            ${getCardAnimation(3)}
             hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.99]
             ${isProblemIncreasing 
               ? "border-red-500/90 bg-gradient-to-br from-red-100/90 via-white to-red-100/70 dark:border-red-500/80 dark:from-red-900/60 dark:via-gray-800 dark:to-red-900/50 shadow-2xl shadow-red-400/90 dark:shadow-red-700/70" 
@@ -429,9 +482,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
               ? "border-orange-300/70 bg-white dark:border-orange-600/60 dark:bg-gray-800/70 hover:border-orange-400/80 dark:hover:border-orange-500/70 hover:shadow-xl shadow-md"
               : "border-gray-300/70 bg-white dark:border-gray-600/60 dark:bg-gray-800/70 hover:border-green-300/70 dark:hover:border-green-600/60 hover:shadow-xl shadow-md"
           }`}
-          style={{ 
-            transitionDelay: '300ms'
-          }}
+          style={getCardStyle(3)}
           role="button"
           tabIndex={0}
           aria-label={`Problem Reviews: ${problemReviews} - ${isProblemIncreasing ? 'Alert Increasing' : problemReviews === 0 ? 'All Clear' : 'Review Required'}`}
@@ -578,10 +629,9 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
               : 'bg-gradient-to-br from-green-400/0 via-green-400/0 to-green-400/5'
           }`} />
         </div>
-
-      </div>
-    </div>
-  );
+      </>
+    );
+  }
 }
 
 
