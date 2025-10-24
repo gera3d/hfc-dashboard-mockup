@@ -19,6 +19,7 @@ import {
   mergeDepartments
 } from '@/lib/localStorage';
 import { AgentDepartmentManager } from '@/components/AgentDepartmentManager';
+import PerformanceTierGuide from '@/components/dashboard/PerformanceTierGuide';
 import type { Agent, Department } from '@/data/dataService';
 import { 
   loadDisplayPreferences, 
@@ -340,6 +341,18 @@ export default function SettingsPage() {
                 </span>
               </label>
             </div>
+          </div>
+        </div>
+
+        {/* Performance Tier Guide Section */}
+        <div className="bg-white rounded-xl border-2 border-gray-200 shadow-sm mb-6">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900">Performance Tier System</h2>
+            <p className="text-sm text-gray-500 mt-1">Learn how we rank and evaluate your metrics</p>
+          </div>
+          
+          <div className="p-6">
+            <PerformanceTierGuide />
           </div>
         </div>
 

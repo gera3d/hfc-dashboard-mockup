@@ -91,14 +91,14 @@ export default function TimePeriodSelector({
                 key={period.key}
                 onClick={() => onRangeChange(dateRanges[period.key])}
                 data-period-selector="true"
-                className={`relative group flex flex-col items-center justify-center p-1.5 rounded transition-all duration-200 ${
+                className={`relative group flex flex-col items-center justify-center p-1.5 rounded transition-all duration-200 focus:outline-none focus:ring-2 ${
                   isSelected
                     ? isHFC
-                      ? 'bg-[#1e5a8e] text-white'
-                      : 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white'
+                      ? 'bg-[#1e5a8e] text-white shadow-lg shadow-[#1e5a8e]/30 focus:ring-[#f5b942]/50'
+                      : 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30 focus:ring-indigo-400/50'
                     : isHFC
-                      ? 'bg-white/5 border border-white/10 hover:bg-white/10 text-white/90'
-                      : 'bg-white dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600'
+                      ? 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white/90 focus:ring-white/20'
+                      : 'bg-white/50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200 hover:shadow-md focus:ring-indigo-300 dark:focus:ring-indigo-500'
                 }`}
               >
                 

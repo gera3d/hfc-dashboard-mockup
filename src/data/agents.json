@@ -4,55 +4,55 @@
     "agent_key": "GregH",
     "display_name": "Greg H.",
     "department_id": "dept-1",
-    "image_url": "https://hp-prod-wp-data.s3.us-west-1.amazonaws.com/content/agents/gregh.png"
+    "image_url": "https://hello.why57.com/wp-content/uploads/2025/08/GregH.png"
   },
   {
     "id": "agent-2",
     "agent_key": "SarahM",
     "display_name": "Sarah M.",
     "department_id": "dept-1",
-    "image_url": "https://hp-prod-wp-data.s3.us-west-1.amazonaws.com/content/agents/sarahm.png"
+    "image_url": "https://hello.why57.com/wp-content/uploads/2025/08/SarahM.png"
   },
   {
     "id": "agent-3",
     "agent_key": "MikeD",
     "display_name": "Mike D.",
     "department_id": "dept-2",
-    "image_url": "https://hp-prod-wp-data.s3.us-west-1.amazonaws.com/content/agents/miked.png"
+    "image_url": "https://hello.why57.com/wp-content/uploads/2025/08/MikeD.png"
   },
   {
     "id": "agent-4",
     "agent_key": "LisaK",
     "display_name": "Lisa K.",
     "department_id": "dept-2",
-    "image_url": "https://hp-prod-wp-data.s3.us-west-1.amazonaws.com/content/agents/lisak.png"
+    "image_url": "https://hello.why57.com/wp-content/uploads/2025/08/LisaK.png"
   },
   {
     "id": "agent-5",
     "agent_key": "JohnW",
     "display_name": "John W.",
     "department_id": "dept-3",
-    "image_url": "https://hp-prod-wp-data.s3.us-west-1.amazonaws.com/content/agents/johnw.png"
+    "image_url": "https://hello.why57.com/wp-content/uploads/2025/08/JohnW.png"
   },
   {
     "id": "agent-6",
     "agent_key": "AmyR",
     "display_name": "Amy R.",
     "department_id": "dept-3",
-    "image_url": "https://hp-prod-wp-data.s3.us-west-1.amazonaws.com/content/agents/amyr.png"
+    "image_url": "https://hello.why57.com/wp-content/uploads/2025/08/AmyR.png"
   },
   {
     "id": "agent-7",
     "agent_key": "TomS",
     "display_name": "Tom S.",
     "department_id": "dept-4",
-    "image_url": "https://hp-prod-wp-data.s3.us-west-1.amazonaws.com/content/agents/toms.png"
+    "image_url": "https://hello.why57.com/wp-content/uploads/2025/08/TomS.png"
   },
   {
     "id": "agent-8",
     "agent_key": "JenB",
     "display_name": "Jen B.",
     "department_id": "dept-4",
-    "image_url": "https://hp-prod-wp-data.s3.us-west-1.amazonaws.com/content/agents/jenb.png"
+    "image_url": "https://hello.why57.com/wp-content/uploads/2025/08/JenB.png"
   }
 ]

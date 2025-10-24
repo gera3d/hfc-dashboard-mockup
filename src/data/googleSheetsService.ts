@@ -140,12 +140,26 @@ function parseCSV(csvText: string): ParsedData {
           const url = new URL(sourceUrl);
           const imgUrlParam = url.searchParams.get('imgurl');
           if (imgUrlParam) {
-            imageUrl = decodeURIComponent(imgUrlParam);
+            const decodedUrl = decodeURIComponent(imgUrlParam);
+            
+            // If it's a relative path (starts with /), prepend the hello.why57.com domain
+            if (decodedUrl.startsWith('/')) {
+              imageUrl = `https://hello.why57.com${decodedUrl}`;
+            }
+            // If it's already a full URL from hello.why57.com, use it as-is
+            else if (decodedUrl.includes('hello.why57.com')) {
+              imageUrl = decodedUrl;
+            }
+            // Otherwise use the URL as-is
+            else {
+              imageUrl = decodedUrl;
+            }
           }
         } catch {
-          // If URL parsing fails, generate default image URL
-          const cleanAgentKey = agentId.toLowerCase().replace(/[^a-z0-9]/g, '');
-          imageUrl = `https://hp-prod-wp-data.s3.us-west-1.amazonaws.com/content/agents/${cleanAgentKey}.png`;
+          // If URL parsing fails, generate default image URL using the why57 format
+          // Extract the base name from agentName (e.g., "Greg H." -> "GregH")
+          const baseName = agentName.replace(/[.\s!]/g, '');
+          imageUrl = `https://hello.why57.com/wp-content/uploads/2025/08/${baseName}.png`;
         }
         
         agentsMap.set(agentId, {

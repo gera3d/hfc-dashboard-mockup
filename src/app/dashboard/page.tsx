@@ -57,6 +57,7 @@ import RatingDistributionWidget from "@/components/RatingDistributionWidget";
 import ProblemFeedback from "@/components/dashboard/ProblemFeedback";
 import DepartmentPerformanceRankings from "@/components/dashboard/DepartmentPerformanceRankings";
 import UnifiedAgentRankings from "@/components/dashboard/UnifiedAgentRankings";
+import PerformanceTierGuide from "@/components/dashboard/PerformanceTierGuide";
 import { 
   loadDisplayPreferences,
   type DisplayPreferences 

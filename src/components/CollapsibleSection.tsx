@@ -81,7 +81,7 @@ export function CollapsibleSection({
               <div 
                 className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${
                   isExpanded 
-                    ? 'bg-[#0066cc] text-white' 
+                    ? 'bg-white text-[#0066cc] border-2 border-[#0066cc] shadow-md' 
                     : 'bg-white text-[#0066cc] border-2 border-[#0066cc]/30 hover:bg-gray-50'
                 }`}
                 style={{
@@ -105,7 +105,7 @@ export function CollapsibleSection({
             <div 
               className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 ${
                 isExpanded 
-                  ? 'bg-[#0066cc] text-white' 
+                  ? 'bg-white text-[#0066cc] border-2 border-[#0066cc] shadow-md' 
                   : 'bg-white text-[#0066cc] border-2 border-[#0066cc]/30 hover:bg-gray-50'
               }`}
               style={{

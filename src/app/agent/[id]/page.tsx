@@ -302,17 +302,25 @@ export default function AgentDetail({ params }: AgentDetailProps) {
               </div>
             </div>
             
-            {trends.rating.value !== 0 && (
-              <div className={`flex items-center gap-2 mt-4 pt-4 border-t border-gray-100 relative z-10 text-sm font-bold ${
-                trends.rating.isPositive ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {trends.rating.isPositive ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-                <span className={trends.rating.isPositive ? 'text-green-600' : 'text-red-600'}>
-                  {Math.abs(trends.rating.value).toFixed(2)}
-                </span>
-                <span className="text-gray-500 font-semibold">vs previous period</span>
-              </div>
-            )}
+            <div className="mt-4 pt-4 border-t border-gray-100 relative z-10">
+              {trends.rating.value !== 0 ? (
+                <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg font-bold text-sm ${
+                  trends.rating.isPositive 
+                    ? 'bg-green-600 text-white shadow-md' 
+                    : 'bg-red-600 text-white shadow-md'
+                }`}>
+                  {trends.rating.isPositive ? <TrendingUp className="w-4 h-4" strokeWidth={3} /> : <TrendingDown className="w-4 h-4" strokeWidth={3} />}
+                  <span className="font-black">
+                    {trends.rating.isPositive ? '+' : ''}{Math.abs(trends.rating.value).toFixed(2)}
+                  </span>
+                  <span className="font-medium opacity-90">vs previous</span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg font-semibold text-sm bg-gray-600 text-white shadow-md">
+                  <span>No change</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Review Volume Card */}
@@ -360,17 +368,25 @@ export default function AgentDetail({ params }: AgentDetailProps) {
               </div>
             </div>
             
-            {trends.volume.value !== 0 && (
-              <div className={`flex items-center gap-2 mt-4 pt-4 border-t border-gray-100 relative z-10 text-sm font-bold ${
-                trends.volume.isPositive ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {trends.volume.isPositive ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-                <span className={trends.volume.isPositive ? 'text-green-600' : 'text-red-600'}>
-                  {Math.abs(trends.volume.value)}
-                </span>
-                <span className="text-gray-500 font-semibold">vs previous period</span>
-              </div>
-            )}
+            <div className="mt-4 pt-4 border-t border-gray-100 relative z-10">
+              {trends.volume.value !== 0 ? (
+                <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg font-bold text-sm ${
+                  trends.volume.isPositive 
+                    ? 'bg-green-600 text-white shadow-md' 
+                    : 'bg-red-600 text-white shadow-md'
+                }`}>
+                  {trends.volume.isPositive ? <TrendingUp className="w-4 h-4" strokeWidth={3} /> : <TrendingDown className="w-4 h-4" strokeWidth={3} />}
+                  <span className="font-black">
+                    {trends.volume.isPositive ? '+' : ''}{Math.abs(trends.volume.value)}
+                  </span>
+                  <span className="font-medium opacity-90">vs previous</span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg font-semibold text-sm bg-gray-600 text-white shadow-md">
+                  <span>No change</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* 5-Star Rate Card */}
@@ -415,17 +431,25 @@ export default function AgentDetail({ params }: AgentDetailProps) {
               </div>
             </div>
             
-            {trends.fiveStar.value !== 0 && (
-              <div className={`flex items-center gap-2 mt-4 pt-4 border-t border-gray-100 relative z-10 text-sm font-bold ${
-                trends.fiveStar.isPositive ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {trends.fiveStar.isPositive ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-                <span className={trends.fiveStar.isPositive ? 'text-green-600' : 'text-red-600'}>
-                  {Math.abs(trends.fiveStar.value).toFixed(1)}%
-                </span>
-                <span className="text-gray-500 font-semibold">vs previous period</span>
-              </div>
-            )}
+            <div className="mt-4 pt-4 border-t border-gray-100 relative z-10">
+              {trends.fiveStar.value !== 0 ? (
+                <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg font-bold text-sm ${
+                  trends.fiveStar.isPositive 
+                    ? 'bg-green-600 text-white shadow-md' 
+                    : 'bg-red-600 text-white shadow-md'
+                }`}>
+                  {trends.fiveStar.isPositive ? <TrendingUp className="w-4 h-4" strokeWidth={3} /> : <TrendingDown className="w-4 h-4" strokeWidth={3} />}
+                  <span className="font-black">
+                    {trends.fiveStar.isPositive ? '+' : ''}{Math.abs(trends.fiveStar.value).toFixed(1)}%
+                  </span>
+                  <span className="font-medium opacity-90">vs previous</span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg font-semibold text-sm bg-gray-600 text-white shadow-md">
+                  <span>No change</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

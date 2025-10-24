@@ -104,7 +104,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
   const isReviewsOnFire = totalChange?.isPositive && parseFloat(totalChange.value) >= 20;
 
   // Check if status is excellent for special styling
-  const isExcellent = healthStatus.status === "Excellent";
+  const isExcellent = fiveStarRate >= 90;
   
   // Mini sparkline component for trends
   const TrendSparkline = ({ change }: { change: any }) => {
@@ -159,9 +159,37 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
     const ratingChange = getChange(metricsData.avg_rating, previousMetrics?.avg_rating || null);
     const problemChange = getChange(problemReviews, prevProblemReviews);
     
-    const healthStatus = getHealthStatus();
+    // Calculate health status for THIS specific metrics data
+    const getLocalHealthStatus = () => {
+      if (fiveStarRate >= 90) return { 
+        status: "Excellent", 
+        color: "success", 
+        description: "Outstanding performance",
+        message: "Keep up the amazing work!"
+      };
+      if (fiveStarRate >= 75) return { 
+        status: "Good", 
+        color: "success", 
+        description: "Solid performance",
+        message: "On the right track"
+      };
+      if (fiveStarRate >= 60) return { 
+        status: "Fair", 
+        color: "warning", 
+        description: "Room for improvement",
+        message: "Let's boost this up"
+      };
+      return { 
+        status: "Needs Attention", 
+        color: "error", 
+        description: "Action required",
+        message: "Immediate focus needed"
+      };
+    };
+    
+    const healthStatus = getLocalHealthStatus();
     const isExcellent = fiveStarRate >= 90;
-    const isReviewsOnFire = metricsData.total > 100;
+    const isReviewsOnFire = totalChange?.isPositive && parseFloat(totalChange.value) >= 20;
     const isProblemIncreasing = problemChange && problemChange.isPositive;
     
     // Animation classes with staggered delays
@@ -393,7 +421,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
           
           {/* Refined accent bar */}
           <div className={`absolute top-0 left-0 right-0 h-1.5 sm:h-2 transition-all duration-700 ${
-            metrics.avg_rating >= 4.8 
+            metricsData.avg_rating >= 4.8 
               ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 shadow-lg shadow-amber-500/60' 
               : 'bg-gradient-to-r from-amber-300 via-amber-400 to-amber-300 opacity-0 group-hover:opacity-100'
           }`} />
@@ -401,17 +429,17 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
           {/* Top Section */}
           <div className="flex items-start justify-between mb-4 sm:mb-5 relative z-10">
             <div className={`flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-2xl transition-all duration-500 ${
-              metrics.avg_rating >= 4.8 
+              metricsData.avg_rating >= 4.8 
                 ? 'bg-gradient-to-br from-amber-500 via-amber-600 to-yellow-600 shadow-xl shadow-amber-400/70 dark:shadow-amber-500/50 scale-105' 
                 : 'bg-gradient-to-br from-amber-100 to-amber-100 dark:from-amber-800/40 dark:to-amber-800/30 group-hover:scale-105 group-hover:shadow-md'
             }`}>
               <Star className={`size-6 sm:size-9 transition-all duration-500 ${
-                metrics.avg_rating >= 4.8 
+                metricsData.avg_rating >= 4.8 
                   ? 'text-white fill-white drop-shadow-lg' 
                   : 'text-amber-700 dark:text-amber-300 fill-amber-700 dark:fill-amber-300'
               }`} strokeWidth={2.5} />
             </div>
-            {metrics.avg_rating >= 4.8 && (
+            {metricsData.avg_rating >= 4.8 && (
               <div className="flex items-center gap-1 bg-amber-600/20 dark:bg-amber-500/20 px-2.5 py-1 rounded-full border border-amber-400/50 dark:border-amber-500/40 shadow-sm">
                 <Sparkles className="size-3.5 text-amber-700 dark:text-amber-300" />
                 <span className="text-[10px] sm:text-xs font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider">
@@ -428,20 +456,20 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
             </span>
             <div className="flex items-baseline gap-2 mb-2">
               <h4 className={`font-black text-3xl sm:text-5xl transition-all duration-500 tabular-nums leading-none ${
-                metrics.avg_rating >= 4.8 
+                metricsData.avg_rating >= 4.8 
                   ? 'text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-600 dark:from-amber-400 dark:via-yellow-400 dark:to-amber-400 drop-shadow-sm' 
                   : 'text-gray-900 dark:text-white'
               }`}>
-                <AnimatedNumber value={metrics.avg_rating} decimals={2} duration={800} />
+                <AnimatedNumber value={metricsData.avg_rating} decimals={2} duration={800} />
               </h4>
               <Star className={`size-6 sm:size-7 ${
-                metrics.avg_rating >= 4.8 ? 'text-amber-600 fill-amber-600 dark:text-amber-400 dark:fill-amber-400' : 'text-amber-500 fill-amber-500 dark:text-amber-400 dark:fill-amber-400'
+                metricsData.avg_rating >= 4.8 ? 'text-amber-600 fill-amber-600 dark:text-amber-400 dark:fill-amber-400' : 'text-amber-500 fill-amber-500 dark:text-amber-400 dark:fill-amber-400'
               }`} />
               {ratingChange && <TrendSparkline change={ratingChange} />}
             </div>
             <div className="flex items-center gap-2">
               <span className={`text-xs sm:text-sm ${
-                metrics.avg_rating >= 4.8 ? 'text-amber-700 dark:text-amber-300 font-bold' : 'text-gray-600 dark:text-gray-300 font-semibold'
+                metricsData.avg_rating >= 4.8 ? 'text-amber-700 dark:text-amber-300 font-bold' : 'text-gray-600 dark:text-gray-300 font-semibold'
               }`}>
                 out of 5.0
               </span>

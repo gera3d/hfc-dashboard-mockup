@@ -187,7 +187,11 @@ export default function DepartmentPerformanceRankings({
                     {/* Collapse/Expand Button */}
                     <button
                       onClick={() => toggleDepartment(dept.name)}
-                      className="ml-4 p-2.5 rounded-lg bg-white border-2 border-[#0066cc]/30 text-[#0066cc] hover:bg-[#0066cc]/5 transition-all"
+                      className={`ml-4 p-2.5 rounded-lg transition-all border-2 ${
+                        collapsedDepartments.has(dept.name)
+                          ? 'bg-white border-[#0066cc]/30 text-[#0066cc] hover:bg-[#0066cc]/5'
+                          : 'bg-white border-[#0066cc] text-[#0066cc] shadow-md hover:shadow-lg'
+                      }`}
                       aria-label={collapsedDepartments.has(dept.name) ? "Expand department" : "Collapse department"}
                     >
                       <svg 
@@ -195,8 +199,9 @@ export default function DepartmentPerformanceRankings({
                         fill="none" 
                         stroke="currentColor" 
                         viewBox="0 0 24 24"
+                        strokeWidth={2.5}
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
                       </svg>
                     </button>
                   </div>
