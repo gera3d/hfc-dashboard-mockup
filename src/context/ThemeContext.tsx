@@ -34,12 +34,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
       
       // Remove all theme classes first
       document.documentElement.classList.remove("dark", "hfc");
+      document.body.classList.remove("dark", "hfc");
       
-      // Add the appropriate theme class
+      // Add the appropriate theme class to both html and body
       if (theme === "dark") {
         document.documentElement.classList.add("dark");
+        document.body.classList.add("dark");
       } else if (theme === "hfc") {
         document.documentElement.classList.add("hfc");
+        document.body.classList.add("hfc");
       }
     }
   }, [theme, isInitialized]);
@@ -55,6 +58,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
       return "light";
     });
   };
+
+  // Don't render children until theme is initialized to prevent FOUC
+  if (!isInitialized) {
+    return null;
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>

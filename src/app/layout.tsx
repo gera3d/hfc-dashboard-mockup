@@ -41,6 +41,26 @@ export default function RootLayout({
       className={`${inter.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('theme') || 'light';
+                  const html = document.documentElement;
+                  html.classList.remove('dark', 'hfc');
+                  if (theme === 'dark') {
+                    html.classList.add('dark');
+                  } else if (theme === 'hfc') {
+                    html.classList.add('hfc');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
         className="font-sans antialiased dark:bg-gray-900"
         suppressHydrationWarning

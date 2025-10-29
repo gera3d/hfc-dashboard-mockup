@@ -82,6 +82,7 @@ export default function DashboardPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isReady, setIsReady] = useState(false);
   const [expandedSection, setExpandedSection] = useState<SectionId | null>(null);
   
   const [filters, setFilters] = useState<Filters>({
@@ -139,6 +140,8 @@ export default function DashboardPage() {
         console.error('Error loading data:', error);
       } finally {
         setLoading(false);
+        // Small delay to ensure theme is applied before showing content
+        setTimeout(() => setIsReady(true), 100);
       }
     };
     
@@ -284,11 +287,36 @@ export default function DashboardPage() {
   };
 
   if (loading) {
+    const isHFC = theme === 'hfc';
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#F6F9FC]">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading dashboard...</p>
+      <div className={`fixed inset-0 flex items-center justify-center ${
+        isHFC 
+          ? 'bg-gradient-to-br from-[#2c5f8d] via-[#1e5a8e] to-[#164670]' 
+          : 'bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900'
+      }`}>
+        <div className="flex flex-col items-center gap-4">
+          {/* Simple, clean spinner */}
+          <div className="relative w-16 h-16">
+            <div className={`absolute inset-0 border-4 rounded-full ${
+              isHFC 
+                ? 'border-white/20' 
+                : 'border-gray-300/50 dark:border-gray-700/50'
+            }`} />
+            <div className={`absolute inset-0 border-4 rounded-full border-transparent animate-spin ${
+              isHFC 
+                ? 'border-t-[#f5b942]' 
+                : 'border-t-indigo-600 dark:border-t-indigo-400'
+            }`} 
+            style={{ animationDuration: '0.8s' }}
+            />
+          </div>
+          
+          {/* Loading text */}
+          <p className={`text-sm font-medium ${
+            isHFC ? 'text-white/80' : 'text-gray-600 dark:text-gray-400'
+          }`}>
+            Loading...
+          </p>
         </div>
       </div>
     );
@@ -316,8 +344,12 @@ export default function DashboardPage() {
       onCompareModeChange={(enabled) => setFilters(prev => ({ ...prev, compareMode: enabled }))}
       dateRanges={dateRanges}
     >
-      {/* Centered Dashboard Container */}
-      <div className="max-w-7xl mx-auto space-y-8 min-h-screen pb-12 px-6">
+      {/* Centered Dashboard Container with smooth fade-in */}
+      <div 
+        className={`max-w-7xl mx-auto space-y-8 min-h-screen pb-12 px-6 transition-opacity duration-500 ${
+          isReady ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
         
         {/* HFC Dashboard Title - Only shown in HFC theme */}
         {theme === 'hfc' && (
