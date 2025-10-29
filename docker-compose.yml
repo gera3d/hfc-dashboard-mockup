@@ -1,0 +1,15 @@
+services:
+  hfc-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hfc-dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    # Uncomment if you need to mount volumes for development
+    # volumes:
+    #   - ./public:/app/public
+    #   - ./src:/app/src
