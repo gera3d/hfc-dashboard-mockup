@@ -961,3 +961,232 @@ body {
 .animate-slide-in-right {
   animation: slideInRight 0.35s cubic-bezier(0, 0, 0.2, 1) forwards;
 }
+
+/* Flatpickr Custom Styling for HFC Theme */
+.flatpickr-calendar {
+  background: linear-gradient(to bottom right, #1a4d7a, #15426a) !important;
+  border: 2px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.3) !important;
+  animation: flatpickrFadeInDown 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+  z-index: 1000001 !important;
+  color: white !important;
+}
+
+@keyframes flatpickrFadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.flatpickr-months {
+  background: transparent !important;
+  padding: 0.5rem !important;
+  color: white !important;
+}
+
+.flatpickr-month {
+  color: white !important;
+  fill: white !important;
+}
+
+.flatpickr-monthDropdown-month {
+  background: transparent !important;
+  color: white !important;
+}
+
+.flatpickr-current-month {
+  padding: 0.5rem 0 !important;
+  color: white !important;
+}
+
+.flatpickr-current-month span.cur-month {
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 0.5rem !important;
+  padding: 0.25rem 0.5rem !important;
+  font-weight: 600 !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  -webkit-text-fill-color: white !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months option {
+  background: #1a4d7a !important;
+  color: white !important;
+}
+
+.flatpickr-current-month .numInputWrapper {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 0.5rem !important;
+  padding: 0.25rem !important;
+}
+
+.flatpickr-current-month input.cur-year {
+  color: white !important;
+  background: transparent !important;
+  border: none !important;
+  font-weight: 600 !important;
+  padding: 0.25rem !important;
+}
+
+.flatpickr-current-month .numInputWrapper:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.flatpickr-current-month .numInputWrapper span {
+  border: none !important;
+  background: transparent !important;
+}
+
+.flatpickr-current-month .numInputWrapper span:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowUp:after,
+.flatpickr-current-month .numInputWrapper span.arrowDown:after {
+  border-bottom-color: white !important;
+  border-top-color: white !important;
+}
+
+.flatpickr-weekdays {
+  background: transparent !important;
+  margin-top: 0.5rem !important;
+}
+
+.flatpickr-weekday {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-weight: 700 !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+
+.flatpickr-days {
+  background: transparent !important;
+  padding: 0.5rem !important;
+}
+
+.flatpickr-day {
+  color: white !important;
+  border: none !important;
+  border-radius: 0.5rem !important;
+  font-weight: 500 !important;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.flatpickr-day:hover:not(.flatpickr-disabled):not(.selected):not(.startRange):not(.endRange) {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: none !important;
+  transform: scale(1.05) !important;
+}
+
+.flatpickr-day.today {
+  background: rgba(245, 185, 66, 0.25) !important;
+  color: white !important;
+  border: 2px solid #f5b942 !important;
+  font-weight: 700 !important;
+}
+
+.flatpickr-day.today:hover {
+  background: rgba(245, 185, 66, 0.35) !important;
+  border: 2px solid #f5b942 !important;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+  background: linear-gradient(135deg, #1e5a8e, #164771) !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3) !important;
+}
+
+.flatpickr-day.selected:hover,
+.flatpickr-day.startRange:hover,
+.flatpickr-day.endRange:hover {
+  background: linear-gradient(135deg, #164771, #0f3554) !important;
+  transform: scale(1.05) !important;
+}
+
+.flatpickr-day.inRange {
+  background: rgba(30, 90, 142, 0.35) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-weight: 500 !important;
+}
+
+.flatpickr-day.inRange:hover {
+  background: rgba(30, 90, 142, 0.45) !important;
+}
+
+.flatpickr-day.disabled,
+.flatpickr-day.disabled:hover {
+  color: rgba(255, 255, 255, 0.2) !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.flatpickr-day.prevMonthDay:hover,
+.flatpickr-day.nextMonthDay:hover {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+span.flatpickr-weekday {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+  padding: 0.5rem !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.15s ease !important;
+}
+
+.flatpickr-months .flatpickr-prev-month:hover,
+.flatpickr-months .flatpickr-next-month:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.flatpickr-months .flatpickr-prev-month:hover svg,
+.flatpickr-months .flatpickr-next-month:hover svg {
+  fill: #f5b942 !important;
+}
+
+.flatpickr-months .flatpickr-prev-month svg,
+.flatpickr-months .flatpickr-next-month svg {
+  fill: white !important;
+}
+
+/* Ensure input text is white in HFC theme */
+#custom-date-range {
+  color: white !important;
+}
+
+#custom-date-range::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+

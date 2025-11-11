@@ -413,7 +413,7 @@ export default function DashboardPage() {
                   const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(agentMetrics[0].agent_name)}&background=0066cc&color=fff&size=256`;
                   
                   return (
-                    <button 
+                    <div 
                       className="w-full rounded-xl border-2 border-yellow-400 bg-white hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 relative overflow-hidden cursor-pointer text-left"
                     >
                   {/* Thin gold accent strip at top */}
@@ -457,7 +457,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                </button>
+                </div>
               );
             })()}
               </AnimatedPreview>
@@ -504,7 +504,7 @@ export default function DashboardPage() {
                 const colors = rankColors[index] || rankColors[0];
                 
                 return (
-                  <button 
+                  <div 
                     key={`preview-dept-${dept.id}-${filters.dateRange.label}-${index}`}
                     className={`w-full sm:flex-1 rounded-xl border-2 ${colors.border} bg-white hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 relative overflow-hidden cursor-pointer text-left`}
                   >
@@ -549,7 +549,7 @@ export default function DashboardPage() {
                         )}
                       </div>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
               </div>
