@@ -86,11 +86,22 @@ export default function SettingsPage() {
         
         alert(`✅ Data synced successfully!\n\nLast updated: ${result.lastUpdated}\n\nThe dashboard now shows the latest data from Google Sheets.`);
       } else {
-        alert(`❌ Sync failed: ${result.message}`);
+        // Better error messaging
+        const errorMsg = result.message || 'Unknown error';
+        if (errorMsg.includes('timeout') || errorMsg.includes('524')) {
+          alert(`⏱️ Sync Timeout\n\nGoogle Sheets is taking too long to respond.\n\nPossible solutions:\n• Try again in a few moments\n• Check your internet connection\n• The spreadsheet might be very large\n• Google Sheets might be experiencing slowness\n\nYour cached data is still available.`);
+        } else {
+          alert(`❌ Sync failed: ${errorMsg}\n\nYour cached data is still available. Try refreshing instead.`);
+        }
       }
     } catch (error) {
       console.error('Error syncing data:', error);
-      alert('❌ Failed to sync data from Google Sheets');
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMsg.includes('timeout') || errorMsg.includes('524') || errorMsg.includes('aborted')) {
+        alert(`⏱️ Sync Timeout\n\nThe request took too long. Google Sheets might be slow right now.\n\nTry:\n• Refreshing from cache instead (faster)\n• Waiting a few minutes and trying again\n• Checking if the Google Sheet is accessible\n\nYour existing cached data is still available.`);
+      } else {
+        alert(`❌ Failed to sync: ${errorMsg}\n\nYour cached data is still available.`);
+      }
     } finally {
       setSyncing(false);
     }
