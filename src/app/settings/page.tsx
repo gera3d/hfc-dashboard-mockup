@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { syncFromGoogleSheets } from '@/data/googleSheetsService';
 import { 
   loadAgents, 
   loadDepartments, 
@@ -26,10 +25,12 @@ import {
   saveDisplayPreferences,
   type DisplayPreferences 
 } from '@/lib/displayPreferences';
+import { useSyncProgress } from '@/context/SyncContext';
+import { SyncProgressIndicator } from '@/components/SyncProgressIndicator';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [syncing, setSyncing] = useState(false);
+  const { syncStatus, startSync } = useSyncProgress();
   const [loading, setLoading] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -64,46 +65,27 @@ export default function SettingsPage() {
     loadData();
   }, []);
 
-  // Sync from Google Sheets
+  // Sync from Google Sheets (using background sync)
   const handleSync = async () => {
-    setSyncing(true);
-    try {
-      const result = await syncFromGoogleSheets();
-      if (result.success) {
-        setLastSyncTime(new Date());
-        
-        // Reload data after sync
-        const [agentsData, departmentsData] = await Promise.all([
-          refreshAgents(),
-          refreshDepartments()
-        ]);
-        
-        const agentsWithOverrides = applyAgentOverrides(agentsData);
-        const departmentsWithCustom = mergeDepartments(departmentsData);
-        
-        setAgents(agentsWithOverrides);
-        setDepartments(departmentsWithCustom);
-        
-        alert(`✅ Data synced successfully!\n\nLast updated: ${result.lastUpdated}\n\nThe dashboard now shows the latest data from Google Sheets.`);
-      } else {
-        // Better error messaging
-        const errorMsg = result.message || 'Unknown error';
-        if (errorMsg.includes('timeout') || errorMsg.includes('524')) {
-          alert(`⏱️ Sync Timeout\n\nGoogle Sheets is taking too long to respond.\n\nPossible solutions:\n• Try again in a few moments\n• Check your internet connection\n• The spreadsheet might be very large\n• Google Sheets might be experiencing slowness\n\nYour cached data is still available.`);
-        } else {
-          alert(`❌ Sync failed: ${errorMsg}\n\nYour cached data is still available. Try refreshing instead.`);
-        }
-      }
-    } catch (error) {
-      console.error('Error syncing data:', error);
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      if (errorMsg.includes('timeout') || errorMsg.includes('524') || errorMsg.includes('aborted')) {
-        alert(`⏱️ Sync Timeout\n\nThe request took too long. Google Sheets might be slow right now.\n\nTry:\n• Refreshing from cache instead (faster)\n• Waiting a few minutes and trying again\n• Checking if the Google Sheet is accessible\n\nYour existing cached data is still available.`);
-      } else {
-        alert(`❌ Failed to sync: ${errorMsg}\n\nYour cached data is still available.`);
-      }
-    } finally {
-      setSyncing(false);
+    await startSync();
+  };
+
+  // Handle sync completion - reload data
+  const handleSyncComplete = async (success: boolean) => {
+    if (success) {
+      setLastSyncTime(new Date());
+      
+      // Reload data after successful sync
+      const [agentsData, departmentsData] = await Promise.all([
+        refreshAgents(),
+        refreshDepartments()
+      ]);
+      
+      const agentsWithOverrides = applyAgentOverrides(agentsData);
+      const departmentsWithCustom = mergeDepartments(departmentsData);
+      
+      setAgents(agentsWithOverrides);
+      setDepartments(departmentsWithCustom);
     }
   };
 
@@ -260,6 +242,9 @@ export default function SettingsPage() {
           </div>
           
           <div className="p-6 space-y-4">
+            {/* Progress Indicator */}
+            <SyncProgressIndicator onSyncComplete={handleSyncComplete} />
+            
             {/* Refresh Button */}
             <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
               <div className="flex-1">
@@ -268,7 +253,7 @@ export default function SettingsPage() {
               </div>
               <button
                 onClick={handleRefresh}
-                disabled={loading || syncing}
+                disabled={loading || syncStatus.isActive}
                 className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center gap-2"
               >
                 {loading ? (
@@ -300,10 +285,10 @@ export default function SettingsPage() {
               </div>
               <button
                 onClick={handleSync}
-                disabled={loading || syncing}
+                disabled={loading || syncStatus.isActive}
                 className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center gap-2"
               >
-                {syncing ? (
+                {syncStatus.isActive ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     Syncing...
@@ -317,6 +302,57 @@ export default function SettingsPage() {
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Historical Data Sources Section */}
+        <div className="bg-white rounded-xl border-2 border-gray-200 shadow-sm mb-6">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900">Historical Data Sources</h2>
+            <p className="text-sm text-gray-500 mt-1">Add older versions of review data for multi-source syncing</p>
+          </div>
+          
+          <div className="p-6 space-y-4">
+            {/* Info Box */}
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex gap-3">
+                <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="text-sm text-blue-800">
+                  <p className="font-semibold mb-1">Multi-Source Sync</p>
+                  <p>Paste published CSV URLs from older Google Sheets below. Each source will be downloaded, parsed, and merged during sync. The parser automatically adapts to different column structures and normalizes agent names.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Primary Source Info */}
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <h3 className="font-semibold text-gray-900">Primary Source (Active)</h3>
+              </div>
+              <p className="text-sm text-gray-600 ml-5">Current reviews via Google Sheets API</p>
+              <p className="text-xs text-gray-500 ml-5 mt-1">Sheet ID: {process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID || '10ooffH9z...'}</p>
+            </div>
+
+            {/* Historical Sources Placeholder */}
+            <div className="p-6 bg-amber-50 border border-amber-200 rounded-lg text-center">
+              <svg className="w-12 h-12 text-amber-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              <h4 className="font-semibold text-gray-900 mb-2">Ready to Add Historical Sources</h4>
+              <p className="text-sm text-gray-600 mb-4">
+                Share your historical CSV URLs to enable multi-source syncing.<br />
+                Each source will be scanned and merged automatically.
+              </p>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-amber-300 rounded-lg text-sm text-amber-900">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Configuration will be added when URLs are provided
+              </div>
             </div>
           </div>
         </div>

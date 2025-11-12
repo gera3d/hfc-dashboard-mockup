@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk, IBM_Plex_Mono } from 'next/font/google'
 import "./globals.css";
 import { ThemeProvider } from '@/context/ThemeContext';
+import { SyncProvider } from '@/context/SyncContext';
 import TopNav from '@/components/TopNav';
 import HFCFooter from '@/components/HFCFooter';
 import FloatingControls from '@/components/FloatingControls';
@@ -66,14 +67,16 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider>
-          <TopNav />
-          <main className="pt-16">
-            {children}
-          </main>
-          {/* HFC footer holds theme toggle and settings link for HFC theme only */}
-          <HFCFooter />
-          {/* Small floating controls (always present) so theme/settings are reachable */}
-          <FloatingControls />
+          <SyncProvider>
+            <TopNav />
+            <main className="pt-16">
+              {children}
+            </main>
+            {/* HFC footer holds theme toggle and settings link for HFC theme only */}
+            <HFCFooter />
+            {/* Small floating controls (always present) so theme/settings are reachable */}
+            <FloatingControls />
+          </SyncProvider>
         </ThemeProvider>
       </body>
     </html>

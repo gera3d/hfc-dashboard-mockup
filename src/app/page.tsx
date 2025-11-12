@@ -3,8 +3,10 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from 'next/navigation';
 import { Trophy, Building2, AlertTriangle, BarChart3 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import { useSyncProgress } from '@/context/SyncContext';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import FadeInSection from '@/components/FadeInSection';
+import { SyncProgressBadge } from '@/components/SyncProgressIndicator';
 import { 
   loadReviews, 
   loadAgents, 
@@ -76,6 +78,7 @@ type SectionId = 'agent-rankings' | 'department-rankings' | 'problem-feedback' |
 export default function DashboardPage() {
   const router = useRouter();
   const { theme } = useTheme();
+  const { syncStatus } = useSyncProgress();
   const dateRanges = getDateRanges();
   
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -147,6 +150,42 @@ export default function DashboardPage() {
     
     loadData();
   }, []);
+
+  // Auto-reload data when sync completes
+  useEffect(() => {
+    if (syncStatus.status === 'complete') {
+      console.log('Sync completed - reloading dashboard data...');
+      const reloadData = async () => {
+        try {
+          const [reviewsData, agentsData, departmentsData] = await Promise.all([
+            loadReviews(),
+            loadAgents(),
+            loadDepartments()
+          ]);
+          
+          const agentsWithOverrides = applyAgentOverrides(agentsData);
+          const departmentsWithCustom = mergeDepartments(departmentsData);
+          
+          const updatedReviews = reviewsData.map(review => {
+            const agent = agentsWithOverrides.find(a => a.id === review.agent_id);
+            if (agent && agent.department_id !== review.department_id) {
+              return { ...review, department_id: agent.department_id };
+            }
+            return review;
+          });
+          
+          setReviews(updatedReviews);
+          setAgents(agentsWithOverrides);
+          setDepartments(departmentsWithCustom);
+          
+          console.log('✅ Dashboard data refreshed with new sync data');
+        } catch (error) {
+          console.error('Error reloading data after sync:', error);
+        }
+      };
+      reloadData();
+    }
+  }, [syncStatus.status]);
 
   // Handle agent department updates (kept for table interactions)
   const handleAgentDepartmentUpdate = async (agentId: string, departmentId: string) => {
@@ -350,6 +389,10 @@ export default function DashboardPage() {
           isReady ? 'opacity-100' : 'opacity-0'
         }`}
       >
+        {/* Sync Status Badge - Floating at top right */}
+        <div className="fixed top-20 right-6 z-50">
+          <SyncProgressBadge />
+        </div>
         
         {/* HFC Dashboard Title - Only shown in HFC theme */}
         {theme === 'hfc' && (
