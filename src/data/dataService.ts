@@ -86,7 +86,7 @@ export const getDateRanges = () => {
     },
     thisYear: {
       from: new Date(now.getFullYear(), 0, 1),
-      to: new Date(now.getFullYear() + 1, 0, 1),
+      to: new Date(today.getTime() + 24 * 60 * 60 * 1000), // Up to end of today
       label: 'This year'
     }
   };
@@ -94,10 +94,24 @@ export const getDateRanges = () => {
 
 // Filter reviews by date range
 export const filterReviewsByDate = (reviews: Review[], dateRange: DateRange): Review[] => {
-  return reviews.filter(review => {
+  console.log('[Filter Debug] Date range:', {
+    from: dateRange.from.toISOString(),
+    to: dateRange.to.toISOString(),
+    label: dateRange.label
+  });
+  
+  const filtered = reviews.filter(review => {
     const reviewDate = new Date(review.review_ts);
     return reviewDate >= dateRange.from && reviewDate < dateRange.to;
   });
+  
+  console.log('[Filter Debug] Results:', {
+    totalReviews: reviews.length,
+    filteredReviews: filtered.length,
+    sampleDates: filtered.slice(0, 5).map(r => new Date(r.review_ts).toISOString())
+  });
+  
+  return filtered;
 };
 
 // Filter reviews by departments

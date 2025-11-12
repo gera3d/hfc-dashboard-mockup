@@ -182,8 +182,15 @@ function parseCSV(csvText: string): ParsedData {
       let reviewDate: string;
       try {
         // Handle format: "2024/Jan/01 1:00:52 AM"
-        reviewDate = new Date(dateStr).toISOString();
-      } catch {
+        const parsed = new Date(dateStr);
+        if (isNaN(parsed.getTime())) {
+          console.warn(`[CSV Parser] Invalid date: "${dateStr}" at line ${index + 2}`);
+          reviewDate = new Date().toISOString();
+        } else {
+          reviewDate = parsed.toISOString();
+        }
+      } catch (error) {
+        console.warn(`[CSV Parser] Error parsing date: "${dateStr}" at line ${index + 2}:`, error);
         reviewDate = new Date().toISOString();
       }
 
@@ -211,8 +218,15 @@ function parseCSV(csvText: string): ParsedData {
     agentsList: Array.from(agentsMap.keys()).slice(0, 10),
     dateRange: reviews.length > 0 ? {
       first: reviews[0]?.review_ts,
-      last: reviews[reviews.length - 1]?.review_ts
-    } : null
+      last: reviews[reviews.length - 1]?.review_ts,
+      firstParsed: reviews[0] ? new Date(reviews[0].review_ts).toISOString() : null,
+      lastParsed: reviews[reviews.length - 1] ? new Date(reviews[reviews.length - 1].review_ts).toISOString() : null
+    } : null,
+    yearDistribution: reviews.reduce((acc, r) => {
+      const year = new Date(r.review_ts).getFullYear();
+      acc[year] = (acc[year] || 0) + 1;
+      return acc;
+    }, {} as Record<number, number>)
   });
 
   return {

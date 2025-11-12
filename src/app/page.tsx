@@ -86,7 +86,7 @@ export default function DashboardPage() {
   const [expandedSection, setExpandedSection] = useState<SectionId | null>(null);
   
   const [filters, setFilters] = useState<Filters>({
-    dateRange: dateRanges.thisYear,
+    dateRange: dateRanges.last7Days,
     selectedDepartments: [],
     selectedAgents: [],
     selectedSources: [],

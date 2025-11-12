@@ -39,9 +39,38 @@ export default function TimePeriodSelector({
     { key: 'last90Days', label: '90 Days', icon: '🗓️' },
     { key: 'thisMonth', label: 'This Month', icon: '📊' },
     { key: 'lastMonth', label: 'Last Month', icon: '📋' },
-    { key: 'thisYear', label: 'This Year', icon: '📈' },
     { key: 'custom', label: 'Custom', icon: '🎯' },
   ];
+
+  // Quick preset ranges for custom modal
+  const getQuickPresets = () => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    return {
+      thisYear: {
+        from: new Date(now.getFullYear(), 0, 1),
+        to: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        label: 'This Year'
+      },
+      lastYear: {
+        from: new Date(now.getFullYear() - 1, 0, 1),
+        to: new Date(now.getFullYear(), 0, 1),
+        label: 'Last Year'
+      },
+      allTime: {
+        from: new Date(2024, 0, 1), // Start from January 2024 to include all data
+        to: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        label: 'All Time'
+      }
+    };
+  };
+
+  const handleQuickPreset = (preset: DateRange) => {
+    setIsCustomRange(true);
+    onRangeChange(preset);
+    setShowCustomPicker(false);
+  };
 
   useEffect(() => {
     if (showCustomPicker) {
@@ -144,8 +173,8 @@ export default function TimePeriodSelector({
           </button>
         </div>
 
-        {/* Period Selection - All 7 options in one row */}
-        <div className="grid grid-cols-7 gap-1">
+        {/* Period Selection - 6 options in one row */}
+        <div className="grid grid-cols-6 gap-1">
           {periods.map((period) => {
             const isSelected = period.key === 'custom' 
               ? isCustomRange 
@@ -298,6 +327,7 @@ export default function TimePeriodSelector({
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setShowCustomPicker(false)}
                   className={`p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95 ${
                     isHFC
@@ -309,6 +339,71 @@ export default function TimePeriodSelector({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
+              </div>
+
+              {/* Quick Presets */}
+              <div className="mb-6">
+                <label className={`block text-sm font-semibold mb-3 ${
+                  isHFC ? 'text-white' : 'text-gray-700 dark:text-gray-300'
+                }`}>
+                  Quick Presets
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {Object.entries(getQuickPresets()).map(([key, preset]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleQuickPreset(preset);
+                      }}
+                      className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 ${
+                        isHFC
+                          ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40 focus:ring-[#f5b942]/50'
+                          : 'bg-gradient-to-br from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 dark:from-gray-700 dark:to-gray-700 dark:hover:from-gray-600 dark:hover:to-gray-600 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-500 focus:ring-indigo-400 dark:focus:ring-indigo-500'
+                      }`}
+                    >
+                      <span className={`text-lg mb-1 ${
+                        key === 'thisYear' ? '📈' : key === 'lastYear' ? '📊' : '🌍'
+                      }`}>
+                        {key === 'thisYear' ? '📈' : key === 'lastYear' ? '📊' : '🌍'}
+                      </span>
+                      <span className={`text-xs font-semibold ${
+                        isHFC ? 'text-white' : 'text-gray-900 dark:text-white'
+                      }`}>
+                        {preset.label}
+                      </span>
+                      <span className={`text-[10px] mt-0.5 ${
+                        isHFC ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'
+                      }`}>
+                        {preset.from.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} - {preset.to.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className={`relative mb-6 ${
+                isHFC ? 'opacity-30' : ''
+              }`}>
+                <div className={`absolute inset-0 flex items-center ${
+                  isHFC ? 'opacity-20' : ''
+                }`}>
+                  <div className={`w-full border-t ${
+                    isHFC ? 'border-white/20' : 'border-gray-300 dark:border-gray-600'
+                  }`}></div>
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className={`px-2 ${
+                    isHFC 
+                      ? 'bg-gradient-to-br from-[#1a4d7a] to-[#15426a] text-white/60' 
+                      : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                  }`}>
+                    or select custom range
+                  </span>
+                </div>
               </div>
 
               {/* Date Range Calendar - Inline */}

@@ -24,6 +24,19 @@ const nextConfig: NextConfig = {
         hostname: 'ui-avatars.com',
         pathname: '/api/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'hello.why57.com',
+      },
+      {
+        protocol: 'http',
+        hostname: 'hello.why57.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 's3-us-west-1.amazonaws.com',
+        pathname: '/hp-prod-wp-data/content/uploads/**',
+      },
     ],
   },
   webpack(config) {
