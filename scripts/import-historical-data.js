@@ -148,8 +148,9 @@ async function downloadHistoricalData() {
       console.log(`      ${idx + 1}. "${props.title}" (${props.gridProperties.rowCount} rows × ${props.gridProperties.columnCount} cols)`);
     });
 
-    // 3. Auto-detect the data sheet (usually first one or one with most rows)
-    const dataSheet = metadata.data.sheets
+    // 3. Try the "Reviews" tab which has 14,418 rows (likely the main data)
+    const reviewsSheet = metadata.data.sheets.find(s => s.properties.title === 'Reviews');
+    const dataSheet = reviewsSheet || metadata.data.sheets
       .filter(s => s.properties.gridProperties.rowCount > 1)
       .sort((a, b) => b.properties.gridProperties.rowCount - a.properties.gridProperties.rowCount)[0];
     

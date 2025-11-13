@@ -12,7 +12,6 @@ interface ParsedData {
 // Helper function to parse CSV text
 function parseCSV(csvText: string): ParsedData {
   const lines = csvText.trim().split('\n');
-  console.log('[CSV Parser] Total lines:', lines.length);
   
   if (lines.length < 2) {
     throw new Error('CSV file appears to be empty or malformed');
@@ -21,7 +20,6 @@ function parseCSV(csvText: string): ParsedData {
   // Parse header row
   const headerLine = lines[0];
   const headers = headerLine.split(',').map(h => h.trim().replace(/"/g, '').toLowerCase());
-  console.log('[CSV Parser] Headers found:', headers.slice(0, 10).join(', '));
 
   const reviews: Review[] = [];
   const agentsMap = new Map<string, Agent>();
@@ -32,11 +30,9 @@ function parseCSV(csvText: string): ParsedData {
     for (const name of names) {
       const idx = headers.findIndex(h => h === name.toLowerCase() || h.includes(name.toLowerCase()));
       if (idx >= 0) {
-        console.log(`[CSV Parser] Found column "${name}" at index ${idx}`);
         return idx;
       }
     }
-    console.warn(`[CSV Parser] Column not found for any of:`, names);
     return -1;
   };
 
@@ -47,17 +43,6 @@ function parseCSV(csvText: string): ParsedData {
   const sourceIdx = getColumnIndex(['source url', 'source']);
   const commentIdx = getColumnIndex(['please provide your feedback below.', 'feedback', 'comment']);
   const customerNameIdx = getColumnIndex(['name', 'customer name', 'reviewer name']);
-
-  console.log('[CSV Parser] Column indices:', {
-    reviewNoIdx,
-    ratingIdx,
-    dateIdx,
-    agentIdx,
-    sourceIdx,
-    commentIdx,
-    customerNameIdx
-  });
-  console.log('[CSV Parser] All headers:', headers);
 
   // Parse data rows
   lines.slice(1).forEach((line, index) => {
@@ -81,16 +66,6 @@ function parseCSV(csvText: string): ParsedData {
         }
       }
       values.push(current.trim()); // Push last value
-
-      // Log first data row for debugging
-      if (index === 0) {
-        console.log('[CSV Parser] First data row sample:', {
-          reviewNo: values[reviewNoIdx],
-          rating: values[ratingIdx],
-          date: values[dateIdx],
-          agent: values[agentIdx]
-        });
-      }
 
       // Extract review data
       const reviewId = values[reviewNoIdx] || `review_${index + 1}`;
@@ -207,26 +182,8 @@ function parseCSV(csvText: string): ParsedData {
       });
 
     } catch (error) {
-      console.warn(`[CSV Parser] Error parsing line ${index + 2}:`, error);
+      // Silently skip malformed rows
     }
-  });
-
-  console.log('[CSV Parser] Parsed results:', {
-    reviews: reviews.length,
-    agents: agentsMap.size,
-    departments: departmentsMap.size,
-    agentsList: Array.from(agentsMap.keys()).slice(0, 10),
-    dateRange: reviews.length > 0 ? {
-      first: reviews[0]?.review_ts,
-      last: reviews[reviews.length - 1]?.review_ts,
-      firstParsed: reviews[0] ? new Date(reviews[0].review_ts).toISOString() : null,
-      lastParsed: reviews[reviews.length - 1] ? new Date(reviews[reviews.length - 1].review_ts).toISOString() : null
-    } : null,
-    yearDistribution: reviews.reduce((acc, r) => {
-      const year = new Date(r.review_ts).getFullYear();
-      acc[year] = (acc[year] || 0) + 1;
-      return acc;
-    }, {} as Record<number, number>)
   });
 
   return {
@@ -239,32 +196,36 @@ function parseCSV(csvText: string): ParsedData {
 // Fetch data from local cached file (fast)
 export async function fetchCachedData(): Promise<ParsedData | null> {
   try {
-    console.log('[Google Sheets] Loading from local cache...');
+    console.log('[Google Sheets] 📥 Loading from API...');
     
-    // Fetch cached data from API route (avoids HMR issues with direct JSON import)
-    const response = await fetch('/api/cached-data', {
-      cache: 'no-store'
+    // Fetch cached data from API route
+    // Rely on server-side caching, not timestamp cache-busting
+    const response = await fetch(`/api/cached-data`, {
+      cache: 'default', // Allow browser HTTP caching with ETag
+      headers: {
+        'Accept': 'application/json'
+      }
     });
     
     if (!response.ok) {
-      console.error('[Google Sheets] Failed to fetch cached data:', response.status);
+      console.error('[Google Sheets] ❌ Failed to fetch:', response.status);
       return null;
     }
     
     const cachedSheetsData = await response.json();
     
     if (!cachedSheetsData.csv || cachedSheetsData.csv.length === 0) {
-      console.log('[Google Sheets] No cached data available. Please sync from Google Sheets.');
+      console.log('[Google Sheets] ⚠️  No cached data available. Please sync from Google Sheets.');
       return null;
     }
 
-    console.log('[Google Sheets] Found cached data from:', cachedSheetsData.lastUpdated);
+    console.log('[Google Sheets] 📊 Parsing', cachedSheetsData.stats.total, 'rows...');
     const parsedData = parseCSV(cachedSheetsData.csv);
-    console.log(`[Google Sheets] Loaded ${parsedData.reviews.length} reviews, ${parsedData.agents.length} agents from cache`);
+    console.log('[Google Sheets] ✅ Loaded', parsedData.reviews.length, 'reviews,', parsedData.agents.length, 'agents');
     
     return parsedData;
   } catch (error) {
-    console.error('[Google Sheets] Error loading cached data:', error);
+    console.error('[Google Sheets] ❌ Error loading cached data:', error);
     return null;
   }
 }
@@ -323,15 +284,24 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 export async function getCachedGoogleSheetsData(): Promise<ParsedData | null> {
   const now = Date.now();
 
+  // Use in-memory cache to avoid parsing 62K rows repeatedly
   if (cachedData && now < cacheExpiry) {
+    // Cache hit - return silently (no log spam)
     return cachedData;
   }
 
+  if (cachedData && now >= cacheExpiry) {
+    console.log('[Google Sheets] ⟳ Cache expired, fetching fresh data...');
+  } else {
+    console.log('[Google Sheets] → First load, fetching data...');
+  }
+  
   const freshData = await fetchGoogleSheetsData();
 
   if (freshData) {
     cachedData = freshData;
     cacheExpiry = now + CACHE_DURATION;
+    console.log('[Google Sheets] ✓ Data cached for', CACHE_DURATION / 1000, 'seconds');
   }
 
   return freshData;

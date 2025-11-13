@@ -6,6 +6,7 @@ import { SyncProvider } from '@/context/SyncContext';
 import TopNav from '@/components/TopNav';
 import HFCFooter from '@/components/HFCFooter';
 import FloatingControls from '@/components/FloatingControls';
+import AutoSync from '@/components/AutoSync';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -68,6 +69,7 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <SyncProvider>
+            <AutoSync />
             <TopNav />
             <main className="pt-16">
               {children}

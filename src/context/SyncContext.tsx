@@ -34,6 +34,12 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(INITIAL_STATUS);
   const [syncId, setSyncId] = useState<string | null>(null);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const syncStatusRef = useRef<SyncStatus>(INITIAL_STATUS);
+  
+  // Keep ref in sync with state
+  React.useEffect(() => {
+    syncStatusRef.current = syncStatus;
+  }, [syncStatus]);
 
   // Poll for sync status
   const pollStatus = useCallback(async (id: string) => {
@@ -85,8 +91,8 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
   // Start sync
   const startSync = useCallback(async () => {
     try {
-      // Don't start if already syncing
-      if (syncStatus.isActive) {
+      // Don't start if already syncing (use ref to avoid closing over state)
+      if (syncStatusRef.current.isActive) {
         console.log('Sync already in progress');
         return;
       }
@@ -127,7 +133,7 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-  }, [syncStatus.isActive, pollStatus]);
+  }, [pollStatus]);
 
   // Dismiss completion message
   const dismissComplete = useCallback(() => {

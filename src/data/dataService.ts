@@ -288,13 +288,13 @@ export const refreshReviews = async (): Promise<Review[]> => {
 
 export const refreshAgents = async (): Promise<Agent[]> => {
   try {
-    const googleData = await refreshGoogleSheetsData();
+    // Use cached data instead of forcing refresh
+    const googleData = await getCachedGoogleSheetsData();
     if (googleData?.agents && googleData.agents.length > 0) {
-      console.log('Refreshed agents from Google Sheets CSV:', googleData.agents.length);
       return googleData.agents;
     }
   } catch (error) {
-    console.warn('Failed to refresh Google Sheets CSV data, using sample data:', error);
+    console.warn('Failed to load Google Sheets data, using sample data:', error);
   }
 
   return agents;
@@ -302,13 +302,13 @@ export const refreshAgents = async (): Promise<Agent[]> => {
 
 export const refreshDepartments = async (): Promise<Department[]> => {
   try {
-    const googleData = await refreshGoogleSheetsData();
+    // Use cached data instead of forcing refresh
+    const googleData = await getCachedGoogleSheetsData();
     if (googleData?.departments && googleData.departments.length > 0) {
-      console.log('Refreshed departments from Google Sheets CSV:', googleData.departments.length);
       return googleData.departments;
     }
   } catch (error) {
-    console.warn('Failed to refresh Google Sheets CSV data, using sample data:', error);
+    console.warn('Failed to load Google Sheets data, using sample data:', error);
   }
 
   return departments;

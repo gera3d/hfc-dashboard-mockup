@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   loadAgents, 
@@ -28,6 +28,16 @@ import {
 import { useSyncProgress } from '@/context/SyncContext';
 import { SyncProgressIndicator } from '@/components/SyncProgressIndicator';
 
+interface DataStats {
+  current: number;
+  historical: number;
+  historical1: number;
+  historical2: number;
+  total: number;
+  lastUpdated: string | null;
+  sources?: Array<{ name: string; count: number }>;
+}
+
 export default function SettingsPage() {
   const router = useRouter();
   const { syncStatus, startSync } = useSyncProgress();
@@ -37,6 +47,34 @@ export default function SettingsPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [showAgentManager, setShowAgentManager] = useState(false);
   const [displayPrefs, setDisplayPrefs] = useState<DisplayPreferences>({ showRatingDistribution: false });
+  const [dataStats, setDataStats] = useState<DataStats | null>(null);
+
+  // Load data stats on mount only
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch('/api/cached-data', { 
+          cache: 'default',
+          headers: { 'Accept': 'application/json' }
+        });
+        const data = await response.json();
+        if (data.stats) {
+          setDataStats({
+            current: data.stats.current || 0,
+            historical: data.stats.historical || 0,
+            historical1: data.stats.historical1 || 0,
+            historical2: data.stats.historical2 || 0,
+            total: data.stats.total || data.stats.lines - 1 || 0,
+            lastUpdated: data.lastUpdated,
+            sources: data.stats.sources || []
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch data stats:', error);
+      }
+    };
+    fetchStats();
+  }, []); // Only on mount
 
   // Load display preferences
   useEffect(() => {
@@ -71,7 +109,7 @@ export default function SettingsPage() {
   };
 
   // Handle sync completion - reload data
-  const handleSyncComplete = async (success: boolean) => {
+  const handleSyncComplete = useCallback(async (success: boolean) => {
     if (success) {
       setLastSyncTime(new Date());
       
@@ -87,7 +125,7 @@ export default function SettingsPage() {
       setAgents(agentsWithOverrides);
       setDepartments(departmentsWithCustom);
     }
-  };
+  }, []); // Empty dependencies - this function doesn't need to change
 
   // Refresh from local cache
   const handleRefresh = async () => {
@@ -329,13 +367,70 @@ export default function SettingsPage() {
 
             {/* Primary Source Info */}
             <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <h3 className="font-semibold text-gray-900">Primary Source (Active)</h3>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <h3 className="font-semibold text-gray-900">Primary Source (Active)</h3>
+                </div>
+                {dataStats && (
+                  <div className="text-xs text-gray-500">
+                    {dataStats.lastUpdated && `Last synced: ${new Date(dataStats.lastUpdated).toLocaleString()}`}
+                  </div>
+                )}
               </div>
               <p className="text-sm text-gray-600 ml-5">Current reviews via Google Sheets API</p>
               <p className="text-xs text-gray-500 ml-5 mt-1">Sheet ID: {process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID || '10ooffH9z...'}</p>
+              {dataStats && dataStats.current > 0 && (
+                <div className="ml-5 mt-2 flex items-center gap-4 text-xs">
+                  <span className="text-blue-600 font-semibold">{dataStats.current.toLocaleString()} reviews</span>
+                </div>
+              )}
             </div>
+
+            {/* Historical Source (if loaded) */}
+            {dataStats && dataStats.historical1 > 0 && (
+              <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <h3 className="font-semibold text-gray-900">Historical Archive 1</h3>
+                </div>
+                <p className="text-sm text-gray-600 ml-5">May 2024 archive</p>
+                <p className="text-xs text-gray-500 ml-5 mt-1">Sheet ID: 1HyHHtJNqlldacYkMYbBOlaKKrf29yDDD9jETLt_mJ0o</p>
+                <div className="ml-5 mt-2 flex items-center gap-4 text-xs">
+                  <span className="text-purple-600 font-semibold">{dataStats.historical1.toLocaleString()} reviews</span>
+                </div>
+              </div>
+            )}
+
+            {dataStats && dataStats.historical2 > 0 && (
+              <div className="p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                  <h3 className="font-semibold text-gray-900">Historical Archive 2</h3>
+                </div>
+                <p className="text-sm text-gray-600 ml-5">Older data archive</p>
+                <p className="text-xs text-gray-500 ml-5 mt-1">Sheet ID: 1jyyjA44sLgfzkwVUTF5s9a61jeboF4NXpHSC3CZZOPE</p>
+                <div className="ml-5 mt-2 flex items-center gap-4 text-xs">
+                  <span className="text-indigo-600 font-semibold">{dataStats.historical2.toLocaleString()} reviews</span>
+                </div>
+              </div>
+            )}
+
+            {/* Combined Total */}
+            {dataStats && dataStats.total > 0 && (
+              <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">Combined Dataset</h3>
+                    <p className="text-sm text-gray-600">All sources merged and ready for analysis</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-emerald-600">{dataStats.total.toLocaleString()}</div>
+                    <div className="text-xs text-gray-500">total reviews</div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Historical Sources Placeholder */}
             <div className="p-6 bg-amber-50 border border-amber-200 rounded-lg text-center">

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from 'next/navigation';
 import { Trophy, Building2, AlertTriangle, BarChart3 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
@@ -98,6 +98,7 @@ export default function DashboardPage() {
 
   // Load display preferences from localStorage
   const [displayPrefs, setDisplayPrefs] = useState<DisplayPreferences>({ showRatingDistribution: false });
+  const prevSyncStatus = useRef<string>('idle');
   
   useEffect(() => {
     setDisplayPrefs(loadDisplayPreferences());
@@ -151,9 +152,13 @@ export default function DashboardPage() {
     loadData();
   }, []);
 
-  // Auto-reload data when sync completes
+  // Auto-reload data when sync completes (not on every status change)
   useEffect(() => {
-    if (syncStatus.status === 'complete') {
+    const currentStatus = syncStatus.status;
+    const wasNotComplete = prevSyncStatus.current !== 'complete';
+    const isNowComplete = currentStatus === 'complete';
+    
+    if (wasNotComplete && isNowComplete) {
       console.log('Sync completed - reloading dashboard data...');
       const reloadData = async () => {
         try {
@@ -185,6 +190,9 @@ export default function DashboardPage() {
       };
       reloadData();
     }
+    
+    // Update ref for next render
+    prevSyncStatus.current = currentStatus;
   }, [syncStatus.status]);
 
   // Handle agent department updates (kept for table interactions)
@@ -456,7 +464,7 @@ export default function DashboardPage() {
                   const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(agentMetrics[0].agent_name)}&background=0066cc&color=fff&size=256`;
                   
                   return (
-                    <button 
+                    <div 
                       className="w-full rounded-xl border-2 border-yellow-400 bg-white hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 relative overflow-hidden cursor-pointer text-left"
                     >
                   {/* Thin gold accent strip at top */}
@@ -500,7 +508,7 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                </button>
+                </div>
               );
             })()}
               </AnimatedPreview>
@@ -547,7 +555,7 @@ export default function DashboardPage() {
                 const colors = rankColors[index] || rankColors[0];
                 
                 return (
-                  <button 
+                  <div 
                     key={`preview-dept-${dept.id}-${filters.dateRange.label}-${index}`}
                     className={`w-full sm:flex-1 rounded-xl border-2 ${colors.border} bg-white hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 relative overflow-hidden cursor-pointer text-left`}
                   >
@@ -592,7 +600,7 @@ export default function DashboardPage() {
                         )}
                       </div>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
               </div>
