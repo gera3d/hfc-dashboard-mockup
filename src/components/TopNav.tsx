@@ -1,13 +1,22 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@/context/ThemeContext';
 import { ThemeToggleButton } from '@/components/tailadmin/common/ThemeToggleButton';
+import { signOut } from '@/lib/supabase';
+import { LogOut } from 'lucide-react';
 
 export default function TopNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const { theme } = useTheme();
+  
+  const handleLogout = async () => {
+    await signOut();
+    router.push('/');
+  };
+
   // For HFC we remove the top nav to avoid duplicate branding (logo in top-left + large center title)
   if (theme === 'hfc') return null;
 
@@ -30,6 +39,14 @@ export default function TopNav() {
           {/* Right Side Actions */}
           <div className="flex items-center gap-2">
             <ThemeToggleButton />
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              title="Sign out"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Sign out</span>
+            </button>
           </div>
         </div>
       </div>
