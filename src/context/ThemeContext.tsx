@@ -9,6 +9,8 @@ type ThemeContextType = {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
+  isCheckingAuth: boolean;
+  setIsCheckingAuth: (checking: boolean) => void;
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -18,6 +20,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [theme, setThemeState] = useState<Theme>("hfc");
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(false);
 
   useEffect(() => {
     // This code will only run on the client side
@@ -65,7 +68,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme, isCheckingAuth, setIsCheckingAuth }}>
       {children}
     </ThemeContext.Provider>
   );

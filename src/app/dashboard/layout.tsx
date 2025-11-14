@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
 import { getSession } from '@/lib/supabase';
+import HFCFooter from '@/components/HFCFooter';
 
 export default function DashboardLayout({
   children,
@@ -42,5 +43,9 @@ export default function DashboardLayout({
     return null;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+    </>
+  );
 }

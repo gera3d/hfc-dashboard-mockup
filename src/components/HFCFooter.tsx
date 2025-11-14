@@ -6,14 +6,26 @@ import { useTheme } from '@/context/ThemeContext';
 import { ThemeToggleButton } from '@/components/tailadmin/common/ThemeToggleButton';
 import { signOut } from '@/lib/supabase';
 import { LogOut } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function HFCFooter() {
   const { theme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
-  
-  // Don't show footer on login page (root path)
-  if (theme !== 'hfc' || pathname === '/') return null;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Hide on login page - check this FIRST before anything else
+  if (pathname === '/') return null;
+
+  // Don't render until mounted on client
+  if (!mounted) return null;
+
+  // Only show for HFC theme - component should only be rendered on authenticated pages
+  if (theme !== 'hfc') return null;
 
   const handleLogout = async () => {
     await signOut();

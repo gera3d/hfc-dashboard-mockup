@@ -32,6 +32,7 @@ import {
 } from '@/lib/displayPreferences';
 import { useSyncProgress } from '@/context/SyncContext';
 import { SyncProgressIndicator } from '@/components/SyncProgressIndicator';
+import HFCFooter from '@/components/HFCFooter';
 
 interface DataStats {
   current: number;
@@ -650,6 +651,7 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
+      <HFCFooter />
     </div>
   );
 }

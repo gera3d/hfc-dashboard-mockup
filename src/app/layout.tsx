@@ -3,8 +3,7 @@ import { Inter, Space_Grotesk, IBM_Plex_Mono } from 'next/font/google'
 import "./globals.css";
 import { ThemeProvider } from '@/context/ThemeContext';
 import { SyncProvider } from '@/context/SyncContext';
-import TopNav from '@/components/TopNav';
-import HFCFooter from '@/components/HFCFooter';
+import LayoutContent from '@/components/LayoutContent';
 import FloatingControls from '@/components/FloatingControls';
 import AutoSync from '@/components/AutoSync';
 
@@ -70,12 +69,9 @@ export default function RootLayout({
         <ThemeProvider>
           <SyncProvider>
             <AutoSync />
-            <TopNav />
-            <main className="pt-16">
+            <LayoutContent>
               {children}
-            </main>
-            {/* HFC footer holds theme toggle and settings link for HFC theme only */}
-            <HFCFooter />
+            </LayoutContent>
             {/* Small floating controls (always present) so theme/settings are reachable */}
             <FloatingControls />
           </SyncProvider>

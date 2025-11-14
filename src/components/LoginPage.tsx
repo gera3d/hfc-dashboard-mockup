@@ -4,9 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn, signUp, getSession } from '@/lib/supabase';
 import HFCBrandTitle from '@/components/HFCBrandTitle';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { setIsCheckingAuth } = useTheme();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,6 +16,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [checkingSession, setCheckingSession] = useState(true);
 
   // Check if user is already logged in
   useEffect(() => {
@@ -21,9 +24,14 @@ export default function LoginPage() {
   }, []);
 
   const checkSession = async () => {
+    setCheckingSession(true);
+    setIsCheckingAuth(true); // Tell the app we're checking auth
     const { session } = await getSession();
     if (session) {
       router.push('/dashboard');
+    } else {
+      setCheckingSession(false);
+      setIsCheckingAuth(false); // Done checking
     }
   };
 
@@ -91,6 +99,21 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  // Show loading screen while checking session
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ background: 'radial-gradient(ellipse at center, #4a7ba7 0%, #3a6a94 40%, #1e3d5a 100%)' }}>
+        <div className="relative z-10 text-center">
+          <HFCBrandTitle size="xl" showSubtitle={true} />
+          <div className="mt-8 flex justify-center">
+            <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+          </div>
+          <p className="text-white/60 text-sm mt-4">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ background: 'radial-gradient(ellipse at center, #4a7ba7 0%, #3a6a94 40%, #1e3d5a 100%)' }}>

@@ -3,6 +3,7 @@
 import { ReactNode } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import TopNav from '@/components/TopNav';
+import HFCFooter from '@/components/HFCFooter';
 import { DateRange } from '@/data/dataService';
 
 interface DashboardLayoutProps {
@@ -30,6 +31,7 @@ export default function DashboardLayout({
       <main className={`${theme === 'hfc' ? 'pt-20 min-h-screen bg-transparent' : 'pt-16 bg-[#F6F9FC] dark:bg-gray-900'}`}>
         {children}
       </main>
+      <HFCFooter />
     </>
   );
 }
