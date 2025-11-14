@@ -1,0 +1,11 @@
+{
+  "status": "complete",
+  "progress": 100,
+  "message": "Complete!",
+  "lastUpdated": "2025-11-14T22:39:39.211Z",
+  "stats": {
+    "size": 13220424,
+    "lines": 22784,
+    "rows": 22761
+  }
+}

@@ -35,6 +35,7 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
   const [syncId, setSyncId] = useState<string | null>(null);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const syncStatusRef = useRef<SyncStatus>(INITIAL_STATUS);
+  const syncLockRef = useRef<boolean>(false); // Prevent concurrent syncs
   
   // Keep ref in sync with state
   React.useEffect(() => {
@@ -69,6 +70,8 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
           pollIntervalRef.current = null;
         }
         setSyncId(null);
+        // Release lock when sync completes or errors
+        syncLockRef.current = false;
       }
     } catch (error) {
       console.error('Error polling sync status:', error);
@@ -85,17 +88,22 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
         pollIntervalRef.current = null;
       }
       setSyncId(null);
+      // Release lock on polling error
+      syncLockRef.current = false;
     }
   }, []);
 
   // Start sync
   const startSync = useCallback(async () => {
     try {
-      // Don't start if already syncing (use ref to avoid closing over state)
-      if (syncStatusRef.current.isActive) {
-        console.log('Sync already in progress');
+      // Prevent concurrent syncs with a lock
+      if (syncLockRef.current || syncStatusRef.current.isActive) {
+        console.log('Sync already in progress - ignoring duplicate request');
         return;
       }
+
+      // Acquire lock immediately
+      syncLockRef.current = true;
 
       setSyncStatus({
         isActive: true,
@@ -132,6 +140,8 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
         message: 'Failed to start sync',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
+      // Release lock on error
+      syncLockRef.current = false;
     }
   }, [pollStatus]);
 

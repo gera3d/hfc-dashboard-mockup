@@ -11,6 +11,7 @@ This is a **mockup** of the HFC Reviews Dashboard that demonstrates what the fin
 - **Agent Leaderboard**: Bar chart showing top agents by total reviews
 - **Agent Performance Table**: Sortable table with all metrics and drill-down capability
 - **Individual Reviews Table**: Paginated table with review details and modal popup
+- **Background Sync System**: Non-blocking Google Sheets sync with real-time progress tracking
 
 ### Agent Detail Page
 - **Agent Profile**: Shows agent information, department, and lifetime stats
@@ -19,12 +20,20 @@ This is a **mockup** of the HFC Reviews Dashboard that demonstrates what the fin
 - **Performance Insights**: Highlights and recent activity
 - **Review History**: Complete list of agent's reviews
 
+### Data Management
+- **Google Sheets Integration**: Live sync from Google Sheets via API
+- **Background Sync**: Non-blocking sync with progress tracking
+- **Agent Management**: Hide/unhide agents with Supabase persistence
+- **Department Management**: Custom department configuration
+- **Local Cache**: Fast data access with automatic refresh
+
 ### Interactive Features
 - **Filtering**: Multi-select filters that work across all components
 - **Comparison Mode**: Period-over-period comparison with delta indicators  
 - **Drill-down Navigation**: Click agents to view detailed performance
 - **Responsive Design**: Works on desktop and tablet devices
 - **Sorting & Pagination**: Full table functionality with export placeholders
+- **Real-time Updates**: Auto-refresh on sync completion
 
 ## 📊 Sample Data
 
@@ -55,19 +64,31 @@ The mockup includes realistic sample data:
 ```
 src/
 ├── app/
-│   ├── page.tsx              # Main dashboard
-│   └── agent/[id]/page.tsx   # Agent detail page
+│   ├── page.tsx                    # Main dashboard
+│   ├── agent/[id]/page.tsx         # Agent detail page
+│   ├── settings/page.tsx           # Settings & sync management
+│   └── api/
+│       └── sync-sheets-bg/
+│           └── route.ts            # Background sync API
 ├── components/
-│   ├── GlobalFilters.tsx     # Filter controls
-│   ├── KPITiles.tsx         # Metric tiles with comparisons
-│   ├── Charts.tsx           # Time series and bar charts
-│   └── DataTables.tsx       # Agent and review tables
-└── data/
-    ├── agents.json          # Agent master data
-    ├── departments.json     # Department list
-    ├── sources.json         # Review sources
-    ├── reviews.ts          # Sample review data
-    └── dataService.ts      # Data filtering and calculations
+│   ├── GlobalFilters.tsx           # Filter controls
+│   ├── KPITiles.tsx                # Metric tiles with comparisons
+│   ├── Charts.tsx                  # Time series and bar charts
+│   ├── DataTables.tsx              # Agent and review tables
+│   ├── AgentDepartmentManager.tsx  # Agent management UI
+│   └── SyncProgressIndicator.tsx   # Sync progress UI
+├── context/
+│   └── SyncContext.tsx             # Global sync state management
+├── data/
+│   ├── agents.json                 # Agent master data
+│   ├── departments.json            # Department list
+│   ├── sources.json                # Review sources
+│   ├── reviews.ts                  # Sample review data
+│   └── dataService.ts              # Data filtering and calculations
+└── lib/
+    ├── localStorage.ts             # Local storage utilities
+    ├── supabaseService.ts          # Supabase integration
+    └── parseSheets.ts              # CSV parsing utilities
 ```
 
 ## 🚀 Getting Started
@@ -85,6 +106,28 @@ src/
 3. **Open in browser:**
    http://localhost:3000
 
+4. **Set up Google Sheets sync (optional):**
+   - Create a Google Cloud service account
+   - Download credentials JSON
+   - Place as `google-sheets-credentials.json` in project root
+   - Set `GOOGLE_SHEET_ID` in `.env.local`
+   - See [GOOGLE-SHEETS-API-SETUP.md](./GOOGLE-SHEETS-API-SETUP.md) for details
+
+5. **Configure Supabase (optional):**
+   - Create a Supabase project
+   - Add connection details to `.env.local`
+   - Run the SQL setup scripts
+   - See [SUPABASE-SETUP.md](./SUPABASE-SETUP.md) for details
+
+## 📚 Documentation
+
+- **[BACKGROUND-SYNC-SYSTEM.md](./BACKGROUND-SYNC-SYSTEM.md)** - Background sync implementation guide
+- **[SYNC-SYSTEM-FIXES-NOV-2025.md](./SYNC-SYSTEM-FIXES-NOV-2025.md)** - Recent sync improvements and bug fixes
+- **[GOOGLE-SHEETS-API-SETUP.md](./GOOGLE-SHEETS-API-SETUP.md)** - Google Sheets integration guide
+- **[SUPABASE-SETUP.md](./SUPABASE-SETUP.md)** - Supabase configuration
+- **[AGENT-DEPARTMENT-MANAGEMENT.md](./AGENT-DEPARTMENT-MANAGEMENT.md)** - Agent management features
+- **[HFC-THEME-DOCUMENTATION.md](./HFC-THEME-DOCUMENTATION.md)** - Design system and theming
+
 ## 📋 Roadmap Compliance
 
 This mockup implements all major requirements from the PRD:
@@ -101,17 +144,23 @@ This mockup implements all major requirements from the PRD:
 - [x] Responsive design
 - [x] Clean visual language with rounded cards
 - [x] Star rating color coding
-- [x] Export placeholders
+- [x] Google Sheets API integration
+- [x] Background sync system with progress tracking
+- [x] Supabase integration for agent management
+- [x] Local storage for user preferences
+- [x] Agent hide/unhide functionality
+- [x] Custom department management
+- [x] Real-time sync status updates
 
-### 🔄 Future Implementation (Real App)
-- [ ] Google Sheets API integration
-- [ ] PostgreSQL database with Drizzle ORM
+### 🔄 Future Implementation
 - [ ] Supabase authentication and RLS
-- [ ] Real-time data updates
+- [ ] Real-time data updates via WebSockets
 - [ ] Actual CSV export functionality
-- [ ] Parity checker with Google Sheets
 - [ ] Advanced filtering and search
 - [ ] Mobile optimization
+- [ ] Sync scheduling/automation
+- [ ] Performance metrics dashboard
+- [ ] Multi-user collaboration features
 
 ## 🎯 Key Differentiators
 
@@ -145,4 +194,18 @@ To adapt this mockup for your needs:
 
 ---
 
-**Note**: This is a frontend mockup with sample data. The final implementation will require backend services, database integration, and authentication as outlined in the roadmap.
+**Last Updated:** November 14, 2025  
+**Status:** ✅ Production Ready  
+
+### Recent Updates (Nov 14, 2025)
+- ✅ Fixed sync race conditions with lock mechanism
+- ✅ Added 3-second cooldown protection
+- ✅ Enhanced error handling and logging
+- ✅ Improved credentials validation
+- ✅ Updated all documentation
+
+For detailed information about the sync system improvements, see [SYNC-SYSTEM-FIXES-NOV-2025.md](./SYNC-SYSTEM-FIXES-NOV-2025.md)
+
+---
+
+**Note**: This application includes both frontend mockup features and production-ready Google Sheets integration. The sync system uses real Google Sheets API and Supabase for data persistence.

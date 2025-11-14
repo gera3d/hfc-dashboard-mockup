@@ -286,8 +286,13 @@ pollIntervalRef.current = setInterval(() => {
 
 ## 🔒 Error Handling
 
+### Race Condition Prevention
+- **Sync Lock**: Prevents multiple concurrent syncs using a ref-based lock
+- **Cooldown Period**: 3-second cooldown between sync attempts
+- **State Validation**: Double-checks both lock and active state before starting
+
 ### Timeout Errors
-- Automatically handled with extended timeout
+- Automatically handled with extended timeout (120 seconds)
 - Clear error messages
 - Cached data remains available
 
@@ -297,16 +302,24 @@ pollIntervalRef.current = setInterval(() => {
 - Graceful degradation
 
 ### Server Errors
-- Detailed error reporting
+- Detailed error reporting with full logging
 - Status preserved for debugging
 - Easy retry from UI
+- Comprehensive error tracking in both client and server
+
+### Hot Reload Protection
+- Enhanced logging to detect module reloading issues
+- Status verification after creation
+- Graceful handling of missing sync IDs
 
 ## 📊 Performance
 
-- **Memory**: Sync status stored in-memory (Map)
-- **Cleanup**: Auto-cleanup after 60 seconds for completed syncs
+- **Memory**: Sync status stored in-memory (Map) with file-based backup option
+- **Cleanup**: Auto-cleanup after 5 minutes for completed syncs
 - **Network**: 1 request per second during active sync
 - **Scalability**: Can handle concurrent syncs with unique IDs
+- **Race Condition Prevention**: Ref-based lock prevents duplicate sync requests
+- **Click Protection**: 3-second cooldown prevents accidental rapid clicks
 
 ## 🔮 Future Enhancements
 
@@ -358,11 +371,15 @@ Import `useSyncProgress()` hook and access sync state.
 - Check console for API errors
 - Verify SyncProvider is wrapping app
 - Ensure no other sync is running
+- Check for cooldown message (3-second wait between attempts)
+- Verify sync lock is not stuck (should auto-release on error)
 
 **Progress Not Updating**
 - Check network tab for polling requests
 - Verify syncId is correct
 - Check for errors in console
+- Look for 500/404 errors indicating module reload issues
+- Check server terminal for detailed sync logs
 
 **Data Not Refreshing**
 - Verify onSyncComplete callback
@@ -370,12 +387,45 @@ Import `useSyncProgress()` hook and access sync state.
 - Ensure useEffect dependencies correct
 
 **Timeout Issues**
-- Review maxDuration setting
+- Review maxDuration setting (currently 300s)
 - Check Google Sheets response time
 - Consider chunking for large files
+- Review sync timeout (currently 120s)
+
+**500/404 Errors During Polling**
+- Usually indicates Next.js hot-reload cleared the status Map
+- Check server logs for "Sync not found" or "Available syncIds" messages
+- Verify credentials file exists and is valid
+- Check for file system errors when writing status
+
+**Duplicate Sync Requests**
+- Sync lock should prevent this automatically
+- Check browser console for "Sync already in progress" messages
+- Verify cooldown is working (3-second minimum between attempts)
+- Button should be disabled during active sync
 
 ---
 
 **Created:** November 11, 2025  
-**Version:** 1.0  
+**Last Updated:** November 14, 2025  
+**Version:** 1.1  
 **Status:** ✅ Production Ready
+
+## 🔄 Recent Updates (v1.1 - Nov 14, 2025)
+
+### Bug Fixes
+- ✅ **Fixed race condition**: Added sync lock to prevent duplicate concurrent syncs
+- ✅ **Added cooldown protection**: 3-second minimum between sync attempts
+- ✅ **Enhanced error handling**: Better 500/404 error detection and logging
+- ✅ **Improved logging**: Comprehensive server-side logs for debugging
+- ✅ **Credentials validation**: Added validation for Google Sheets credentials file
+
+### Improvements
+- ✅ **Extended cleanup period**: Changed from 60s to 5 minutes
+- ✅ **Better state management**: Sync lock releases automatically on error
+- ✅ **Enhanced debugging**: Added detailed logging for sync ID tracking
+- ✅ **Timeout increase**: Sync timeout increased to 120 seconds
+
+### Known Issues
+- ⚠️ **Hot Reload**: In development mode, Next.js hot-reloading can clear the in-memory sync status Map, causing 404 errors. This doesn't affect production builds.
+  - **Workaround**: Server logs will show "Sync not found" messages. The sync will complete successfully but polling may fail. File-based status storage is available if needed.

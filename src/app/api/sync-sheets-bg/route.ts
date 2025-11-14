@@ -1,8 +1,6 @@
 ﻿import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
+import { writeFile, readFile, mkdir } from 'fs/promises';
 import { join } from 'path';
-import { existsSync } from 'fs';
-import { resolve } from 'path';
 import { google } from 'googleapis';
 import { parseCsvToObjects } from '../../../lib/parseSheets';
 
@@ -10,8 +8,9 @@ const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID || '';
 const SHEET_NAME = process.env.GOOGLE_SHEET_NAME || 'Reviews';
 
 export const maxDuration = 300;
+export const dynamic = 'force-dynamic'; // Prevent caching issues
 
-const syncStatus = new Map<string, {
+type SyncStatusType = {
   status: 'idle' | 'downloading' | 'processing' | 'saving' | 'complete' | 'error';
   progress: number;
   message: string;
@@ -22,7 +21,74 @@ const syncStatus = new Map<string, {
     lines: number;
     rows?: number;
   };
-}>();
+};
+
+// File-based status storage (survives hot reloads)
+const SYNC_STATUS_DIR = join(process.cwd(), 'src', 'data', 'sync-status');
+
+async function ensureSyncStatusDir() {
+  try {
+    await mkdir(SYNC_STATUS_DIR, { recursive: true });
+  } catch (error) {
+    // Ignore if directory already exists
+    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
+      console.error('[Sync] Error creating status directory:', error);
+    }
+  }
+}
+
+async function getSyncStatus(syncId: string): Promise<SyncStatusType | null> {
+  try {
+    const filePath = join(SYNC_STATUS_DIR, `${syncId}.json`);
+    const data = await readFile(filePath, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    // File doesn't exist or other read error
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return null; // File not found - sync doesn't exist
+    }
+    console.error('[Sync] Error reading status:', error);
+    return null;
+  }
+}
+
+async function setSyncStatus(syncId: string, status: SyncStatusType): Promise<void> {
+  try {
+    await ensureSyncStatusDir();
+    const filePath = join(SYNC_STATUS_DIR, `${syncId}.json`);
+    await writeFile(filePath, JSON.stringify(status, null, 2), 'utf-8');
+  } catch (error) {
+    console.error('[Sync] Error writing status:', error);
+  }
+}
+
+// NOTE: Removed in-memory Map - now using file-based storage exclusively
+// This prevents hot-reload issues in development where the Map would be cleared
+// causing 500/404 errors when polling for sync status
+
+// Cleanup old sync statuses (older than 5 minutes)
+async function cleanupOldSyncs() {
+  try {
+    await ensureSyncStatusDir();
+    const { readdir, unlink } = await import('fs/promises');
+    const files = await readdir(SYNC_STATUS_DIR);
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    
+    for (const file of files) {
+      if (!file.endsWith('.json')) continue;
+      const syncId = file.replace('.json', '');
+      const timestamp = parseInt(syncId.replace('sync-', ''));
+      
+      if (timestamp < fiveMinutesAgo) {
+        const filePath = join(SYNC_STATUS_DIR, file);
+        await unlink(filePath);
+        console.log('[Sync] Cleaned up old sync file:', syncId);
+      }
+    }
+  } catch (error) {
+    console.error('[Sync] Error cleaning up:', error);
+  }
+}
 
 function hasGoogleSheetId(): boolean {
   return !!process.env.GOOGLE_SHEET_ID;
@@ -33,7 +99,7 @@ async function downloadSheetData(syncId: string): Promise<string> {
   console.log('🔄 [SYNC START]', syncId);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   
-  syncStatus.set(syncId, {
+  await setSyncStatus(syncId, {
     status: 'downloading',
     progress: 10,
     message: 'Connecting...'
@@ -46,17 +112,15 @@ async function downloadSheetData(syncId: string): Promise<string> {
   let lastRowCount = 0;
   
   try {
-    if (existsSync(dataPath)) {
-      const { readFile } = await import('fs/promises');
-      const existing = JSON.parse(await readFile(dataPath, 'utf-8'));
-      lastRowCount = existing.stats?.rows || existing.stats?.lines - 1 || 0;
-      console.log('[Sync] 📊 Last sync had', lastRowCount, 'data rows');
-    }
+    const { readFile } = await import('fs/promises');
+    const existing = JSON.parse(await readFile(dataPath, 'utf-8'));
+    lastRowCount = existing.stats?.rows || existing.stats?.lines - 1 || 0;
+    console.log('[Sync] 📊 Last sync had', lastRowCount, 'data rows');
   } catch (err) {
     console.log('[Sync] 📝 No previous sync data, doing initial sync');
   }
 
-  syncStatus.set(syncId, {
+  await setSyncStatus(syncId, {
     status: 'downloading',
     progress: 30,
     message: 'Downloading from Google Sheets API...'
@@ -71,7 +135,16 @@ async function downloadSheetData(syncId: string): Promise<string> {
     // Load credentials from file
     const { readFile: readFileFs } = await import('fs/promises');
     const credentialsPath = join(process.cwd(), 'google-sheets-credentials.json');
+    
+    console.log('[Sync] Loading credentials from:', credentialsPath);
+    
     const credentials = JSON.parse(await readFileFs(credentialsPath, 'utf-8'));
+    
+    if (!credentials.client_email || !credentials.private_key) {
+      throw new Error('Invalid credentials file - missing client_email or private_key');
+    }
+    
+    console.log('[Sync] Credentials loaded for:', credentials.client_email);
     
     const auth = new google.auth.GoogleAuth({
       credentials,
@@ -80,7 +153,7 @@ async function downloadSheetData(syncId: string): Promise<string> {
 
     const sheets = google.sheets({ version: 'v4', auth });
     
-    syncStatus.set(syncId, {
+    await setSyncStatus(syncId, {
       status: 'downloading',
       progress: 50,
       message: 'Fetching data...'
@@ -122,7 +195,7 @@ async function downloadSheetData(syncId: string): Promise<string> {
   // Quick check: if row count hasn't changed, skip processing
   if (dataRows === lastRowCount && lastRowCount > 0) {
     console.log('[Sync] ✅ Already up to date! No new rows.');
-    syncStatus.set(syncId, {
+    await setSyncStatus(syncId, {
       status: 'complete',
       progress: 100,
       message: `Already up to date (${dataRows} rows)`,
@@ -135,7 +208,7 @@ async function downloadSheetData(syncId: string): Promise<string> {
   const newRowCount = dataRows - lastRowCount;
   console.log('[Sync] 🆕 Found', newRowCount, 'new rows!');
 
-  syncStatus.set(syncId, {
+  await setSyncStatus(syncId, {
     status: 'processing',
     progress: 60,
     message: `Processing ${dataRows} rows...`
@@ -146,7 +219,21 @@ async function downloadSheetData(syncId: string): Promise<string> {
 
 async function backgroundSync(syncId: string): Promise<void> {
   try {
-    syncStatus.set(syncId, {
+    // Don't overwrite immediately - update the existing status
+    const currentStatus = await getSyncStatus(syncId);
+    if (!currentStatus) {
+      console.error('[Sync] ERROR: syncId not found:', syncId);
+      await setSyncStatus(syncId, {
+        status: 'error',
+        progress: 0,
+        message: 'Internal error: sync not initialized',
+        error: 'Sync status was lost during initialization'
+      });
+      return;
+    }
+
+    await setSyncStatus(syncId, {
+      ...currentStatus,
       status: 'downloading',
       progress: 0,
       message: 'Starting...'
@@ -170,7 +257,7 @@ async function backgroundSync(syncId: string): Promise<void> {
 
     console.log('[Sync] Download complete, CSV length:', csvText.length);
 
-    syncStatus.set(syncId, {
+    await setSyncStatus(syncId, {
       status: 'saving',
       progress: 90,
       message: 'Saving...'
@@ -209,7 +296,7 @@ async function backgroundSync(syncId: string): Promise<void> {
 
     console.log('[Sync] Saved metadata to', filePath);
 
-    syncStatus.set(syncId, {
+    await setSyncStatus(syncId, {
       status: 'complete',
       progress: 100,
       message: 'Complete!',
@@ -236,7 +323,7 @@ async function backgroundSync(syncId: string): Promise<void> {
     if (errStack) console.error('Stack:', errStack);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     
-    syncStatus.set(syncId, {
+    await setSyncStatus(syncId, {
       status: 'error',
       progress: 0,
       message: 'Sync failed',
@@ -248,14 +335,33 @@ async function backgroundSync(syncId: string): Promise<void> {
 export async function POST() {
   const syncId = `sync-${Date.now()}`;
   
-  syncStatus.set(syncId, {
+  console.log('[Sync API POST] Creating new sync:', syncId);
+  
+  // Cleanup old syncs first
+  await cleanupOldSyncs();
+  
+  // Use file-based storage (survives hot reloads)
+  await setSyncStatus(syncId, {
     status: 'idle',
     progress: 0,
     message: 'Starting...'
   });
 
+  // Verify it was set
+  const verifyStatus = await getSyncStatus(syncId);
+  if (!verifyStatus) {
+    console.error('[Sync API POST] ERROR: Failed to set initial status for', syncId);
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to initialize sync'
+    }, { status: 500 });
+  }
+
+  console.log('[Sync API POST] Initial status set successfully:', verifyStatus);
+
+  // Start background sync (don't await it)
   backgroundSync(syncId).catch(err => {
-    console.error('[Sync]:', err);
+    console.error('[Sync] Unhandled error in backgroundSync:', err);
   });
 
   return NextResponse.json({
@@ -266,18 +372,41 @@ export async function POST() {
 }
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const syncId = searchParams.get('syncId');
+  try {
+    const { searchParams } = new URL(request.url);
+    const syncId = searchParams.get('syncId');
 
-  if (!syncId) {
-    return NextResponse.json({ error: 'syncId required' }, { status: 400 });
+    if (!syncId) {
+      console.error('[Sync API GET] No syncId provided');
+      return NextResponse.json({ error: 'syncId required' }, { status: 400 });
+    }
+
+    console.log('[Sync API GET] Polling for syncId:', syncId);
+
+    // Use file-based storage instead of Map (survives hot reloads)
+    const status = await getSyncStatus(syncId);
+
+    if (!status) {
+      console.error('[Sync API GET] Status not found for syncId:', syncId);
+      // Try to list available status files for debugging
+      try {
+        await ensureSyncStatusDir();
+        const { readdir } = await import('fs/promises');
+        const files = await readdir(SYNC_STATUS_DIR);
+        console.error('[Sync API GET] Available status files:', files);
+      } catch (e) {
+        console.error('[Sync API GET] Could not list status files:', e);
+      }
+      return NextResponse.json({ error: 'Sync not found' }, { status: 404 });
+    }
+
+    console.log('[Sync API GET] Returning status:', status.status, status.progress + '%');
+    return NextResponse.json(status);
+  } catch (error) {
+    console.error('[Sync API GET] Unexpected error:', error);
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
-
-  const status = syncStatus.get(syncId);
-
-  if (!status) {
-    return NextResponse.json({ error: 'Sync not found' }, { status: 404 });
-  }
-
-  return NextResponse.json(status);
 }

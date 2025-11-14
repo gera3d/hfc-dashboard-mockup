@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   loadAgents, 
@@ -48,6 +48,7 @@ export default function SettingsPage() {
   const { syncStatus, startSync } = useSyncProgress();
   const [loading, setLoading] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  const lastSyncAttemptRef = useRef<number>(0);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [showAgentManager, setShowAgentManager] = useState(false);
@@ -132,6 +133,16 @@ export default function SettingsPage() {
 
   // Sync from Google Sheets (using background sync)
   const handleSync = async () => {
+    // Prevent accidental rapid clicks (3 second cooldown)
+    const now = Date.now();
+    const timeSinceLastAttempt = now - lastSyncAttemptRef.current;
+    
+    if (timeSinceLastAttempt < 3000) {
+      console.log('Sync cooldown active - please wait', Math.ceil((3000 - timeSinceLastAttempt) / 1000), 'seconds');
+      return;
+    }
+    
+    lastSyncAttemptRef.current = now;
     await startSync();
   };
 
