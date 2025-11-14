@@ -22,7 +22,8 @@ import {
   Review,
   Agent,
   Department,
-  DateRange
+  DateRange,
+  AgentMetrics
 } from "@/data/dataService";
 import {
   applyAgentOverrides,
@@ -31,6 +32,8 @@ import {
   saveCustomDepartment,
   getChangeCount
 } from '@/lib/localStorage';
+import { filterHiddenAgents, subscribeToHiddenAgents, getHiddenAgents } from '@/lib/supabaseService';
+import '@/lib/testSupabase'; // Auto-test Supabase connection
 
 // Your existing chart components
 import { 
@@ -87,6 +90,11 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [isReady, setIsReady] = useState(false);
   const [expandedSection, setExpandedSection] = useState<SectionId | null>(null);
+  const [agentMetrics, setAgentMetrics] = useState<AgentMetrics[]>([]);
+  const [deptMetricsMap, setDeptMetricsMap] = useState<Record<string, AgentMetrics[]>>({});
+  const [hiddenAgentsVersion, setHiddenAgentsVersion] = useState(0); // Force refresh when hidden agents change
+  const [hiddenAgentIds, setHiddenAgentIds] = useState<Set<string>>(new Set()); // Track hidden agent IDs
+  const [hiddenAgentsLoaded, setHiddenAgentsLoaded] = useState(false); // Track if hidden agents have been loaded
   
   const [filters, setFilters] = useState<Filters>({
     dateRange: dateRanges.last7Days,
@@ -102,6 +110,25 @@ export default function DashboardPage() {
   
   useEffect(() => {
     setDisplayPrefs(loadDisplayPreferences());
+  }, []);
+
+  // Load hidden agents on mount
+  useEffect(() => {
+    const loadHiddenAgents = async () => {
+      try {
+        console.log('🔒 Loading hidden agents from Supabase...');
+        const hiddenIds = await getHiddenAgents();
+        console.log('🔒 Received hidden agent IDs:', hiddenIds);
+        const hiddenSet = new Set(hiddenIds);
+        setHiddenAgentIds(hiddenSet);
+        setHiddenAgentsLoaded(true);
+        console.log('🔒 Loaded hidden agents on mount:', Array.from(hiddenSet));
+      } catch (error) {
+        console.error('❌ Error loading hidden agents:', error);
+        setHiddenAgentsLoaded(true); // Set to true anyway so app doesn't hang
+      }
+    };
+    loadHiddenAgents();
   }, []);
 
   // Handle section toggle with accordion behavior
@@ -285,10 +312,103 @@ export default function DashboardPage() {
     return calculateMetrics(previousFiltered);
   }, [filters, reviews]);
 
-  // Calculate metrics
-  const currentMetrics = calculateMetrics(filteredData);
-  const agentMetrics = getAgentMetrics(filteredData, agents, departments);
-  const dailyMetrics = getDailyMetrics(filteredData, filters.dateRange);
+  // Filter reviews to exclude hidden agents
+  const visibleReviews = useMemo(() => {
+    if (!hiddenAgentsLoaded) {
+      console.log('⏳ Hidden agents not loaded yet, returning all filtered data');
+      return filteredData;
+    }
+    console.log('🔍 visibleReviews useMemo - hiddenAgentIds:', Array.from(hiddenAgentIds));
+    console.log('📊 filteredData length:', filteredData.length);
+    
+    if (hiddenAgentIds.size === 0) {
+      console.log('⚠️ No hidden agents, returning all filtered data');
+      return filteredData;
+    }
+    
+    const visible = filteredData.filter(review => {
+      const isHidden = hiddenAgentIds.has(review.agent_id);
+      if (isHidden) {
+        console.log(`� Filtering out review from hidden agent: ${review.agent_id}`);
+      }
+      return !isHidden;
+    });
+    
+    console.log(`�️ Filtered reviews: ${filteredData.length} -> ${visible.length} (removed ${filteredData.length - visible.length})`);
+    return visible;
+  }, [filteredData, hiddenAgentIds, hiddenAgentsLoaded]);
+  
+  // Filter agents list to exclude hidden
+  const visibleAgents = useMemo(() => {
+    if (!hiddenAgentsLoaded) {
+      console.log('⏳ Agents: Hidden agents not loaded yet');
+      return agents;
+    }
+    console.log('🔍 visibleAgents useMemo - hiddenAgentIds:', Array.from(hiddenAgentIds));
+    console.log('👥 Total agents:', agents.length);
+    
+    if (hiddenAgentIds.size === 0) {
+      console.log('⚠️ No hidden agents');
+      return agents;
+    }
+    
+    const visible = agents.filter(agent => {
+      const isHidden = hiddenAgentIds.has(agent.id);
+      if (isHidden) {
+        console.log(`🚫 Filtering out hidden agent: ${agent.id} (${agent.display_name})`);
+      }
+      return !isHidden;
+    });
+    
+    console.log(`�️ Filtered agents: ${agents.length} -> ${visible.length}`);
+    return visible;
+  }, [agents, hiddenAgentIds, hiddenAgentsLoaded]);
+
+  // Calculate metrics - use visibleReviews instead of filteredData
+  const currentMetrics = calculateMetrics(visibleReviews);
+  const dailyMetrics = getDailyMetrics(visibleReviews, filters.dateRange);
+  
+  // Filter hidden agents (async)
+  useEffect(() => {
+    const loadFilteredMetrics = async () => {
+      if (!hiddenAgentsLoaded) {
+        console.log('⏳ Waiting for hidden agents to load...');
+        return;
+      }
+      
+      console.log('🔄 Filtering hidden agents from dashboard...');
+      console.log('📋 Hidden agent IDs:', Array.from(hiddenAgentIds));
+      
+      // Filter agent metrics using visible reviews and visible agents
+      const metrics = getAgentMetrics(visibleReviews, visibleAgents, departments);
+      console.log(`✅ Calculated metrics for ${metrics.length} visible agents`);
+      setAgentMetrics(metrics);
+      
+      // Also compute per-department metrics using visible data
+      const deptMap: Record<string, AgentMetrics[]> = {};
+      for (const dept of departments) {
+        const deptReviews = visibleReviews.filter(r => r.department_id === dept.id);
+        const deptMetrics = getAgentMetrics(deptReviews, visibleAgents, departments);
+        deptMap[dept.id] = deptMetrics;
+      }
+      setDeptMetricsMap(deptMap);
+    };
+    loadFilteredMetrics();
+  }, [visibleReviews, visibleAgents, departments, hiddenAgentsVersion, hiddenAgentsLoaded]);
+  
+  // Subscribe to real-time hidden agents changes
+  useEffect(() => {
+    console.log('📡 Setting up real-time subscription for hidden agents...');
+    const unsubscribe = subscribeToHiddenAgents(() => {
+      console.log('🔄 Hidden agents changed - refreshing dashboard...');
+      setHiddenAgentsVersion(v => v + 1); // Trigger re-filter
+    });
+    
+    return () => {
+      console.log('🔌 Unsubscribing from hidden agents updates');
+      unsubscribe();
+    };
+  }, []);
   
   // Debug logging - DETAILED
   console.log('📊 DASHBOARD DEBUG - FULL DETAILS:', {
@@ -324,10 +444,10 @@ export default function DashboardPage() {
 
   // Sort reviews by date (most recent first)
   const sortedReviews = useMemo(() => {
-    return [...filteredData].sort((a, b) => 
+    return [...visibleReviews].sort((a, b) => 
       new Date(b.review_ts).getTime() - new Date(a.review_ts).getTime()
     );
-  }, [filteredData]);
+  }, [visibleReviews]);
 
   const handleAgentClick = (agentId: string) => {
     router.push(`/agent/${agentId}`);
@@ -430,7 +550,7 @@ export default function DashboardPage() {
           <FadeInSection delay={250} direction="up" duration={500}>
             <RatingDistributionWidget 
               metrics={currentMetrics} 
-              reviews={filteredData}
+              reviews={visibleReviews}
               showDonut={true}
             />
           </FadeInSection>
@@ -460,7 +580,7 @@ export default function DashboardPage() {
             agentMetrics[0] && (
               <AnimatedPreview key={`preview-agent-${filters.dateRange.label}`} direction="left">
                 {(() => {
-                  const topAgent = agents.find(a => a.id === agentMetrics[0].agent_id);
+                  const topAgent = visibleAgents.find(a => a.id === agentMetrics[0].agent_id);
                   const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(agentMetrics[0].agent_name)}&background=0066cc&color=fff&size=256`;
                   
                   return (
@@ -540,10 +660,9 @@ export default function DashboardPage() {
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 text-sm w-full">
                 {/* Top 3 Departments with their top agent */}
                 {departments.slice(0, 3).map((dept, index) => {
-                const deptReviews = filteredData.filter(r => r.department_id === dept.id);
-                const deptAgentMetrics = getAgentMetrics(deptReviews, agents, departments);
+                const deptAgentMetrics = deptMetricsMap[dept.id] || [];
                 const topAgent = deptAgentMetrics[0];
-                const agent = topAgent ? agents.find(a => a.id === topAgent.agent_id) : null;
+                const agent = topAgent ? visibleAgents.find(a => a.id === topAgent.agent_id) : null;
                 const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(topAgent?.agent_name || dept.name)}&background=0066cc&color=fff&size=256`;
                 
                 // Determine border and accent colors based on rank
@@ -609,9 +728,9 @@ export default function DashboardPage() {
         >
           <DepartmentPerformanceRankings 
             key={`dept-rankings-${filters.dateRange.label}`}
-            reviews={filteredData} 
+            reviews={visibleReviews} 
             departments={departments} 
-            agents={agents} 
+            agents={visibleAgents} 
             limit={10} 
           />
         </CollapsibleSection>
@@ -631,7 +750,7 @@ export default function DashboardPage() {
           icon={<AlertTriangle className="w-5 h-5" />}
           previewContent={
             (() => {
-              const lowRatings = filteredData.filter(r => r.rating <= 2);
+              const lowRatings = visibleReviews.filter(r => r.rating <= 2);
               const withComments = lowRatings.filter(r => r.comment && r.comment.trim());
               const mostRecentProblem = withComments.sort((a, b) => 
                 new Date(b.review_ts).getTime() - new Date(a.review_ts).getTime()
@@ -665,7 +784,7 @@ export default function DashboardPage() {
                         </span>
                         <span>•</span>
                         <span className="font-black">
-                          Agent {agents.find(a => a.id === mostRecentProblem.agent_id)?.display_name || mostRecentProblem.agent_id}
+                          Agent {visibleAgents.find(a => a.id === mostRecentProblem.agent_id)?.display_name || mostRecentProblem.agent_id}
                         </span>
                       </div>
                       <div className="text-sm text-gray-700 dark:text-gray-300 italic line-clamp-2 font-medium">
@@ -678,7 +797,7 @@ export default function DashboardPage() {
             })()
           }
         >
-          <ProblemFeedback reviews={filteredData} />
+          <ProblemFeedback reviews={visibleReviews} />
         </CollapsibleSection>
         </div>
       </FadeInSection>
@@ -707,8 +826,8 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     {[5, 4, 3, 2, 1].map((star) => {
-                      const count = filteredData.filter(r => r.rating === star).length;
-                      const total = filteredData.length;
+                      const count = visibleReviews.filter(r => r.rating === star).length;
+                      const total = visibleReviews.length;
                       const percent = total > 0 ? Math.round((count / total) * 100) : 0;
                       return (
                         <div key={star} className="text-center">
@@ -734,7 +853,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center justify-between gap-4">
                     {departments.slice(0, 3).map((dept) => {
-                      const deptReviews = filteredData.filter(r => r.department_id === dept.id);
+                      const deptReviews = visibleReviews.filter(r => r.department_id === dept.id);
                       const avgRating = deptReviews.length > 0 
                         ? deptReviews.reduce((sum, r) => sum + r.rating, 0) / deptReviews.length 
                         : 0;
@@ -762,20 +881,20 @@ export default function DashboardPage() {
 
             {/* Charts Row - Department Comparison & Problem Spotlight */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <DepartmentComparison reviews={filteredData} departments={departments} />
-              <ProblemSpotlight reviews={filteredData} departments={departments} />
+              <DepartmentComparison reviews={visibleReviews} departments={departments} />
+              <ProblemSpotlight reviews={visibleReviews} departments={departments} />
             </div>
 
             {/* TailAdmin Charts Row 1 */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <RatingTrendChart reviews={filteredData} />
+              <RatingTrendChart reviews={visibleReviews} />
               <StarDistributionChart metrics={currentMetrics} />
             </div>
 
             {/* TailAdmin Charts Row 2 */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <SourceDistributionChart reviews={filteredData} />
-              <DepartmentComparisonChart reviews={filteredData} departments={departments} />
+              <SourceDistributionChart reviews={visibleReviews} />
+              <DepartmentComparisonChart reviews={visibleReviews} departments={departments} />
             </div>
 
             {/* Agent Performance Table - TailAdmin Style */}
@@ -794,14 +913,14 @@ export default function DashboardPage() {
                 onCreateDepartment={handleCreateDepartment}
               />
               
-              <ReviewTable data={filteredData} agents={agents} departments={departments} />
+              <ReviewTable data={visibleReviews} agents={visibleAgents} departments={departments} />
               
-              <CustomerFeedbackTable data={filteredData} agents={agents} departments={departments} />
+              <CustomerFeedbackTable data={visibleReviews} agents={visibleAgents} departments={departments} />
               
               {/* TailAdmin Reviews Table */}
               <ReviewsTable 
                 reviews={sortedReviews} 
-                agents={agents} 
+                agents={visibleAgents} 
                 departments={departments}
                 maxRows={15}
               />

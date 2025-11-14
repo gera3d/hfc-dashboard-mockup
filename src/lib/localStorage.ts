@@ -8,7 +8,8 @@ import { Agent, Department } from '@/data/dataService'
 const STORAGE_KEYS = {
   AGENT_DEPARTMENTS: 'hfc_agent_departments',
   CUSTOM_DEPARTMENTS: 'hfc_custom_departments',
-  LAST_UPDATE: 'hfc_last_update'
+  LAST_UPDATE: 'hfc_last_update',
+  HIDDEN_AGENTS: 'hfc_hidden_agents'
 }
 
 export interface AgentDepartmentOverride {
@@ -151,6 +152,7 @@ export const clearAllOverrides = () => {
     localStorage.removeItem(STORAGE_KEYS.AGENT_DEPARTMENTS)
     localStorage.removeItem(STORAGE_KEYS.CUSTOM_DEPARTMENTS)
     localStorage.removeItem(STORAGE_KEYS.LAST_UPDATE)
+    localStorage.removeItem(STORAGE_KEYS.HIDDEN_AGENTS)
     console.log('🗑️ Cleared all localStorage overrides')
   } catch (error) {
     console.error('Failed to clear localStorage:', error)
@@ -179,4 +181,64 @@ export const exportChanges = () => {
     customDepartments: customDepts,
     exportedAt: new Date().toISOString()
   }
+}
+
+/**
+ * Get list of hidden agent IDs from localStorage
+ */
+export const getHiddenAgents = (): string[] => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEYS.HIDDEN_AGENTS)
+    return stored ? JSON.parse(stored) : []
+  } catch (error) {
+    console.error('Failed to read hidden agents:', error)
+    return []
+  }
+}
+
+/**
+ * Hide an agent by adding to hidden list
+ */
+export const hideAgent = (agentId: string) => {
+  try {
+    const hidden = getHiddenAgents()
+    if (!hidden.includes(agentId)) {
+      hidden.push(agentId)
+      localStorage.setItem(STORAGE_KEYS.HIDDEN_AGENTS, JSON.stringify(hidden))
+      console.log(`👁️ Hidden agent: ${agentId}`)
+    }
+  } catch (error) {
+    console.error('Failed to hide agent:', error)
+  }
+}
+
+/**
+ * Unhide an agent by removing from hidden list
+ */
+export const unhideAgent = (agentId: string) => {
+  try {
+    const hidden = getHiddenAgents()
+    const filtered = hidden.filter(id => id !== agentId)
+    localStorage.setItem(STORAGE_KEYS.HIDDEN_AGENTS, JSON.stringify(filtered))
+    console.log(`👁️ Unhidden agent: ${agentId}`)
+  } catch (error) {
+    console.error('Failed to unhide agent:', error)
+  }
+}
+
+/**
+ * Check if an agent is hidden
+ */
+export const isAgentHidden = (agentId: string): boolean => {
+  const hidden = getHiddenAgents()
+  return hidden.includes(agentId)
+}
+
+/**
+ * Filter out hidden agents from an array
+ */
+export const filterHiddenAgents = <T extends { agent_id: string }>(items: T[]): T[] => {
+  const hidden = getHiddenAgents()
+  if (hidden.length === 0) return items
+  return items.filter(item => !hidden.includes(item.agent_id))
 }

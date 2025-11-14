@@ -39,10 +39,18 @@ export default function DepartmentPerformanceRankings({
   
   // Process department metrics
   const departmentData = useMemo(() => {
+    console.log('📊 DepartmentPerformanceRankings - Processing with:', {
+      reviewsCount: reviews.length,
+      agentsCount: agents.length,
+      departmentsCount: departments.length
+    });
+    
     return departments
       .map((dept) => {
         const deptReviews = reviews.filter((r) => r.department_id === dept.id);
         const deptAgents = agents.filter((a) => a.department_id === dept.id);
+        
+        console.log(`📋 Dept ${dept.name}: ${deptReviews.length} reviews, ${deptAgents.length} agents`);
         
         // Calculate stats for each agent
         const agentsWithStats = deptAgents.map((agent) => {

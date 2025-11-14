@@ -2,7 +2,7 @@
 
 import { useState, useMemo, use, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Star, TrendingUp, TrendingDown, Award, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Star, TrendingUp, TrendingDown, Award, AlertTriangle, EyeOff, Eye } from 'lucide-react'
 import { TimeSeriesChart } from '@/components/Charts'
 import { ReviewTable } from '@/components/DataTables'
 import { 
@@ -19,6 +19,7 @@ import {
   Agent,
   Department
 } from '@/data/dataService'
+import { hideAgent, unhideAgent, isAgentHidden } from '@/lib/supabaseService'
 
 interface AgentDetailProps {
   params: Promise<{
@@ -36,6 +37,7 @@ export default function AgentDetail({ params }: AgentDetailProps) {
   const [departments, setDepartments] = useState<Department[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedDateRange, setSelectedDateRange] = useState<DateRange>(dateRanges.thisMonth)
+  const [isHidden, setIsHidden] = useState(false)
   
   // Load data on mount
   useEffect(() => {
@@ -62,6 +64,48 @@ export default function AgentDetail({ params }: AgentDetailProps) {
   // Find the agent
   const agent = agents.find(a => a.id === agentId)
   const department = departments.find(d => d.id === agent?.department_id)
+  
+  // Check if agent is hidden
+  useEffect(() => {
+    const checkHidden = async () => {
+      if (agent) {
+        const hidden = await isAgentHidden(agent.id)
+        setIsHidden(hidden)
+      }
+    }
+    checkHidden()
+  }, [agent])
+  
+  const toggleHidden = async () => {
+    if (!agent) return
+    
+    console.log('🔄 Toggling hidden state for agent:', agent.id, 'Current state:', isHidden)
+    
+    try {
+      if (isHidden) {
+        const success = await unhideAgent(agent.id)
+        console.log('✅ Unhide result:', success)
+        if (success) {
+          setIsHidden(false)
+          alert('Agent is now visible on the dashboard')
+        } else {
+          alert('Failed to unhide agent. Check console for errors.')
+        }
+      } else {
+        const success = await hideAgent(agent.id)
+        console.log('✅ Hide result:', success)
+        if (success) {
+          setIsHidden(true)
+          alert('Agent is now hidden from the dashboard')
+        } else {
+          alert('Failed to hide agent. Check console for errors.')
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error toggling hidden state:', error)
+      alert('Error: ' + (error as Error).message)
+    }
+  }
   
   // Filter reviews for this agent
   const agentReviews = useMemo(() => {
@@ -188,11 +232,46 @@ export default function AgentDetail({ params }: AgentDetailProps) {
             
             {/* Agent Info */}
             <div className="flex-1">
-              <h1 className="text-4xl font-bold mb-2">{agent.display_name}</h1>
+              <div className="flex items-start justify-between mb-2">
+                <h1 className="text-4xl font-bold">{agent.display_name}</h1>
+                
+                {/* Hide/Unhide Button */}
+                <button
+                  onClick={toggleHidden}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                    isHidden 
+                      ? 'bg-green-500 hover:bg-green-600 text-white' 
+                      : 'bg-white/20 hover:bg-white/30 text-white border border-white/40'
+                  }`}
+                  title={isHidden ? 'This agent is hidden from the dashboard' : 'Hide this agent from the dashboard'}
+                >
+                  {isHidden ? (
+                    <>
+                      <Eye className="w-4 h-4" />
+                      <span>Show on Dashboard</span>
+                    </>
+                  ) : (
+                    <>
+                      <EyeOff className="w-4 h-4" />
+                      <span>Hide from Dashboard</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              
               <div className="flex items-center gap-4 text-white/90 mb-6">
                 <span className="text-lg">{department?.name}</span>
                 <span className="text-white/60">•</span>
                 <span>ID: {agent.agent_key}</span>
+                {isHidden && (
+                  <>
+                    <span className="text-white/60">•</span>
+                    <span className="flex items-center gap-1 text-yellow-300">
+                      <EyeOff className="w-4 h-4" />
+                      Hidden from Dashboard
+                    </span>
+                  </>
+                )}
               </div>
               
               {/* Lifetime Stats Row */}

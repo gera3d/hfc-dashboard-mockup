@@ -17,6 +17,11 @@ import {
   applyAgentOverrides,
   mergeDepartments
 } from '@/lib/localStorage';
+import { 
+  getHiddenAgents, 
+  unhideAgent,
+  subscribeToHiddenAgents
+} from '@/lib/supabaseService';
 import { AgentDepartmentManager } from '@/components/AgentDepartmentManager';
 import PerformanceTierGuide from '@/components/dashboard/PerformanceTierGuide';
 import type { Agent, Department } from '@/data/dataService';
@@ -48,6 +53,7 @@ export default function SettingsPage() {
   const [showAgentManager, setShowAgentManager] = useState(false);
   const [displayPrefs, setDisplayPrefs] = useState<DisplayPreferences>({ showRatingDistribution: false });
   const [dataStats, setDataStats] = useState<DataStats | null>(null);
+  const [hiddenAgents, setHiddenAgents] = useState<string[]>([]);
 
   // Load data stats on mount only
   useEffect(() => {
@@ -79,6 +85,27 @@ export default function SettingsPage() {
   // Load display preferences
   useEffect(() => {
     setDisplayPrefs(loadDisplayPreferences());
+    
+    // Load hidden agents from Supabase
+    const loadHidden = async () => {
+      console.log('📥 Loading hidden agents from Supabase...')
+      const hidden = await getHiddenAgents()
+      console.log('📊 Hidden agents loaded:', hidden)
+      setHiddenAgents(hidden)
+    }
+    loadHidden()
+    
+    // Subscribe to real-time changes
+    console.log('🔔 Subscribing to real-time hidden agent changes...')
+    const unsubscribe = subscribeToHiddenAgents((hiddenAgents) => {
+      console.log('🔄 Real-time update - hidden agents changed:', hiddenAgents)
+      setHiddenAgents(hiddenAgents)
+    })
+    
+    return () => {
+      console.log('🔕 Unsubscribing from hidden agents')
+      unsubscribe()
+    }
   }, []);
 
   // Load initial data
@@ -207,6 +234,19 @@ export default function SettingsPage() {
     } catch (error) {
       console.error('Error creating department:', error);
       throw error;
+    }
+  };
+  
+  const handleUnhideAgent = async (agentId: string) => {
+    console.log('👁️ Unhiding agent:', agentId)
+    const success = await unhideAgent(agentId);
+    if (success) {
+      const hidden = await getHiddenAgents();
+      console.log('✅ Agent unhidden, new hidden list:', hidden)
+      setHiddenAgents(hidden);
+      alert('Agent is now visible on the dashboard')
+    } else {
+      alert('Failed to unhide agent. Check console for errors.')
     }
   };
 
@@ -495,6 +535,76 @@ export default function SettingsPage() {
           
           <div className="p-6">
             <PerformanceTierGuide />
+          </div>
+        </div>
+
+        {/* Hidden Agents Section */}
+        <div className="bg-white rounded-xl border-2 border-gray-200 shadow-sm mb-6">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-xl font-bold text-gray-900">Hidden Agents</h2>
+            <p className="text-sm text-gray-500 mt-1">Agents hidden from the dashboard appear here</p>
+          </div>
+          
+          <div className="p-6">
+            {hiddenAgents.length === 0 ? (
+              <div className="text-center py-8">
+                <svg className="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <p className="text-gray-500 font-medium">No hidden agents</p>
+                <p className="text-sm text-gray-400 mt-1">You can hide agents from their profile page</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {hiddenAgents.map(agentId => {
+                  const agent = agents.find(a => a.id === agentId);
+                  const department = departments.find(d => d.id === agent?.department_id);
+                  
+                  if (!agent) return null;
+                  
+                  return (
+                    <div key={agentId} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
+                          <img
+                            src={agent.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.display_name)}&background=0066cc&color=fff&size=128`}
+                            alt={agent.display_name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.display_name)}&background=0066cc&color=fff&size=128`;
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{agent.display_name}</h3>
+                          <p className="text-sm text-gray-500">{department?.name || 'Unknown Department'}</p>
+                          <p className="text-xs text-gray-400">ID: {agent.agent_key}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => router.push(`/agent/${agentId}`)}
+                          className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                        >
+                          View Profile
+                        </button>
+                        <button
+                          onClick={() => handleUnhideAgent(agentId)}
+                          className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          Show on Dashboard
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
