@@ -23,13 +23,19 @@ import {
   DateRange
 } from "@/data/dataService";
 import {
-  applyAgentOverrides,
-  mergeDepartments,
-  saveAgentDepartment,
-  saveCustomDepartment,
   getChangeCount
 } from '@/lib/localStorage';
-import { subscribeToHiddenAgents, getHiddenAgents } from '@/lib/supabaseService';
+import { 
+  subscribeToHiddenAgents, 
+  getHiddenAgents, 
+  hideAgent,
+  subscribeToDepartmentChanges,
+  applyAgentDepartmentAssignments,
+  mergeCustomDepartments,
+  assignAgentToDepartment,
+  createCustomDepartment
+} from '@/lib/supabaseService';
+import { migrateDepartmentDataToSupabase, checkMigrationNeeded } from '@/lib/departmentMigration';
 
 // Your existing chart components
 import { 
@@ -133,11 +139,60 @@ export default function DashboardPage() {
       setHiddenAgentIds(new Set(hiddenIds));
       console.log('🔒 Updated hidden agents:', hiddenIds);
     });
+    
+    return unsubscribe;
+  }, []);
 
-    return () => {
-      console.log('🔌 Unsubscribing from hidden agents updates');
-      unsubscribe();
+  // Subscribe to real-time department changes
+  useEffect(() => {
+    console.log('📡 Setting up real-time subscription for departments...');
+    const unsubscribe = subscribeToDepartmentChanges(async () => {
+      console.log('🔄 Departments changed, reloading...');
+      // Reload departments and agents when changes occur
+      const [agentsData, departmentsData] = await Promise.all([
+        loadAgents(),
+        loadDepartments()
+      ]);
+      const agentsWithOverrides = await applyAgentDepartmentAssignments(agentsData);
+      const departmentsWithCustom = await mergeCustomDepartments(departmentsData);
+      setAgents(agentsWithOverrides);
+      setDepartments(departmentsWithCustom);
+    });
+    
+    return unsubscribe;
+  }, []);
+
+  // Check for migration on mount
+  useEffect(() => {
+    const checkAndPromptMigration = async () => {
+      try {
+        const migrationStatus = await checkMigrationNeeded();
+        if (migrationStatus.needed) {
+          const message = `📦 Migration Available: You have department data saved locally.\n\n` +
+            `• ${migrationStatus.localCustomDepts} custom department${migrationStatus.localCustomDepts !== 1 ? 's' : ''}\n` +
+            `• ${migrationStatus.localAssignments} agent assignment${migrationStatus.localAssignments !== 1 ? 's' : ''}\n\n` +
+            `Would you like to migrate this data to Supabase for permanent storage and cross-device sync?`;
+          
+          if (window.confirm(message)) {
+            console.log('🔄 Starting migration...');
+            const result = await migrateDepartmentDataToSupabase();
+            if (result.success) {
+              alert(`✅ Migration successful!\n\n` +
+                `• ${result.customDepartmentsMigrated} custom departments migrated\n` +
+                `• ${result.agentAssignmentsMigrated} agent assignments migrated`);
+              // Reload data to show migrated data
+              window.location.reload();
+            } else {
+              alert(`⚠️ Migration completed with errors:\n\n${result.errors.join('\n')}`);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error checking migration:', error);
+      }
     };
+    
+    checkAndPromptMigration();
   }, []);
 
   // Handle section toggle with accordion behavior
@@ -155,13 +210,13 @@ export default function DashboardPage() {
           loadDepartments()
         ]);
         
-        // Apply localStorage overrides to preserve user changes
-        const agentsWithOverrides = applyAgentOverrides(agentsData);
-        const departmentsWithCustom = mergeDepartments(departmentsData);
+        // Apply Supabase overrides to preserve user changes
+        const agentsWithOverrides = await applyAgentDepartmentAssignments(agentsData);
+        const departmentsWithCustom = await mergeCustomDepartments(departmentsData);
         
         // Update reviews to match agent department changes
         const updatedReviews = reviewsData.map(review => {
-          const agent = agentsWithOverrides.find(a => a.id === review.agent_id);
+          const agent = agentsWithOverrides.find((a: Agent) => a.id === review.agent_id);
           if (agent && agent.department_id !== review.department_id) {
             return { ...review, department_id: agent.department_id };
           }
@@ -188,10 +243,15 @@ export default function DashboardPage() {
     loadData();
   }, []);
 
-  // Handle agent department updates (kept for table interactions)
+  // Handle agent department updates (now saved to Supabase)
   const handleAgentDepartmentUpdate = async (agentId: string, departmentId: string) => {
     try {
-      saveAgentDepartment(agentId, departmentId);
+      // Save to Supabase instead of localStorage
+      const success = await assignAgentToDepartment(agentId, departmentId);
+      
+      if (!success) {
+        throw new Error('Failed to save to Supabase');
+      }
       
       setAgents(prevAgents => 
         prevAgents.map(agent => 
@@ -215,7 +275,7 @@ export default function DashboardPage() {
       const dept = departments.find(d => d.id === departmentId);
       
       if (agent && dept) {
-        console.log(`✅ ${agent.display_name} moved to ${dept.name} (saved to localStorage)`);
+        console.log(`✅ ${agent.display_name} moved to ${dept.name} (saved to Supabase)`);
       }
     } catch (error) {
       console.error('Error updating agent department:', error);
@@ -231,14 +291,45 @@ export default function DashboardPage() {
         name: departmentName
       };
       
-      saveCustomDepartment(newDepartment);
+      console.log(`📝 Creating department "${departmentName}" with ID: ${newDeptId}`);
+      
+      // Save to Supabase instead of localStorage
+      const success = await createCustomDepartment(newDeptId, departmentName);
+      
+      if (!success) {
+        console.error('❌ Supabase returned false when creating department');
+        throw new Error('Failed to save department to Supabase. Please check the browser console for details and verify that the Supabase tables exist.');
+      }
+      
       setDepartments(prev => [...prev, newDepartment]);
       
-      console.log(`✅ Department "${departmentName}" created and saved to localStorage`);
+      console.log(`✅ Department "${departmentName}" created and saved to Supabase`);
       return newDeptId;
     } catch (error) {
-      console.error('Error creating department:', error);
+      console.error('❌ Error creating department:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Failed to create department: ${errorMessage}\n\nPlease check:\n1. Supabase tables exist (run supabase-departments-setup.sql)\n2. Browser console for detailed error`);
       throw error;
+    }
+  };
+
+  const handleHideAgent = async (agentId: string) => {
+    try {
+      console.log(`🔒 Hiding agent: ${agentId}`);
+      const success = await hideAgent(agentId);
+      
+      if (!success) {
+        throw new Error('Failed to hide agent');
+      }
+      
+      // Reload hidden agents to trigger re-render
+      const hiddenIds = await getHiddenAgents();
+      setHiddenAgentIds(new Set(hiddenIds));
+      
+      console.log(`✅ Agent ${agentId} hidden successfully`);
+    } catch (error) {
+      console.error('❌ Error hiding agent:', error);
+      alert('Failed to hide agent. Please try again.');
     }
   };
 
@@ -825,6 +916,7 @@ export default function DashboardPage() {
                 departments={departments}
                 onDepartmentChange={handleAgentDepartmentUpdate}
                 onCreateDepartment={handleCreateDepartment}
+                onHideAgent={handleHideAgent}
               />
               
               <ReviewTable data={filteredData} agents={agents} departments={departments} />

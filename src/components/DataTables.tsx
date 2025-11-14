@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { ChevronUp, ChevronDown, ExternalLink, Download, Star, MessageCircle, Plus } from 'lucide-react'
+import { ChevronUp, ChevronDown, ExternalLink, Download, Star, MessageCircle, Plus, EyeOff } from 'lucide-react'
 import { AgentMetrics, Review, Agent, Department, agents as defaultAgents, departments as defaultDepartments } from '@/data/dataService'
 import { TableContainer } from './TableContainer'
 
@@ -11,6 +11,7 @@ interface AgentTableProps {
   departments?: Department[]
   onDepartmentChange?: (agentId: string, departmentId: string) => void
   onCreateDepartment?: (departmentName: string) => Promise<string> // Returns new department ID
+  onHideAgent?: (agentId: string) => void // New prop for hiding agents
 }
 
 interface ReviewTableProps {
@@ -24,7 +25,7 @@ interface ReviewTableProps {
 type SortField = 'agent_name' | 'department_name' | 'star_1' | 'star_2' | 'star_3' | 'star_4' | 'star_5' | 'total' | 'avg_rating' | 'percent_5_star' | 'last_review_date'
 type SortDirection = 'asc' | 'desc'
 
-export function AgentTable({ data, onAgentClick, departments = defaultDepartments, onDepartmentChange, onCreateDepartment }: AgentTableProps) {
+export function AgentTable({ data, onAgentClick, departments = defaultDepartments, onDepartmentChange, onCreateDepartment, onHideAgent }: AgentTableProps) {
   const [sortField, setSortField] = useState<SortField>('total')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [editingAgentId, setEditingAgentId] = useState<string | null>(null)
@@ -145,109 +146,109 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
       subtitle="Detailed metrics for all agents, grouped by department, with totals and averages"
     >
       <div className="overflow-x-auto">
-        <table className="min-w-full">
+        <table className="min-w-full table-fixed">
           <thead className="bg-gray-50">
             <tr>
               <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-36"
                 onClick={() => handleSort('agent_name')}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   Agent
                   <SortIcon field="agent_name" />
                 </div>
               </th>
               <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-32"
                 onClick={() => handleSort('department_name')}
               >
-                <div className="flex items-center gap-2">
-                  Department
+                <div className="flex items-center gap-1">
+                  Dept
                   <SortIcon field="department_name" />
                 </div>
               </th>
               <th 
-                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-12"
                 onClick={() => handleSort('star_1')}
               >
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-1">
                   1★
                   <SortIcon field="star_1" />
                 </div>
               </th>
               <th 
-                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-12"
                 onClick={() => handleSort('star_2')}
               >
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-1">
                   2★
                   <SortIcon field="star_2" />
                 </div>
               </th>
               <th 
-                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-12"
                 onClick={() => handleSort('star_3')}
               >
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-1">
                   3★
                   <SortIcon field="star_3" />
                 </div>
               </th>
               <th 
-                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-12"
                 onClick={() => handleSort('star_4')}
               >
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-1">
                   4★
                   <SortIcon field="star_4" />
                 </div>
               </th>
               <th 
-                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-12"
                 onClick={() => handleSort('star_5')}
               >
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-1">
                   5★
                   <SortIcon field="star_5" />
                 </div>
               </th>
               <th 
-                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-16"
                 onClick={() => handleSort('total')}
               >
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-1">
                   Total
                   <SortIcon field="total" />
                 </div>
               </th>
               <th 
-                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-16"
                 onClick={() => handleSort('avg_rating')}
               >
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-1">
                   Avg
                   <SortIcon field="avg_rating" />
                 </div>
               </th>
               <th 
-                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-14"
                 onClick={() => handleSort('percent_5_star')}
               >
-                <div className="flex items-center justify-center gap-2">
-                  5★ Rate
+                <div className="flex items-center justify-center gap-1">
+                  5★%
                   <SortIcon field="percent_5_star" />
                 </div>
               </th>
               <th 
-                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-20"
                 onClick={() => handleSort('last_review_date')}
               >
-                <div className="flex items-center justify-center gap-2">
-                  Last Review
+                <div className="flex items-center justify-center gap-1">
+                  Last
                   <SortIcon field="last_review_date" />
                 </div>
               </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                 Actions
               </th>
             </tr>
@@ -280,15 +281,15 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
                     tabIndex={0}
                     onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && onAgentClick?.(agent.agent_id)}
                   >
-                    <td className="px-6 py-3 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{agent.agent_name}</div>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900 truncate">{agent.agent_name}</div>
                     </td>
-                    <td className="px-6 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-2 py-2 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                       <div className="relative">
                         <select
                           value={departments.find(d => d.name === agent.department_name)?.id || ''}
                           onChange={(e) => handleDepartmentChange(agent.agent_id, e.target.value)}
-                          className="text-sm text-gray-900 border border-gray-300 rounded px-2 py-1 pr-8 hover:border-blue-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer bg-white transition-colors"
+                          className="text-xs text-gray-900 border border-gray-300 rounded px-1.5 py-1 pr-6 w-full hover:border-blue-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer bg-white transition-colors"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {departments.map(dept => (
@@ -297,33 +298,49 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
                             </option>
                           ))}
                           <option value="CREATE_NEW" className="text-blue-600 font-semibold">
-                            + Create New Department
+                            + New
                           </option>
                         </select>
                       </div>
                     </td>
-                    <td className="px-6 py-3 text-center text-red-600">{agent.star_1}</td>
-                    <td className="px-6 py-3 text-center text-orange-600">{agent.star_2}</td>
-                    <td className="px-6 py-3 text-center text-yellow-600">{agent.star_3}</td>
-                    <td className="px-6 py-3 text-center text-lime-600">{agent.star_4}</td>
-                    <td className="px-6 py-3 text-center text-green-600">{agent.star_5}</td>
-                    <td className="px-6 py-3 text-center font-bold text-blue-600">{agent.total}</td>
-                    <td className="px-6 py-3 text-center">
+                    <td className="px-2 py-2 text-center text-sm text-red-600">{agent.star_1}</td>
+                    <td className="px-2 py-2 text-center text-sm text-orange-600">{agent.star_2}</td>
+                    <td className="px-2 py-2 text-center text-sm text-yellow-600">{agent.star_3}</td>
+                    <td className="px-2 py-2 text-center text-sm text-lime-600">{agent.star_4}</td>
+                    <td className="px-2 py-2 text-center text-sm text-green-600">{agent.star_5}</td>
+                    <td className="px-2 py-2 text-center text-sm font-bold text-blue-600">{agent.total}</td>
+                    <td className="px-2 py-2 text-center">
                       <div className="flex items-center justify-center gap-1">
                         <Star className="w-4 h-4 text-yellow-400 fill-current" />
                         <span className="text-sm font-medium">{agent.avg_rating.toFixed(2)}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-3 text-center text-green-600">{agent.percent_5_star.toFixed(1)}%</td>
-                    <td className="px-6 py-3 text-center text-gray-600">{formatLastReviewDate(agent.last_review_date)}</td>
-                    <td className="px-6 py-3 text-center">
-                      <button
-                        onClick={() => onAgentClick?.(agent.agent_id)}
-                        className="text-blue-600 hover:text-blue-800"
-                        title="View agent details"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </button>
+                    <td className="px-2 py-2 text-center text-sm text-green-600">{agent.percent_5_star.toFixed(1)}%</td>
+                    <td className="px-2 py-2 text-center text-xs text-gray-600">{formatLastReviewDate(agent.last_review_date)}</td>
+                    <td className="px-2 py-2 text-center" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => onAgentClick?.(agent.agent_id)}
+                          className="text-blue-600 hover:text-blue-800 transition-colors p-1 rounded hover:bg-blue-50"
+                          title="View agent details"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </button>
+                        {onHideAgent && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              if (window.confirm(`Hide ${agent.agent_name}? This agent will be removed from all dashboards and rankings.`)) {
+                                onHideAgent(agent.agent_id)
+                              }
+                            }}
+                            className="text-gray-500 hover:text-red-600 transition-colors p-1 rounded hover:bg-red-50"
+                            title="Hide agent from dashboard"
+                          >
+                            <EyeOff className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 )),
@@ -347,10 +364,10 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
       
       {/* New Department Modal */}
       {showNewDeptModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowNewDeptModal(null)}>
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Create New Department</h3>
-            <p className="text-sm text-gray-600 mb-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowNewDeptModal(null)}>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 max-w-lg w-full shadow-2xl border border-gray-200 dark:border-gray-700" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-2xl font-bold text-[#0066cc] dark:text-blue-400 mb-3">Create New Department</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
               Enter the name for the new department. The agent will be assigned to it automatically.
             </p>
             <input
@@ -358,7 +375,7 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
               value={newDeptName}
               onChange={(e) => setNewDeptName(e.target.value)}
               placeholder="Department name (e.g., Life Insurance, Claims)"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none mb-4"
+              className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#0066cc] focus:border-[#0066cc] dark:bg-gray-700 dark:text-white outline-none mb-6 text-base transition-all"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && newDeptName.trim()) {
@@ -369,13 +386,13 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
                 }
               }}
             />
-            <div className="flex gap-3 justify-end">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => {
                   setShowNewDeptModal(null)
                   setNewDeptName('')
                 }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                className="w-full px-5 py-3 text-base font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                 disabled={isCreating}
               >
                 Cancel
@@ -383,17 +400,17 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
               <button
                 onClick={() => handleCreateDepartment(showNewDeptModal)}
                 disabled={!newDeptName.trim() || isCreating}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                className="w-full px-5 py-3 text-base font-semibold text-white bg-[#0066cc] rounded-lg hover:bg-[#0052a3] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
               >
                 {isCreating ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     Creating...
                   </>
                 ) : (
                   <>
-                    <Plus className="w-4 h-4" />
-                    Create Department
+                    <Plus className="w-5 h-5" />
+                    Create
                   </>
                 )}
               </button>
