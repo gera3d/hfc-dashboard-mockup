@@ -1,6 +1,0 @@
-{
-  "status": "error",
-  "progress": 0,
-  "message": "Sync failed",
-  "error": "Sync timeout after 120 seconds"
-}
