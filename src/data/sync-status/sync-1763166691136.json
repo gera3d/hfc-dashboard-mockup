@@ -1,6 +1,0 @@
-{
-  "status": "error",
-  "progress": 0,
-  "message": "Sync failed",
-  "error": "Failed to download from Google Sheets: The operation was aborted."
-}

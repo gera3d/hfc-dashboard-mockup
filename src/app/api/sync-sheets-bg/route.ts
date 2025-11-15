@@ -66,13 +66,13 @@ async function setSyncStatus(syncId: string, status: SyncStatusType): Promise<vo
 // This prevents hot-reload issues in development where the Map would be cleared
 // causing 500/404 errors when polling for sync status
 
-// Cleanup old sync statuses (older than 10 minutes to reduce cleanup conflicts)
+// Cleanup old sync statuses (older than 1 minute)
 async function cleanupOldSyncs() {
   try {
     await ensureSyncStatusDir();
     const { readdir, unlink, stat } = await import('fs/promises');
     const files = await readdir(SYNC_STATUS_DIR);
-    const tenMinutesAgo = Date.now() - 10 * 60 * 1000;
+    const oneMinuteAgo = Date.now() - 60 * 1000;
     
     for (const file of files) {
       if (!file.endsWith('.json')) continue;
@@ -80,8 +80,8 @@ async function cleanupOldSyncs() {
       
       try {
         const stats = await stat(filePath);
-        // Only delete if file was modified more than 10 minutes ago
-        if (stats.mtimeMs < tenMinutesAgo) {
+        // Only delete if file was modified more than 1 minute ago
+        if (stats.mtimeMs < oneMinuteAgo) {
           await unlink(filePath);
           console.log('[Sync] Cleaned up old sync file:', file);
         }
@@ -194,13 +194,24 @@ async function downloadSheetData(syncId: string): Promise<string> {
       
       console.log('[Sync] 🎯 Fetching only new rows from', range);
       
-      response = await sheets.spreadsheets.values.get({
-        spreadsheetId,
-        range,
-        valueRenderOption: 'FORMATTED_VALUE',
-      });
+      try {
+        response = await sheets.spreadsheets.values.get({
+          spreadsheetId,
+          range,
+          valueRenderOption: 'FORMATTED_VALUE',
+        });
+        
+        newRows = response.data.values || [];
+      } catch (rangeError: any) {
+        // If range exceeds grid limits, it means there are no new rows
+        if (rangeError.message && rangeError.message.includes('exceeds grid limits')) {
+          console.log('[Sync] ✅ No new rows (range exceeds grid limits)');
+          newRows = [];
+        } else {
+          throw rangeError;
+        }
+      }
       
-      newRows = response.data.values || [];
       console.log('[Sync] ✅ Found', newRows.length, 'new rows');
       
       if (newRows.length === 0) {
@@ -212,7 +223,9 @@ async function downloadSheetData(syncId: string): Promise<string> {
           lastUpdated: new Date().toISOString(),
           stats: { size: existingCsvData.length, lines: lastRowCount + 1, rows: lastRowCount }
         });
-        throw new Error(`NO_NEW_DATA:Already up to date with ${lastRowCount} rows`);
+        console.log('✅ [SYNC COMPLETE] Already up to date');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+        return ''; // Return empty string to signal no new data (will be handled gracefully)
       }
       
       // Merge with existing data
@@ -327,6 +340,18 @@ async function backgroundSync(syncId: string): Promise<void> {
       downloadSheetData(syncId),
       timeoutPromise
     ]);
+
+    // If empty string returned, it means no new data (already up to date)
+    if (!csvText) {
+      console.log('✅ [SYNC COMPLETE] Already up to date with latest data');
+      await setSyncStatus(syncId, {
+        status: 'complete',
+        progress: 100,
+        message: 'Already up to date - no new data',
+        lastUpdated: new Date().toISOString()
+      });
+      return;
+    }
 
     console.log('[Sync] Download complete, CSV length:', csvText.length);
     

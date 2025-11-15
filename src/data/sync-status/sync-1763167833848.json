@@ -1,0 +1,6 @@
+{
+  "status": "error",
+  "progress": 0,
+  "message": "Sync failed",
+  "error": "Failed to download from Google Sheets: NO_NEW_DATA:Already up to date with 22773 rows"
+}

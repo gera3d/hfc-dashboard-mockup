@@ -1,0 +1,11 @@
+{
+  "status": "complete",
+  "progress": 100,
+  "message": "Already up to date (22773 rows)",
+  "lastUpdated": "2025-11-15T00:51:39.804Z",
+  "stats": {
+    "size": 13227910,
+    "lines": 22774,
+    "rows": 22773
+  }
+}
