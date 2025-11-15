@@ -47,8 +47,34 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await fetch(`/api/sync-sheets-bg?syncId=${id}`);
       
+      // If sync not found (404), treat as completed (likely cleaned up after success)
+      if (response.status === 404) {
+        console.log('[SyncContext] Sync status not found - assuming completed');
+        setSyncStatus({
+          isActive: false,
+          status: 'complete',
+          progress: 100,
+          message: 'Sync completed',
+        });
+        if (pollIntervalRef.current) {
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+        }
+        setSyncId(null);
+        syncLockRef.current = false;
+        return;
+      }
+      
       if (!response.ok) {
-        throw new Error('Failed to get sync status');
+        console.warn('[SyncContext] Failed to get sync status:', response.status);
+        // Don't crash - just mark as inactive and stop polling
+        if (pollIntervalRef.current) {
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+        }
+        setSyncId(null);
+        syncLockRef.current = false;
+        return;
       }
 
       const status = await response.json();
@@ -74,7 +100,14 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
         syncLockRef.current = false;
       }
     } catch (error) {
-      console.error('Error polling sync status:', error);
+      console.warn('[SyncContext] Error polling sync status - stopping poll:', error);
+      // Stop polling on error
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+      setSyncId(null);
+      syncLockRef.current = false;
       setSyncStatus({
         isActive: false,
         status: 'error',

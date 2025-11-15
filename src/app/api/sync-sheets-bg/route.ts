@@ -66,23 +66,27 @@ async function setSyncStatus(syncId: string, status: SyncStatusType): Promise<vo
 // This prevents hot-reload issues in development where the Map would be cleared
 // causing 500/404 errors when polling for sync status
 
-// Cleanup old sync statuses (older than 5 minutes)
+// Cleanup old sync statuses (older than 10 minutes to reduce cleanup conflicts)
 async function cleanupOldSyncs() {
   try {
     await ensureSyncStatusDir();
-    const { readdir, unlink } = await import('fs/promises');
+    const { readdir, unlink, stat } = await import('fs/promises');
     const files = await readdir(SYNC_STATUS_DIR);
-    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    const tenMinutesAgo = Date.now() - 10 * 60 * 1000;
     
     for (const file of files) {
       if (!file.endsWith('.json')) continue;
-      const syncId = file.replace('.json', '');
-      const timestamp = parseInt(syncId.replace('sync-', ''));
+      const filePath = join(SYNC_STATUS_DIR, file);
       
-      if (timestamp < fiveMinutesAgo) {
-        const filePath = join(SYNC_STATUS_DIR, file);
-        await unlink(filePath);
-        console.log('[Sync] Cleaned up old sync file:', syncId);
+      try {
+        const stats = await stat(filePath);
+        // Only delete if file was modified more than 10 minutes ago
+        if (stats.mtimeMs < tenMinutesAgo) {
+          await unlink(filePath);
+          console.log('[Sync] Cleaned up old sync file:', file);
+        }
+      } catch (err) {
+        // File might have been deleted already - ignore
       }
     }
   } catch (error) {
@@ -107,15 +111,28 @@ async function downloadSheetData(syncId: string): Promise<string> {
 
   const spreadsheetId = SPREADSHEET_ID;
 
-  // Check if we have existing data for quick comparison
+  // Check if we have existing data to determine incremental sync strategy
   const dataPath = join(process.cwd(), 'src', 'data', 'cached-sheets-data.json');
   let lastRowCount = 0;
+  let existingCsvData = '';
+  let isIncrementalSync = false;
   
   try {
     const { readFile } = await import('fs/promises');
     const existing = JSON.parse(await readFile(dataPath, 'utf-8'));
     lastRowCount = existing.stats?.rows || existing.stats?.lines - 1 || 0;
-    console.log('[Sync] 📊 Last sync had', lastRowCount, 'data rows');
+    
+    if (lastRowCount > 0) {
+      // Try to read the existing CSV data from temp file
+      const csvPath = join(process.cwd(), 'src', 'data', 'temp-sheet-download.csv');
+      try {
+        existingCsvData = await readFile(csvPath, 'utf-8');
+        console.log('[Sync] 📊 Last sync had', lastRowCount, 'data rows');
+        isIncrementalSync = true;
+      } catch {
+        console.log('[Sync] 📝 No cached CSV found, doing full sync');
+      }
+    }
   } catch (err) {
     console.log('[Sync] 📝 No previous sync data, doing initial sync');
   }
@@ -123,11 +140,12 @@ async function downloadSheetData(syncId: string): Promise<string> {
   await setSyncStatus(syncId, {
     status: 'downloading',
     progress: 30,
-    message: 'Downloading from Google Sheets API...'
+    message: isIncrementalSync ? 'Checking for new rows...' : 'Downloading from Google Sheets API...'
   });
 
   // Use Google Sheets API with service account credentials
   console.log('[Sync] 📥 Using Google Sheets API...');
+  console.log('[Sync] 🔍 Sync mode:', isIncrementalSync ? 'INCREMENTAL' : 'FULL');
   
   let csvText: string;
   
@@ -151,7 +169,11 @@ async function downloadSheetData(syncId: string): Promise<string> {
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
 
-    const sheets = google.sheets({ version: 'v4', auth });
+    const sheets = google.sheets({ 
+      version: 'v4', 
+      auth,
+      timeout: 90000, // 90 second timeout to handle rate limiting
+    });
     
     await setSyncStatus(syncId, {
       status: 'downloading',
@@ -159,30 +181,92 @@ async function downloadSheetData(syncId: string): Promise<string> {
       message: 'Fetching data...'
     });
     
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId,
-      range: `${SHEET_NAME}!A:Z`,
-      valueRenderOption: 'FORMATTED_VALUE',
-    });
-
-    const rows = response.data.values || [];
+    console.log('[Sync] 📞 Calling Google Sheets API...');
     
-    console.log('[Sync] ✓ API returned', rows.length, 'rows');
+    let response;
+    let newRows: any[][] = [];
     
-    // Convert to CSV format
-    csvText = rows.map(row => 
-      row.map(cell => {
-        const cellStr = String(cell || '');
-        if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
-          return `"${cellStr.replace(/"/g, '""')}"`;
-        }
-        return cellStr;
-      }).join(',')
-    ).join('\n');
+    if (isIncrementalSync) {
+      // INCREMENTAL SYNC: Only fetch rows after the last known row
+      // Add 1 to skip header, +1 more to get rows after last synced row
+      const startRow = lastRowCount + 2;
+      const range = `${SHEET_NAME}!A${startRow}:Z`;
+      
+      console.log('[Sync] 🎯 Fetching only new rows from', range);
+      
+      response = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range,
+        valueRenderOption: 'FORMATTED_VALUE',
+      });
+      
+      newRows = response.data.values || [];
+      console.log('[Sync] ✅ Found', newRows.length, 'new rows');
+      
+      if (newRows.length === 0) {
+        console.log('[Sync] ✅ Already up to date! No new rows.');
+        await setSyncStatus(syncId, {
+          status: 'complete',
+          progress: 100,
+          message: `Already up to date (${lastRowCount} rows)`,
+          lastUpdated: new Date().toISOString(),
+          stats: { size: existingCsvData.length, lines: lastRowCount + 1, rows: lastRowCount }
+        });
+        throw new Error(`NO_NEW_DATA:Already up to date with ${lastRowCount} rows`);
+      }
+      
+      // Merge with existing data
+      console.log('[Sync] 🔗 Merging', newRows.length, 'new rows with existing', lastRowCount, 'rows');
+      
+      // Convert new rows to CSV
+      const newCsvRows = newRows.map(row => 
+        row.map(cell => {
+          const cellStr = String(cell || '');
+          if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+            return `"${cellStr.replace(/"/g, '""')}"`;
+          }
+          return cellStr;
+        }).join(',')
+      );
+      
+      // Append to existing CSV
+      csvText = existingCsvData + '\n' + newCsvRows.join('\n');
+      
+    } else {
+      // FULL SYNC: Download everything (first time or no cache)
+      console.log('[Sync] 📦 Fetching all rows from', `${SHEET_NAME}!A:Z`);
+      
+      response = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: `${SHEET_NAME}!A:Z`,
+        valueRenderOption: 'FORMATTED_VALUE',
+      });
+      
+      const rows = response.data.values || [];
+      console.log('[Sync] ✓ API returned', rows.length, 'rows');
+      
+      // Convert to CSV format
+      csvText = rows.map(row => 
+        row.map(cell => {
+          const cellStr = String(cell || '');
+          if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+            return `"${cellStr.replace(/"/g, '""')}"`;
+          }
+          return cellStr;
+        }).join(',')
+      ).join('\n');
+    }
     
-    console.log('[Sync] ✓ Converted to CSV:', csvText.length, 'bytes');
+    console.log('[Sync] ✓ Final CSV:', csvText.length, 'bytes');
   } catch (error: any) {
     console.error('[Sync] ❌ API download failed:', error.message);
+    console.error('[Sync] ❌ Full error:', error);
+    await setSyncStatus(syncId, {
+      status: 'error',
+      progress: 0,
+      message: 'API download failed',
+      error: error.message
+    });
     throw new Error(`Failed to download from Google Sheets: ${error.message}`);
   }
 
@@ -190,23 +274,12 @@ async function downloadSheetData(syncId: string): Promise<string> {
   const totalRows = lines.length;
   const dataRows = totalRows > 0 ? totalRows - 1 : 0;
   
-  console.log('[Sync] 📏 CSV has', totalRows, 'total lines (', dataRows, 'data rows)');
+  console.log('[Sync] 📏 Final CSV has', totalRows, 'total lines (', dataRows, 'data rows)');
   
-  // Quick check: if row count hasn't changed, skip processing
-  if (dataRows === lastRowCount && lastRowCount > 0) {
-    console.log('[Sync] ✅ Already up to date! No new rows.');
-    await setSyncStatus(syncId, {
-      status: 'complete',
-      progress: 100,
-      message: `Already up to date (${dataRows} rows)`,
-      lastUpdated: new Date().toISOString(),
-      stats: { size: csvText.length, lines: totalRows, rows: dataRows }
-    });
-    throw new Error(`NO_NEW_DATA:Already up to date with ${dataRows} rows`);
+  if (isIncrementalSync) {
+    const newRowCount = dataRows - lastRowCount;
+    console.log('[Sync] 🆕 Added', newRowCount, 'new rows to existing', lastRowCount, 'rows');
   }
-  
-  const newRowCount = dataRows - lastRowCount;
-  console.log('[Sync] 🆕 Found', newRowCount, 'new rows!');
 
   await setSyncStatus(syncId, {
     status: 'processing',
@@ -256,6 +329,10 @@ async function backgroundSync(syncId: string): Promise<void> {
     ]);
 
     console.log('[Sync] Download complete, CSV length:', csvText.length);
+    
+    // Save the raw CSV for incremental sync next time
+    const csvPath = join(process.cwd(), 'src', 'data', 'temp-sheet-download.csv');
+    await writeFile(csvPath, csvText, 'utf-8');
 
     await setSyncStatus(syncId, {
       status: 'saving',

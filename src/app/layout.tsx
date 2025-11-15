@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk, IBM_Plex_Mono } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import "./globals.css";
 import { ThemeProvider } from '@/context/ThemeContext';
 import { SyncProvider } from '@/context/SyncContext';
@@ -7,23 +7,12 @@ import LayoutContent from '@/components/LayoutContent';
 import FloatingControls from '@/components/FloatingControls';
 import AutoSync from '@/components/AutoSync';
 
+// Optimize font loading - only load essential font
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
-})
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  variable: '--font-display',
-  display: 'swap',
-})
-
-const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ['latin'],
-  variable: '--font-mono',
-  weight: ['400', '500', '600'],
-  display: 'swap',
+  preload: true,
 })
 
 export const metadata: Metadata = {
@@ -39,7 +28,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable}`}
+      className={inter.variable}
       suppressHydrationWarning
     >
       <head>
