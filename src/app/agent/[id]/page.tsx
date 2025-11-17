@@ -210,10 +210,10 @@ export default function AgentDetail({ params }: AgentDetailProps) {
             Back to Dashboard
           </button>
           
-          <div className="flex items-start gap-8">
+          <div className="flex flex-col md:flex-row items-start gap-4 md:gap-8">
             {/* Large Agent Avatar */}
             <div className="relative">
-              <div className="w-32 h-32 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-white">
+              <div className="w-20 h-20 md:w-32 md:h-32 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-white">
                 <img
                   src={agent.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.display_name)}&background=0066cc&color=fff&size=256`}
                   alt={agent.display_name}
@@ -231,14 +231,14 @@ export default function AgentDetail({ params }: AgentDetailProps) {
             </div>
             
             {/* Agent Info */}
-            <div className="flex-1">
-              <div className="flex items-start justify-between mb-2">
-                <h1 className="text-4xl font-bold">{agent.display_name}</h1>
+            <div className="flex-1 w-full md:w-auto">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">{agent.display_name}</h1>
                 
                 {/* Hide/Unhide Button */}
                 <button
                   onClick={toggleHidden}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                     isHidden 
                       ? 'bg-green-500 hover:bg-green-600 text-white' 
                       : 'bg-white/20 hover:bg-white/30 text-white border border-white/40'
@@ -248,25 +248,27 @@ export default function AgentDetail({ params }: AgentDetailProps) {
                   {isHidden ? (
                     <>
                       <Eye className="w-4 h-4" />
-                      <span>Show on Dashboard</span>
+                      <span className="hidden sm:inline">Show on Dashboard</span>
+                      <span className="sm:hidden">Show</span>
                     </>
                   ) : (
                     <>
                       <EyeOff className="w-4 h-4" />
-                      <span>Hide from Dashboard</span>
+                      <span className="hidden sm:inline">Hide from Dashboard</span>
+                      <span className="sm:hidden">Hide</span>
                     </>
                   )}
                 </button>
               </div>
               
-              <div className="flex items-center gap-4 text-white/90 mb-6">
-                <span className="text-lg">{department?.name}</span>
-                <span className="text-white/60">•</span>
-                <span>ID: {agent.agent_key}</span>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm sm:text-base text-white/90 mb-6">
+                <span className="text-base sm:text-lg">{department?.name}</span>
+                <span className="text-white/60 hidden sm:inline">•</span>
+                <span className="text-sm sm:text-base">ID: {agent.agent_key}</span>
                 {isHidden && (
                   <>
-                    <span className="text-white/60">•</span>
-                    <span className="flex items-center gap-1 text-yellow-300">
+                    <span className="text-white/60 hidden sm:inline">•</span>
+                    <span className="flex items-center gap-1 text-yellow-300 text-sm">
                       <EyeOff className="w-4 h-4" />
                       Hidden from Dashboard
                     </span>
@@ -275,29 +277,29 @@ export default function AgentDetail({ params }: AgentDetailProps) {
               </div>
               
               {/* Lifetime Stats Row */}
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                 {/* Total Reviews */}
-                <div className="bg-white rounded-2xl p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                  <div className="text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeMetrics.total.toLocaleString()}</div>
-                  <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Total Reviews</div>
+                <div className="bg-white rounded-2xl p-4 md:p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeMetrics.total.toLocaleString()}</div>
+                  <div className="text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wide">Total Reviews</div>
                 </div>
                 {/* Lifetime Avg */}
-                <div className="bg-white rounded-2xl p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                  <div className="text-4xl font-black tabular-nums mb-1 flex items-baseline gap-1 text-[#0066cc]">
+                <div className="bg-white rounded-2xl p-4 md:p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-black tabular-nums mb-1 flex items-baseline gap-1 text-[#0066cc]">
                     {lifetimeMetrics.avg_rating.toFixed(2)}
-                    <Star className="size-5 fill-[#00ca6f] text-[#00ca6f] mb-1" />
+                    <Star className="size-4 sm:size-5 fill-[#00ca6f] text-[#00ca6f] mb-1" />
                   </div>
-                  <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Lifetime Avg</div>
+                  <div className="text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wide">Lifetime Avg</div>
                 </div>
                 {/* 5-Star Rate */}
-                <div className="bg-white rounded-2xl p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                  <div className="text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeMetrics.percent_5_star.toFixed(0)}%</div>
-                  <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">5-Star Rate</div>
+                <div className="bg-white rounded-2xl p-4 md:p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeMetrics.percent_5_star.toFixed(0)}%</div>
+                  <div className="text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wide">5-Star Rate</div>
                 </div>
                 {/* 4-5 Star Reviews */}
-                <div className="bg-white rounded-2xl p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                  <div className="text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeReviews.filter(r => r.rating >= 4).length.toLocaleString()}</div>
-                  <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">4-5 Star Reviews</div>
+                <div className="bg-white rounded-2xl p-4 md:p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeReviews.filter(r => r.rating >= 4).length.toLocaleString()}</div>
+                  <div className="text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wide">4-5 Star Reviews</div>
                 </div>
               </div>
             </div>
