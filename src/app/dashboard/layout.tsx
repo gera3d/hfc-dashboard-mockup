@@ -19,6 +19,11 @@ export default function DashboardLayout({
   }, []);
 
   const checkAuth = async () => {
+    // Temporarily bypass auth for mobile testing
+    setIsAuthenticated(true);
+    setIsLoading(false);
+    return;
+    
     const { session } = await getSession();
     if (!session) {
       router.push('/');
