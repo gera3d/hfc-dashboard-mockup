@@ -210,10 +210,10 @@ export default function AgentDetail({ params }: AgentDetailProps) {
             Back to Dashboard
           </button>
           
-          <div className="flex items-start gap-8">
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-8">
             {/* Large Agent Avatar */}
-            <div className="relative">
-              <div className="w-32 h-32 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-white">
+            <div className="relative mx-auto sm:mx-0">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-white">
                 <img
                   src={agent.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.display_name)}&background=0066cc&color=fff&size=256`}
                   alt={agent.display_name}
@@ -224,21 +224,21 @@ export default function AgentDetail({ params }: AgentDetailProps) {
                 />
               </div>
               {/* Lifetime 5-star badge */}
-              <div className="absolute -bottom-2 -right-2 bg-[#00ca6f] text-white rounded-full px-3 py-1 text-xs font-bold shadow-lg flex items-center gap-1">
+              <div className="absolute -bottom-2 -right-2 bg-[#00ca6f] text-white rounded-full px-2 sm:px-3 py-1 text-xs font-bold shadow-lg flex items-center gap-1">
                 <Star className="w-3 h-3 fill-current" />
                 {lifetimeMetrics.avg_rating.toFixed(2)}
               </div>
             </div>
             
             {/* Agent Info */}
-            <div className="flex-1">
-              <div className="flex items-start justify-between mb-2">
-                <h1 className="text-4xl font-bold">{agent.display_name}</h1>
+            <div className="flex-1 w-full">
+              <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-3 mb-2">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">{agent.display_name}</h1>
                 
                 {/* Hide/Unhide Button */}
                 <button
                   onClick={toggleHidden}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium transition-all text-sm whitespace-nowrap ${
                     isHidden 
                       ? 'bg-green-500 hover:bg-green-600 text-white' 
                       : 'bg-white/20 hover:bg-white/30 text-white border border-white/40'
@@ -248,26 +248,28 @@ export default function AgentDetail({ params }: AgentDetailProps) {
                   {isHidden ? (
                     <>
                       <Eye className="w-4 h-4" />
-                      <span>Show on Dashboard</span>
+                      <span className="hidden sm:inline">Show on Dashboard</span>
+                      <span className="sm:hidden">Show</span>
                     </>
                   ) : (
                     <>
                       <EyeOff className="w-4 h-4" />
-                      <span>Hide from Dashboard</span>
+                      <span className="hidden sm:inline">Hide from Dashboard</span>
+                      <span className="sm:hidden">Hide</span>
                     </>
                   )}
                 </button>
               </div>
               
-              <div className="flex items-center gap-4 text-white/90 mb-6">
-                <span className="text-lg">{department?.name}</span>
-                <span className="text-white/60">•</span>
-                <span>ID: {agent.agent_key}</span>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm sm:text-base text-white/90 mb-4 sm:mb-6">
+                <span>{department?.name}</span>
+                <span className="text-white/60 hidden sm:inline">•</span>
+                <span className="text-xs sm:text-base">ID: {agent.agent_key}</span>
                 {isHidden && (
                   <>
-                    <span className="text-white/60">•</span>
-                    <span className="flex items-center gap-1 text-yellow-300">
-                      <EyeOff className="w-4 h-4" />
+                    <span className="text-white/60 hidden sm:inline">•</span>
+                    <span className="flex items-center gap-1 text-yellow-300 text-xs sm:text-base">
+                      <EyeOff className="w-3 h-3 sm:w-4 sm:h-4" />
                       Hidden from Dashboard
                     </span>
                   </>
@@ -275,29 +277,29 @@ export default function AgentDetail({ params }: AgentDetailProps) {
               </div>
               
               {/* Lifetime Stats Row */}
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
                 {/* Total Reviews */}
-                <div className="bg-white rounded-2xl p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                  <div className="text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeMetrics.total.toLocaleString()}</div>
-                  <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Total Reviews</div>
+                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                  <div className="text-2xl sm:text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeMetrics.total.toLocaleString()}</div>
+                  <div className="text-[10px] sm:text-sm font-semibold text-gray-600 uppercase tracking-wide">Total Reviews</div>
                 </div>
                 {/* Lifetime Avg */}
-                <div className="bg-white rounded-2xl p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                  <div className="text-4xl font-black tabular-nums mb-1 flex items-baseline gap-1 text-[#0066cc]">
+                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                  <div className="text-2xl sm:text-4xl font-black tabular-nums mb-1 flex items-baseline gap-1 text-[#0066cc]">
                     {lifetimeMetrics.avg_rating.toFixed(2)}
-                    <Star className="size-5 fill-[#00ca6f] text-[#00ca6f] mb-1" />
+                    <Star className="size-4 sm:size-5 fill-[#00ca6f] text-[#00ca6f] mb-1" />
                   </div>
-                  <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Lifetime Avg</div>
+                  <div className="text-[10px] sm:text-sm font-semibold text-gray-600 uppercase tracking-wide">Lifetime Avg</div>
                 </div>
                 {/* 5-Star Rate */}
-                <div className="bg-white rounded-2xl p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                  <div className="text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeMetrics.percent_5_star.toFixed(0)}%</div>
-                  <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">5-Star Rate</div>
+                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                  <div className="text-2xl sm:text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeMetrics.percent_5_star.toFixed(0)}%</div>
+                  <div className="text-[10px] sm:text-sm font-semibold text-gray-600 uppercase tracking-wide">5-Star Rate</div>
                 </div>
                 {/* 4-5 Star Reviews */}
-                <div className="bg-white rounded-2xl p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                  <div className="text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeReviews.filter(r => r.rating >= 4).length.toLocaleString()}</div>
-                  <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">4-5 Star Reviews</div>
+                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                  <div className="text-2xl sm:text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeReviews.filter(r => r.rating >= 4).length.toLocaleString()}</div>
+                  <div className="text-[10px] sm:text-sm font-semibold text-gray-600 uppercase tracking-wide">4-5 Star Reviews</div>
                 </div>
               </div>
             </div>

@@ -121,60 +121,66 @@ export default function TimePeriodSelector({
       
       <div className="relative">
         {/* Header with Time Period title and Compare toggle */}
-        <div className="flex items-center justify-between mb-1.5">
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs">⏱️</span>
-            <h3 className={`text-[10px] font-bold ${
-              isHFC ? 'text-white' : 'text-gray-900 dark:text-white'
-            }`}>
-              Time Period
-            </h3>
-            {/* Selected Range Display - inline with title */}
-            <span className={`text-[9px] font-medium ${
-              isHFC ? 'text-white/80' : 'text-gray-700 dark:text-gray-300'
-            }`}>
-              • {selectedRange.label}
-            </span>
-            <span className={`text-[9px] ${
-              isHFC ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'
-            }`}>
-              ({selectedRange.from.toLocaleDateString()} - {selectedRange.to.toLocaleDateString()})
-            </span>
+        <div className="flex flex-col gap-2 mb-2">
+          {/* Title and Selected Range */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 flex-wrap min-w-0 flex-1">
+              <span className="text-xs sm:text-sm flex-shrink-0">⏱️</span>
+              <h3 className={`text-xs sm:text-sm font-bold flex-shrink-0 ${
+                isHFC ? 'text-white' : 'text-gray-900 dark:text-white'
+              }`}>
+                Time Period
+              </h3>
+              {/* Selected Range Display - inline with title */}
+              <span className={`text-xs sm:text-sm font-medium truncate ${
+                isHFC ? 'text-white/80' : 'text-gray-700 dark:text-gray-300'
+              }`}>
+                • {selectedRange.label}
+              </span>
+            </div>
+            
+            {/* Compare Toggle with better contrast - always on same row on mobile */}
+            <button
+              onClick={() => onCompareModeChange(!compareMode)}
+              className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-300 flex-shrink-0 whitespace-nowrap ${
+                compareMode
+                  ? isHFC
+                    ? 'bg-[#f5b942] text-[#1a4d7a] shadow-md'
+                    : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
+                  : isHFC
+                    ? 'bg-white/90 text-[#1a4d7a] hover:bg-white border border-white/30'
+                    : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600'
+              }`}
+            >
+              {compareMode ? (
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              ) : (
+                <svg 
+                  className="w-3 h-3" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              )}
+              <span className="hidden xs:inline sm:inline">Compare</span>
+              <span className="xs:hidden sm:hidden">📊</span>
+            </button>
           </div>
           
-          {/* Compare Toggle with better contrast */}
-          <button
-            onClick={() => onCompareModeChange(!compareMode)}
-            className={`relative flex items-center gap-1 px-2 py-1 rounded text-[9px] font-semibold transition-all duration-300 ${
-              compareMode
-                ? isHFC
-                  ? 'bg-[#f5b942] text-[#1a4d7a] shadow-md'
-                  : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
-                : isHFC
-                  ? 'bg-white/90 text-[#1a4d7a] hover:bg-white border border-white/30'
-                  : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600'
-            }`}
-          >
-            {compareMode ? (
-              <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            ) : (
-              <svg 
-                className="w-2.5 h-2.5" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            )}
-            <span>Compare</span>
-          </button>
+          {/* Date Range Display - separate row on mobile for better readability */}
+          <div className={`text-[10px] sm:text-xs ${
+            isHFC ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'
+          }`}>
+            {selectedRange.from.toLocaleDateString()} - {selectedRange.to.toLocaleDateString()}
+          </div>
         </div>
 
-        {/* Period Selection - 6 options in one row */}
-        <div className="grid grid-cols-6 gap-1">
+        {/* Period Selection - responsive grid: 3 columns on mobile, 6 on larger screens */}
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-1">
           {periods.map((period) => {
             const isSelected = period.key === 'custom' 
               ? isCustomRange 
@@ -191,7 +197,7 @@ export default function TimePeriodSelector({
                   }
                 }}
                 data-period-selector="true"
-                className={`relative group flex flex-col items-center justify-center p-1.5 rounded transition-all duration-200 focus:outline-none focus:ring-2 ${
+                className={`relative group flex flex-col items-center justify-center p-2 sm:p-1.5 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 ${
                   isSelected
                     ? isHFC
                       ? 'bg-[#1e5a8e] text-white shadow-lg shadow-[#1e5a8e]/30 focus:ring-[#f5b942]/50'
@@ -202,20 +208,20 @@ export default function TimePeriodSelector({
                 }`}
               >
                 
-                <span className="text-base mb-0.5 relative z-10">
+                <span className="text-lg sm:text-base mb-1 sm:mb-0.5 relative z-10">
                   {period.icon}
                 </span>
-                <span className="text-[9px] font-semibold relative z-10">
+                <span className="text-[10px] sm:text-[9px] font-semibold relative z-10 text-center">
                   {period.label}
                 </span>
                 
                 {isSelected && (
-                  <div className="absolute top-0.5 right-0.5">
-                    <div className={`w-2.5 h-2.5 rounded-full flex items-center justify-center ${
+                  <div className="absolute top-1 right-1 sm:top-0.5 sm:right-0.5">
+                    <div className={`w-3 h-3 sm:w-2.5 sm:h-2.5 rounded-full flex items-center justify-center ${
                       isHFC ? 'bg-[#f5b942]' : 'bg-white/30'
                     }`}>
                       <svg 
-                        className={`w-1.5 h-1.5 ${isHFC ? 'text-[#1e5a8e]' : 'text-white'}`}
+                        className={`w-2 h-2 sm:w-1.5 sm:h-1.5 ${isHFC ? 'text-[#1e5a8e]' : 'text-white'}`}
                         fill="currentColor" 
                         viewBox="0 0 20 20"
                       >
@@ -231,19 +237,19 @@ export default function TimePeriodSelector({
 
         {/* Comparison Info */}
         {compareMode && (
-          <div className={`mt-1.5 p-1.5 rounded border ${
+          <div className={`mt-2 p-2 sm:p-1.5 rounded-md border ${
             isHFC
               ? 'bg-[#f5b942] backdrop-blur-sm border-[#f5b942]'
               : 'bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border-indigo-200 dark:border-indigo-800'
           }`}>
-            <div className="flex items-center gap-1.5">
-              <div className={`flex-shrink-0 w-5 h-5 rounded flex items-center justify-center ${
+            <div className="flex items-center gap-2 sm:gap-1.5">
+              <div className={`flex-shrink-0 w-6 h-6 sm:w-5 sm:h-5 rounded flex items-center justify-center ${
                 isHFC
                   ? 'bg-[#1a4d7a]'
                   : 'bg-gradient-to-br from-indigo-500 to-purple-600'
               }`}>
                 <svg 
-                  className="w-2.5 h-2.5 text-white"
+                  className="w-3 h-3 sm:w-2.5 sm:h-2.5 text-white"
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
@@ -251,21 +257,21 @@ export default function TimePeriodSelector({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
               </div>
-              <div className="flex-1">
-                <span className={`text-[10px] font-semibold ${
+              <div className="flex-1 min-w-0">
+                <div className={`text-xs sm:text-[10px] font-semibold ${
                   isHFC
                     ? 'text-[#1a4d7a]'
                     : 'text-indigo-900 dark:text-indigo-300'
                 }`}>
                   Comparison Mode Active
-                </span>
-                <span className={`text-[9px] ml-1 ${
+                </div>
+                <div className={`text-[10px] sm:text-[9px] ${
                   isHFC
                     ? 'text-[#1a4d7a]/90'
                     : 'text-indigo-700 dark:text-indigo-400'
                 }`}>
                   vs previous {selectedRange.label?.toLowerCase() || ''} period
-                </span>
+                </div>
               </div>
             </div>
           </div>
