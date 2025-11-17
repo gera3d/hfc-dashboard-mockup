@@ -471,7 +471,41 @@ export function ReviewTable({ data, agents = defaultAgents, departments = defaul
         title="Individual Reviews" 
         subtitle="Complete review history with details"
       >
-        <div className="overflow-x-auto">
+        {/* Mobile Card Layout */}
+        <div className="block md:hidden">
+          <div className="space-y-3">
+            {currentData.map((review) => (
+              <div
+                key={review.id}
+                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => setSelectedReview(review)}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900 text-sm mb-1">{getAgentName(review.agent_id)}</div>
+                    <div className="text-xs text-gray-500">{getDepartmentName(review.department_id)}</div>
+                  </div>
+                  <div className="flex items-center gap-1 ml-3">
+                    <Star className={`w-5 h-5 ${getRatingColor(review.rating)} fill-current`} />
+                    <span className={`text-base font-bold ${getRatingColor(review.rating)}`}>
+                      {review.rating}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-sm text-gray-700 mb-3 line-clamp-2">
+                  {review.comment ? truncateComment(review.comment, 80) : 'No comment'}
+                </div>
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <span>{formatDateTime(review.review_ts)}</span>
+                  <span className="text-gray-400">{review.source}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop Table Layout */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full">
             <thead className="bg-gray-50">
               <tr>
@@ -536,25 +570,25 @@ export function ReviewTable({ data, agents = defaultAgents, departments = defaul
         </div>
         
         {showPagination && totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-            <div className="text-sm text-gray-700">
+          <div className="px-4 sm:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="text-xs sm:text-sm text-gray-700 text-center sm:text-left">
               Showing {startIndex + 1} to {Math.min(endIndex, data.length)} of {data.length} reviews
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 text-xs sm:text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
-              <span className="px-3 py-1 text-sm">
+              <span className="px-3 py-1.5 text-xs sm:text-sm">
                 Page {currentPage} of {totalPages}
               </span>
               <button
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 text-xs sm:text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
               </button>
@@ -565,11 +599,11 @@ export function ReviewTable({ data, agents = defaultAgents, departments = defaul
       
       {/* Review Detail Modal */}
       {selectedReview && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+          <div className="bg-white rounded-xl sm:rounded-2xl max-w-2xl w-full max-h-[90vh] sm:max-h-[80vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Review Details</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Review Details</h3>
                 <button
                   onClick={() => setSelectedReview(null)}
                   className="text-gray-400 hover:text-gray-600"
@@ -578,46 +612,46 @@ export function ReviewTable({ data, agents = defaultAgents, departments = defaul
                 </button>
               </div>
             </div>
-            <div className="p-6">
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 sm:p-6">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Agent</label>
-                    <p className="text-gray-900">{getAgentName(selectedReview.agent_id)}</p>
+                    <label className="text-xs sm:text-sm font-medium text-gray-500">Agent</label>
+                    <p className="text-sm sm:text-base text-gray-900">{getAgentName(selectedReview.agent_id)}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Department</label>
-                    <p className="text-gray-900">{getDepartmentName(selectedReview.department_id)}</p>
+                    <label className="text-xs sm:text-sm font-medium text-gray-500">Department</label>
+                    <p className="text-sm sm:text-base text-gray-900">{getDepartmentName(selectedReview.department_id)}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Date & Time</label>
-                    <p className="text-gray-900">{formatDateTime(selectedReview.review_ts)}</p>
+                    <label className="text-xs sm:text-sm font-medium text-gray-500">Date & Time</label>
+                    <p className="text-sm sm:text-base text-gray-900">{formatDateTime(selectedReview.review_ts)}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Source</label>
-                    <p className="text-gray-900">{selectedReview.source}</p>
+                    <label className="text-xs sm:text-sm font-medium text-gray-500">Source</label>
+                    <p className="text-sm sm:text-base text-gray-900">{selectedReview.source}</p>
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Rating</label>
-                  <div className="flex items-center gap-2 mt-1">
+                  <label className="text-xs sm:text-sm font-medium text-gray-500">Rating</label>
+                  <div className="flex items-center gap-1.5 sm:gap-2 mt-1">
                     {[1, 2, 3, 4, 5].map(star => (
                       <Star 
                         key={star}
-                        className={`w-6 h-6 ${star <= selectedReview.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                        className={`w-5 h-5 sm:w-6 sm:h-6 ${star <= selectedReview.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
                       />
                     ))}
-                    <span className={`text-lg font-medium ${getRatingColor(selectedReview.rating)}`}>
+                    <span className={`text-base sm:text-lg font-medium ${getRatingColor(selectedReview.rating)}`}>
                       {selectedReview.rating} / 5
                     </span>
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Comment</label>
-                  <div className="mt-2 p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <MessageCircle className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                      <p className="text-gray-900 leading-relaxed">
+                  <label className="text-xs sm:text-sm font-medium text-gray-500">Comment</label>
+                  <div className="mt-2 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm sm:text-base text-gray-900 leading-relaxed">
                         {selectedReview.comment || 'No comment provided'}
                       </p>
                     </div>

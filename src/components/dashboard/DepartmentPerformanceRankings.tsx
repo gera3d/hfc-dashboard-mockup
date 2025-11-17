@@ -148,10 +148,105 @@ export default function DepartmentPerformanceRankings({
   return (
     <div className="relative mb-8 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-[#0066cc]/5 via-white to-[#00ca6f]/5 rounded-2xl" />
-      <div className="relative bg-white rounded-2xl border-2 border-gray-300 shadow-lg hover:shadow-2xl hover:border-[#0066cc] transition-all duration-300 overflow-hidden p-6">
+      <div className="relative bg-white rounded-2xl border-2 border-gray-300 shadow-lg hover:shadow-2xl hover:border-[#0066cc] transition-all duration-300 overflow-hidden p-4 sm:p-6">
         
-        {/* Department List */}
-        <div className="space-y-6">
+        {/* Mobile Card Layout */}
+        <div className="block lg:hidden space-y-4">
+          {departmentData.map((dept, rank) => {
+            const badges = getBadges(dept, rank);
+            const trend = getTrendIndicator(dept);
+            
+            return (
+              <div 
+                key={dept.name} 
+                className="bg-white rounded-xl border-2 border-gray-300 shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-[#0066cc]"
+              >
+                {/* Mobile Department Header */}
+                <div className="p-4 bg-gradient-to-r from-gray-50/50 to-white">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-gradient-to-br from-[#0066cc] to-[#0055aa] text-white font-black text-lg shadow-md border-2 border-white flex-shrink-0">
+                      {rank + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-black text-gray-900 tracking-tight truncate">{dept.name}</h3>
+                      <div className="flex items-center gap-2 text-xs text-gray-600 font-medium mt-1">
+                        <span>👥 {dept.agentCount}</span>
+                        <span>📝 {dept.reviews}</span>
+                      </div>
+                    </div>
+                    <div className="text-right bg-[#0066cc]/5 rounded-lg px-3 py-2 border border-[#0066cc]/20 flex-shrink-0">
+                      <div className="flex items-center gap-1 text-2xl font-black text-[#0066cc]">
+                        {dept.rating.toFixed(2)}
+                        <span className="text-sm text-yellow-400">★</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Mobile Stats */}
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="bg-white rounded-lg p-2 border border-gray-200">
+                      <div className="text-gray-500 font-medium">5-star rate</div>
+                      <div className="text-[#00ca6f] font-black text-sm">{dept.percent_5_star.toFixed(1)}%</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-2 border border-gray-200">
+                      <div className="text-gray-500 font-medium">Satisfaction</div>
+                      <div className="text-[#0066cc] font-black text-sm">{dept.customer_satisfaction.toFixed(1)}%</div>
+                    </div>
+                  </div>
+                  
+                  {dept.problem_reviews > 0 && (
+                    <div className="mt-2 text-xs font-bold text-red-600 bg-red-50 rounded-lg px-3 py-1.5 border border-red-200">
+                      ⚠️ {dept.problem_reviews} issues
+                    </div>
+                  )}
+                  
+                  {/* Collapse/Expand Button */}
+                  <button
+                    onClick={() => toggleDepartment(dept.name)}
+                    className={`mt-3 w-full p-2 rounded-lg transition-all border-2 flex items-center justify-center gap-2 text-sm font-bold ${
+                      collapsedDepartments.has(dept.name)
+                        ? 'bg-white border-[#0066cc]/30 text-[#0066cc]'
+                        : 'bg-[#0066cc]/5 border-[#0066cc] text-[#0066cc]'
+                    }`}
+                  >
+                    <span>{collapsedDepartments.has(dept.name) ? 'Show' : 'Hide'} Agents</span>
+                    <svg 
+                      className={`w-4 h-4 transition-transform duration-300 ${collapsedDepartments.has(dept.name) ? '' : 'rotate-180'}`}
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                      strokeWidth={2.5}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Mobile Agents Grid */}
+                {!collapsedDepartments.has(dept.name) && dept.agents.length > 0 && (
+                  <div className="p-4 pt-2 border-t border-gray-100">
+                    <div className="grid grid-cols-2 gap-3">
+                      {dept.agents.map((agent, idx) => {
+                        const medal = idx === 0 ? 'gold' : idx === 1 ? 'silver' : idx === 2 ? 'bronze' : undefined;
+                        return (
+                          <MobileAgentCard 
+                            key={agent.id}
+                            agent={agent} 
+                            medal={medal}
+                            rank={idx + 1}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Desktop Department List */}
+        <div className="hidden lg:block space-y-6">
           {departmentData.map((dept, rank) => {
             const badges = getBadges(dept, rank);
             const trend = getTrendIndicator(dept);
@@ -243,6 +338,69 @@ export default function DepartmentPerformanceRankings({
         </div>
       </div>
     </div>
+  );
+}
+
+// Mobile Agent Card Component
+function MobileAgentCard({ agent, medal, rank }: any) {
+  const router = useRouter();
+  
+  const medals = {
+    gold: { color: 'from-yellow-400 to-amber-500', border: 'border-yellow-400', bg: 'bg-yellow-500' },
+    silver: { color: 'from-gray-400 to-gray-500', border: 'border-gray-400', bg: 'bg-gray-400' },
+    bronze: { color: 'from-orange-400 to-orange-600', border: 'border-orange-400', bg: 'bg-orange-500' }
+  };
+
+  const m = medal ? medals[medal as keyof typeof medals] : null;
+
+  return (
+    <button
+      onClick={() => router.push(`/agent/${agent.id}`)}
+      className={`w-full rounded-lg border-2 ${m?.border || 'border-gray-300'} bg-white hover:shadow-lg hover:scale-[1.02] transition-all duration-300 overflow-hidden text-left`}
+    >
+      {m && (
+        <div className={`h-1 bg-gradient-to-r ${m.color}`} />
+      )}
+      
+      <div className="p-3">
+        <div className="flex items-center gap-2 mb-2">
+          <div className={`relative h-12 w-12 rounded-full border-2 ${m?.border || 'border-[#0066cc]'} flex-shrink-0`}>
+            <img
+              src={agent.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.display_name)}&background=0066cc&color=fff&size=128`}
+              alt={agent.display_name}
+              className="h-full w-full object-cover rounded-full"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.display_name)}&background=0066cc&color=fff&size=128`;
+              }}
+            />
+            {m && (
+              <div className={`absolute -bottom-1 -right-1 h-5 w-5 rounded-full ${m.bg} flex items-center justify-center text-xs font-black text-white border-2 border-white`}>
+                {rank}
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-bold text-gray-900 truncate">{agent.display_name}</div>
+            <div className="text-[10px] text-gray-600 font-medium">{agent.totalReviews} reviews</div>
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center gap-1">
+            <span className="text-yellow-400">★</span>
+            <span className="font-black text-[#0066cc]">{agent.avgRating.toFixed(2)}</span>
+          </div>
+          {agent.problemCount > 0 && (
+            <span className="text-red-600 font-bold">⚠️ {agent.problemCount}</span>
+          )}
+        </div>
+        
+        {/* Rating bar */}
+        <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-full bg-[#00ca6f]" style={{ width: `${(agent.fiveStarCount / agent.totalReviews) * 100}%` }} />
+        </div>
+      </div>
+    </button>
   );
 }
 

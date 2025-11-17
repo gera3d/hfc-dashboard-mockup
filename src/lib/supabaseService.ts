@@ -122,13 +122,9 @@ export const isAgentHidden = async (agentId: string): Promise<boolean> => {
       .from('hidden_agents')
       .select('agent_id')
       .eq('agent_id', normalizedId)
-      .single()
+      .maybeSingle()
     
     if (error) {
-      // Not found is expected for non-hidden agents
-      if (error.code === 'PGRST116') {
-        return false
-      }
       console.error('Error checking if agent is hidden:', error)
       return false
     }

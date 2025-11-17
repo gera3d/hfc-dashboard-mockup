@@ -201,19 +201,19 @@ export default function AgentDetail({ params }: AgentDetailProps) {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Hero Header */}
       <div className="bg-gradient-to-r from-[#0066cc] via-[#0077dd] to-[#0066cc] text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
           <button
             onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-2 text-white/90 hover:text-white mb-6 transition-colors"
+            className="flex items-center gap-2 text-white/90 hover:text-white mb-4 sm:mb-6 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </button>
           
-          <div className="flex items-start gap-8">
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-8">
             {/* Large Agent Avatar */}
-            <div className="relative">
-              <div className="w-32 h-32 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-white">
+            <div className="relative mx-auto sm:mx-0">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-white">
                 <img
                   src={agent.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(agent.display_name)}&background=0066cc&color=fff&size=256`}
                   alt={agent.display_name}
@@ -224,21 +224,21 @@ export default function AgentDetail({ params }: AgentDetailProps) {
                 />
               </div>
               {/* Lifetime 5-star badge */}
-              <div className="absolute -bottom-2 -right-2 bg-[#00ca6f] text-white rounded-full px-3 py-1 text-xs font-bold shadow-lg flex items-center gap-1">
+              <div className="absolute -bottom-2 -right-2 bg-[#00ca6f] text-white rounded-full px-2 sm:px-3 py-1 text-xs font-bold shadow-lg flex items-center gap-1">
                 <Star className="w-3 h-3 fill-current" />
                 {lifetimeMetrics.avg_rating.toFixed(2)}
               </div>
             </div>
             
             {/* Agent Info */}
-            <div className="flex-1">
-              <div className="flex items-start justify-between mb-2">
-                <h1 className="text-4xl font-bold">{agent.display_name}</h1>
+            <div className="flex-1 w-full">
+              <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-3 mb-2">
+                <h1 className="text-2xl sm:text-4xl font-bold">{agent.display_name}</h1>
                 
                 {/* Hide/Unhide Button */}
                 <button
                   onClick={toggleHidden}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                     isHidden 
                       ? 'bg-green-500 hover:bg-green-600 text-white' 
                       : 'bg-white/20 hover:bg-white/30 text-white border border-white/40'
@@ -259,10 +259,10 @@ export default function AgentDetail({ params }: AgentDetailProps) {
                 </button>
               </div>
               
-              <div className="flex items-center gap-4 text-white/90 mb-6">
-                <span className="text-lg">{department?.name}</span>
-                <span className="text-white/60">•</span>
-                <span>ID: {agent.agent_key}</span>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm sm:text-base text-white/90 mb-4 sm:mb-6">
+                <span className="sm:text-lg">{department?.name}</span>
+                <span className="text-white/60 hidden sm:inline">•</span>
+                <span className="text-xs sm:text-base">ID: {agent.agent_key}</span>
                 {isHidden && (
                   <>
                     <span className="text-white/60">•</span>
@@ -275,29 +275,29 @@ export default function AgentDetail({ params }: AgentDetailProps) {
               </div>
               
               {/* Lifetime Stats Row */}
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {/* Total Reviews */}
-                <div className="bg-white rounded-2xl p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                  <div className="text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeMetrics.total.toLocaleString()}</div>
-                  <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Total Reviews</div>
+                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                  <div className="text-2xl sm:text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeMetrics.total.toLocaleString()}</div>
+                  <div className="text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wide">Total Reviews</div>
                 </div>
                 {/* Lifetime Avg */}
-                <div className="bg-white rounded-2xl p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                  <div className="text-4xl font-black tabular-nums mb-1 flex items-baseline gap-1 text-[#0066cc]">
+                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                  <div className="text-2xl sm:text-4xl font-black tabular-nums mb-1 flex items-baseline gap-1 text-[#0066cc]">
                     {lifetimeMetrics.avg_rating.toFixed(2)}
-                    <Star className="size-5 fill-[#00ca6f] text-[#00ca6f] mb-1" />
+                    <Star className="size-4 sm:size-5 fill-[#00ca6f] text-[#00ca6f] mb-1" />
                   </div>
-                  <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Lifetime Avg</div>
+                  <div className="text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wide">Lifetime Avg</div>
                 </div>
                 {/* 5-Star Rate */}
-                <div className="bg-white rounded-2xl p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                  <div className="text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeMetrics.percent_5_star.toFixed(0)}%</div>
-                  <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">5-Star Rate</div>
+                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                  <div className="text-2xl sm:text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeMetrics.percent_5_star.toFixed(0)}%</div>
+                  <div className="text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wide">5-Star Rate</div>
                 </div>
                 {/* 4-5 Star Reviews */}
-                <div className="bg-white rounded-2xl p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
-                  <div className="text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeReviews.filter(r => r.rating >= 4).length.toLocaleString()}</div>
-                  <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">4-5 Star Reviews</div>
+                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border-2 border-white/50 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300">
+                  <div className="text-2xl sm:text-4xl font-black tabular-nums mb-1 text-[#0066cc]">{lifetimeReviews.filter(r => r.rating >= 4).length.toLocaleString()}</div>
+                  <div className="text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wide">4-5 Star Reviews</div>
                 </div>
               </div>
             </div>
@@ -306,18 +306,18 @@ export default function AgentDetail({ params }: AgentDetailProps) {
       </div>
       
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Date Range Selector */}
-        <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200/80 p-6 mb-6 hover:shadow-xl transition-shadow">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-4 flex-wrap">
-              <span className="text-sm font-bold text-gray-700 uppercase tracking-wide">Performance Period:</span>
-              <div className="flex gap-2 flex-wrap">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border-2 border-gray-200/80 p-4 sm:p-6 mb-4 sm:mb-6 hover:shadow-xl transition-shadow">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+              <span className="text-xs sm:text-sm font-bold text-gray-700 uppercase tracking-wide">Performance Period:</span>
+              <div className="flex gap-2 flex-wrap w-full sm:w-auto">
                 {Object.entries(dateRanges).map(([key, range]) => (
                   <button
                     key={key}
                     onClick={() => setSelectedDateRange(range)}
-                    className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
+                    className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 ${
                       selectedDateRange.label === range.label
                         ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-300/50 scale-105'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
@@ -328,14 +328,14 @@ export default function AgentDetail({ params }: AgentDetailProps) {
                 ))}
               </div>
             </div>
-            <div className="text-sm font-bold text-gray-600 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
+            <div className="text-xs sm:text-sm font-bold text-gray-600 bg-gray-50 px-3 sm:px-4 py-2 rounded-lg border border-gray-200 w-full sm:w-auto text-center">
               {agentReviews.length} reviews in selected period
             </div>
           </div>
         </div>
         
         {/* Key Metrics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Average Rating Card */}
           <div className={`group relative flex flex-col rounded-2xl border-2 p-7 transition-all duration-500 cursor-pointer overflow-hidden
             hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.99]
@@ -533,10 +533,10 @@ export default function AgentDetail({ params }: AgentDetailProps) {
         </div>
 
         {/* Rating Distribution & Problem Reviews */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Rating Distribution */}
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200/80 p-7 hover:shadow-xl transition-all duration-300">
-            <h3 className="text-xl font-black text-gray-900 mb-6 uppercase tracking-wide">Rating Distribution</h3>
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border-2 border-gray-200/80 p-4 sm:p-7 hover:shadow-xl transition-all duration-300">
+            <h3 className="text-lg sm:text-xl font-black text-gray-900 mb-4 sm:mb-6 uppercase tracking-wide">Rating Distribution</h3>
             <div className="space-y-4">
               {[5, 4, 3, 2, 1].map((rating) => (
                 <div key={rating} className="flex items-center gap-4">
@@ -566,9 +566,9 @@ export default function AgentDetail({ params }: AgentDetailProps) {
           </div>
 
           {/* Problem Reviews */}
-          <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200/80 p-7 hover:shadow-xl transition-all duration-300">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-black text-gray-900 uppercase tracking-wide">Problem Reviews</h3>
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border-2 border-gray-200/80 p-4 sm:p-7 hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h3 className="text-lg sm:text-xl font-black text-gray-900 uppercase tracking-wide">Problem Reviews</h3>
               {problemCount > 0 && (
                 <div className="flex items-center gap-1.5 bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-black shadow-md">
                   <AlertTriangle className="w-5 h-5" />
@@ -613,14 +613,14 @@ export default function AgentDetail({ params }: AgentDetailProps) {
         </div>
 
         {/* Performance Chart */}
-        <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200/80 p-7 mb-8 hover:shadow-xl transition-all duration-300">
-          <h3 className="text-xl font-black text-gray-900 mb-6 uppercase tracking-wide">Performance Trend</h3>
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border-2 border-gray-200/80 p-4 sm:p-7 mb-6 sm:mb-8 hover:shadow-xl transition-all duration-300">
+          <h3 className="text-lg sm:text-xl font-black text-gray-900 mb-4 sm:mb-6 uppercase tracking-wide">Performance Trend</h3>
           <TimeSeriesChart data={dailyMetrics} />
         </div>
 
         {/* Reviews Table */}
-        <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200/80 p-7 hover:shadow-xl transition-all duration-300">
-          <h3 className="text-xl font-black text-gray-900 mb-6 uppercase tracking-wide">All Reviews</h3>
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border-2 border-gray-200/80 p-4 sm:p-7 hover:shadow-xl transition-all duration-300">
+          <h3 className="text-lg sm:text-xl font-black text-gray-900 mb-4 sm:mb-6 uppercase tracking-wide">All Reviews</h3>
           <ReviewTable data={agentReviews} agents={agents} departments={departments} />
         </div>
       </div>
