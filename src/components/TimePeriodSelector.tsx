@@ -121,8 +121,8 @@ export default function TimePeriodSelector({
       
       <div className="relative">
         {/* Header with Time Period title and Compare toggle */}
-        <div className="flex items-center justify-between mb-1.5">
-          <div className="flex items-center gap-1.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-0 mb-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-xs">⏱️</span>
             <h3 className={`text-[10px] font-bold ${
               isHFC ? 'text-white' : 'text-gray-900 dark:text-white'
@@ -135,7 +135,7 @@ export default function TimePeriodSelector({
             }`}>
               • {selectedRange.label}
             </span>
-            <span className={`text-[9px] ${
+            <span className={`text-[9px] hidden sm:inline ${
               isHFC ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'
             }`}>
               ({selectedRange.from.toLocaleDateString()} - {selectedRange.to.toLocaleDateString()})
@@ -145,7 +145,7 @@ export default function TimePeriodSelector({
           {/* Compare Toggle with better contrast */}
           <button
             onClick={() => onCompareModeChange(!compareMode)}
-            className={`relative flex items-center gap-1 px-2 py-1 rounded text-[9px] font-semibold transition-all duration-300 ${
+            className={`relative flex items-center gap-1 px-2 py-1 rounded text-[9px] font-semibold transition-all duration-300 flex-shrink-0 self-start sm:self-auto ${
               compareMode
                 ? isHFC
                   ? 'bg-[#f5b942] text-[#1a4d7a] shadow-md'
