@@ -24,35 +24,14 @@ export default function FadeInSection({
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && (!once || !hasAnimated)) {
-          setTimeout(() => {
-            setIsVisible(true);
-            setHasAnimated(true);
-          }, delay);
-        } else if (!once && !entry.isIntersecting) {
-          setIsVisible(false);
-        }
-      },
-      {
-        threshold: 0.1, // Trigger when 10% of element is visible
-        rootMargin: '50px' // Start animation slightly before element enters viewport
-      }
-    );
+    // Trigger animation immediately on mount with the specified delay
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+      setHasAnimated(true);
+    }, delay);
 
-    if (ref.current) {
-      observer.observe(ref.current);
-    }
-
-    return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
-      }
-    };
-  }, [delay, once, hasAnimated]);
-
-  // Calculate transform based on direction
+    return () => clearTimeout(timer);
+  }, [delay]);  // Calculate transform based on direction
   const getTransform = () => {
     if (!isVisible) {
       switch (direction) {
