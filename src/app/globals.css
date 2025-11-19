@@ -1,9 +1,41 @@
 @import "tailwindcss";
 @import "./tailadmin.css";
 
+/* ===== MOBILE OPTIMIZATIONS ===== */
+
+/* Improve iOS momentum scrolling */
+html {
+  -webkit-overflow-scrolling: touch;
+  overflow-scrolling: touch;
+}
+
+/* Better touch interactions */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth scrolling for mobile */
+.-webkit-overflow-scrolling-touch {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Horizontal scroll optimization */
+.touch-pan-x {
+  touch-action: pan-x pinch-zoom;
+}
+
+/* Prevent text selection on touch UI elements */
+.select-none {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
 /* Ensure proper stacking context for dropdown menus */
 .dropdown-menu {
-  z-index: 9999 !important;
+  z-index: 10000 !important;
 }
 
 /* Fix for dropdown positioning */
@@ -14,7 +46,7 @@
 /* Force dropdowns to appear on top */
 .dropdown-content {
   position: absolute !important;
-  z-index: 9999 !important;
+  z-index: 10000 !important;
   isolation: isolate;
 }
 

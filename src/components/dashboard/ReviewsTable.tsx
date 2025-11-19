@@ -66,7 +66,7 @@ export const ReviewsTable: React.FC<ReviewsTableProps> = ({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto -webkit-overflow-scrolling-touch touch-pan-x">
         <Table>
           <TableHeader>
             <TableRow>

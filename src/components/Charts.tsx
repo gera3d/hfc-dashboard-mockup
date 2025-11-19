@@ -93,7 +93,7 @@ export function TimeSeriesChart({ data }: TimeSeriesChartProps) {
         </p>
       </div>
       
-      <div className="h-72">
+      <div className="h-64 sm:h-72 md:h-80">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E3E8EE" vertical={false} />

@@ -86,7 +86,7 @@ export default function GlobalFilters({ filters, onFiltersChange }: GlobalFilter
     : agents
   
   return (
-    <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-elevated border border-white/50 p-6 md:p-8 mb-10 hover:shadow-elevatedStrong transition-all duration-300 relative overflow-visible group">
+    <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-elevated border border-white/50 p-6 md:p-8 mb-10 hover:shadow-elevatedStrong transition-all duration-300 relative overflow-visible group touch-manipulation select-none">
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-white via-transparent to-indigo-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       
@@ -95,7 +95,7 @@ export default function GlobalFilters({ filters, onFiltersChange }: GlobalFilter
         <div className="relative dropdown-container">
           <button
             onClick={() => setShowDatePicker(!showDatePicker)}
-            className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white hover:bg-gray-50 font-medium text-gray-900"
+            className="flex items-center gap-2 px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white hover:bg-gray-50 font-medium text-gray-900 touch-manipulation"
           >
             <Calendar className="w-5 h-5 text-gray-500" />
             <span className="text-sm font-semibold">{getDateRangeLabel(filters.dateRange)}</span>
@@ -103,7 +103,7 @@ export default function GlobalFilters({ filters, onFiltersChange }: GlobalFilter
           </button>
           
           {showDatePicker && (
-            <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[9999] min-w-48 overflow-hidden dropdown-content">
+            <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[10000] min-w-48 overflow-hidden dropdown-content touch-manipulation">
               <div className="p-2">
                 <button
                   onClick={() => handleDateRangeSelect(dateRanges.last7Days)}
@@ -148,7 +148,7 @@ export default function GlobalFilters({ filters, onFiltersChange }: GlobalFilter
           </button>
           
           {showDepartmentDropdown && (
-            <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[9999] min-w-48 dropdown-content">
+            <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[10000] min-w-48 dropdown-content touch-manipulation">
               <div className="p-2">
                 {filters.selectedDepartments.length > 0 && (
                   <button
@@ -194,7 +194,7 @@ export default function GlobalFilters({ filters, onFiltersChange }: GlobalFilter
           </button>
           
           {showAgentDropdown && (
-            <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[9999] min-w-48 max-h-64 overflow-y-auto dropdown-content">
+            <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[10000] min-w-48 max-h-64 overflow-y-auto dropdown-content touch-manipulation">
               <div className="p-2">
                 {filters.selectedAgents.length > 0 && (
                   <button
@@ -246,7 +246,7 @@ export default function GlobalFilters({ filters, onFiltersChange }: GlobalFilter
           </button>
           
           {showSourceDropdown && (
-            <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[9999] min-w-48 dropdown-content">
+            <div className="absolute top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-[10000] min-w-48 dropdown-content touch-manipulation">
               <div className="p-2">
                 {filters.selectedSources.length > 0 && (
                   <button

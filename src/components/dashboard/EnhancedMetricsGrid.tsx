@@ -214,7 +214,7 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
       <>
         {/* 1. CUSTOMER SATISFACTION */}
         <div 
-          className={`group relative flex flex-col rounded-xl sm:rounded-2xl border-2 p-5 sm:p-7 transition-all cursor-pointer overflow-hidden
+          className={`group relative flex flex-col rounded-xl sm:rounded-2xl border-2 p-5 sm:p-7 min-h-[280px] sm:min-h-[320px] transition-all cursor-pointer overflow-hidden touch-manipulation
             ${getCardAnimation(0)}
             hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.99]
             ${isExcellent 
