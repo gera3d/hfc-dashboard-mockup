@@ -46,25 +46,26 @@ export function CollapsibleSection({
             : 'hover:bg-gray-50 rounded-2xl'
         }`}
       >
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 w-full">
-          <div className="flex items-center gap-2 sm:gap-3 w-full sm:flex-1 min-w-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full">
+          {/* Top row: Icon, Title, Badge, Toggle */}
+          <div className="flex items-center gap-2 sm:gap-4 w-full">
             {/* Icon */}
             {icon && (
               <div 
-                className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-[#0066cc] bg-[#0066cc]/10 border border-[#0066cc]/20"
+                className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-[#0066cc] bg-[#0066cc]/10 border border-[#0066cc]/20"
               >
                 {icon}
               </div>
             )}
             
             {/* Title & Subtitle */}
-            <div className="text-left flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base sm:text-lg font-bold text-[#0066cc]">
+            <div className="text-left min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h3 className="text-base sm:text-lg font-bold text-[#0066cc] truncate">
                   {title}
                 </h3>
                 {badge && (
-                  <span className="px-2.5 py-0.5 text-[10px] sm:text-xs font-bold rounded-full bg-[#0066cc]/10 text-[#0066cc] border border-[#0066cc]/20 whitespace-nowrap flex-shrink-0">
+                  <span className="px-1.5 sm:px-2.5 py-0.5 text-[10px] sm:text-xs font-bold rounded-full bg-[#0066cc]/10 text-[#0066cc] border border-[#0066cc]/20 whitespace-nowrap flex-shrink-0">
                     {badge}
                   </span>
                 )}
@@ -76,34 +77,17 @@ export function CollapsibleSection({
               )}
             </div>
             
-            {/* Toggle Button - show on mobile inline with title */}
-            <div className="flex-shrink-0 sm:hidden">
-              <div 
-                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${
-                  isExpanded 
-                    ? 'bg-white text-[#0066cc] border-2 border-[#0066cc] shadow-md' 
-                    : 'bg-white text-[#0066cc] border-2 border-[#0066cc]/30 hover:bg-gray-50'
-                }`}
-                style={{
-                  transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                }}
-              >
-                <ChevronDown className="w-4 h-4" />
+            {/* Preview Content when collapsed - desktop only inline */}
+            {!isExpanded && previewContent && (
+              <div className="hidden sm:block sm:flex-1 min-w-0 sm:mr-4">
+                {previewContent}
               </div>
-            </div>
-          </div>
-          
-          {/* Preview Content when collapsed - full width on mobile, inline on desktop */}
-          {!isExpanded && previewContent && (
-            <div className="w-full sm:w-auto sm:flex-shrink-0">
-              {previewContent}
-            </div>
-          )}
-          
-          {/* Toggle Button - show on desktop */}
-          <div className="hidden sm:block flex-shrink-0">
-            <div 
-              className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-200 ${
+            )}
+            
+            {/* Toggle Button - always on the right */}
+            <div className="flex-shrink-0">
+              <div 
+                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center transition-all duration-200 ${
                 isExpanded 
                   ? 'bg-white text-[#0066cc] border-2 border-[#0066cc] shadow-md' 
                   : 'bg-white text-[#0066cc] border-2 border-[#0066cc]/30 hover:bg-gray-50'
@@ -112,9 +96,17 @@ export function CollapsibleSection({
                 transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
               }}
             >
-              <ChevronDown className="w-5 h-5" />
+              <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
+          </div>
+          
+          {/* Preview Content when collapsed - mobile gets its own row */}
+          {!isExpanded && previewContent && (
+            <div className="block sm:hidden w-full mt-2">
+              {previewContent}
+            </div>
+          )}
         </div>
       </button>
       

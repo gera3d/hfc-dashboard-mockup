@@ -1,4 +1,7 @@
 {
+  "status": "complete",
+  "progress": 100,
+  "message": "Complete!",
   "lastUpdated": "2025-11-18T05:11:49.630Z",
   "stats": {
     "size": 13303372,

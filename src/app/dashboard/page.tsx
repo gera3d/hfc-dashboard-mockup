@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from 'next/navigation';
 import { Trophy, Building2, AlertTriangle, BarChart3 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import HFCBrandTitle from '@/components/HFCBrandTitle';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import FadeInSection from '@/components/FadeInSection';
 import { 
@@ -469,7 +470,14 @@ export default function DashboardPage() {
           ? 'bg-gradient-to-br from-[#2c5f8d] via-[#1e5a8e] to-[#164670]' 
           : 'bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900'
       }`}>
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-6">
+          {/* HFC Brand Logo */}
+          {isHFC && (
+            <div className="mb-2">
+              <HFCBrandTitle size="xl" showSubtitle={false} />
+            </div>
+          )}
+          
           {/* Simple, clean spinner */}
           <div className="relative w-16 h-16">
             <div className={`absolute inset-0 border-4 rounded-full ${
@@ -657,7 +665,7 @@ export default function DashboardPage() {
           onToggle={() => handleSectionToggle('department-rankings')}
           title="Department Performance Rankings"
           subtitle="Compare performance metrics across all departments"
-          badge={`${departments.length} depts`}
+          badge={`${departments.length} dept${departments.length !== 1 ? 's' : ''}`}
           icon={<Building2 className="w-5 h-5" />}
           previewContent={
             <AnimatedPreview key={`dept-preview-${filters.dateRange.label}`} direction="right">
@@ -762,37 +770,37 @@ export default function DashboardPage() {
               )[0];
               
               return (
-                <div className="flex items-start gap-4">
-                  {/* Stats */}
-                  <div className="flex items-center gap-4 text-sm flex-shrink-0">
-                    <div className="text-center px-3 py-2 bg-red-50 rounded-xl border-2 border-red-200">
-                      <div className="font-black text-red-600 text-lg">
+                <div className="flex flex-col sm:flex-row items-start gap-3 w-full">
+                  {/* Stats - Compact version */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="text-center px-2 py-1.5 bg-red-50 rounded-lg border border-red-200">
+                      <div className="font-black text-red-600 text-base leading-none">
                         {lowRatings.length}
                       </div>
-                      <div className="text-xs text-red-700 font-bold uppercase tracking-wide">Low Ratings</div>
+                      <div className="text-[10px] text-red-700 font-semibold mt-0.5 whitespace-nowrap">Low Ratings</div>
                     </div>
-                    <div className="text-center px-3 py-2 bg-orange-50 rounded-xl border-2 border-orange-200">
-                      <div className="font-black text-orange-600 text-lg">
+                    <div className="text-center px-2 py-1.5 bg-orange-50 rounded-lg border border-orange-200">
+                      <div className="font-black text-orange-600 text-base leading-none">
                         {withComments.length}
                       </div>
-                      <div className="text-xs text-orange-700 font-bold uppercase tracking-wide">With Comments</div>
+                      <div className="text-[10px] text-orange-700 font-semibold mt-0.5 whitespace-nowrap">w/ Comments</div>
                     </div>
                   </div>
                   
                   {/* Most Recent Issue Snippet */}
                   {mostRecentProblem && (
-                    <div className="flex-1 min-w-0 border-l-4 border-red-300 dark:border-red-700 pl-4">
-                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-2 font-bold">
-                        <span className="font-black uppercase tracking-wide">Latest Issue:</span>
-                        <span className="text-red-600 dark:text-red-400 font-black">
+                    <div className="flex-1 min-w-0 border-l-2 border-red-300 pl-3">
+                      <div className="text-[10px] text-gray-500 mb-0.5 flex items-center gap-1.5 flex-wrap">
+                        <span className="font-semibold uppercase tracking-wide">Latest:</span>
+                        <span className="text-red-600 font-bold">
                           {mostRecentProblem.rating}★
                         </span>
-                        <span>•</span>
-                        <span className="font-black">
-                          Agent {agents.find(a => a.id === mostRecentProblem.agent_id)?.display_name || mostRecentProblem.agent_id}
+                        <span className="text-gray-400">•</span>
+                        <span className="font-semibold truncate">
+                          {agents.find(a => a.id === mostRecentProblem.agent_id)?.display_name || mostRecentProblem.agent_id}
                         </span>
                       </div>
-                      <div className="text-sm text-gray-700 dark:text-gray-300 italic line-clamp-2 font-medium">
+                      <div className="text-xs text-gray-700 italic line-clamp-1 font-medium">
                         "{mostRecentProblem.comment}"
                       </div>
                     </div>
