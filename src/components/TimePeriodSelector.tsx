@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { DateRange } from '@/data/dataService';
 import { useTheme } from '@/context/ThemeContext';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.css';
+import monthSelectPlugin from 'flatpickr/dist/plugins/monthSelect';
+import 'flatpickr/dist/plugins/monthSelect/style.css';
 
 interface TimePeriodSelectorProps {
   selectedRange: DateRange;
@@ -28,6 +30,9 @@ export default function TimePeriodSelector({
   const [showCustomPicker, setShowCustomPicker] = useState(false);
   const [isCustomRange, setIsCustomRange] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const flatpickrRef = useRef<flatpickr.Instance | null>(null);
+  const [startDateInput, setStartDateInput] = useState('');
+  const [endDateInput, setEndDateInput] = useState('');
   
   useEffect(() => {
     setMounted(true);
@@ -58,8 +63,18 @@ export default function TimePeriodSelector({
         to: new Date(now.getFullYear(), 0, 1),
         label: 'Last Year'
       },
+      last3Years: {
+        from: new Date(now.getFullYear() - 3, 0, 1),
+        to: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        label: 'Last 3 Years'
+      },
+      last5Years: {
+        from: new Date(now.getFullYear() - 5, 0, 1),
+        to: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        label: 'Last 5 Years'
+      },
       allTime: {
-        from: new Date(2024, 0, 1), // Start from January 2024 to include all data
+        from: new Date(2019, 0, 1), // Start from year 2019
         to: new Date(today.getTime() + 24 * 60 * 60 * 1000),
         label: 'All Time'
       }
@@ -80,6 +95,13 @@ export default function TimePeriodSelector({
         showMonths: 2,
         inline: true,
         static: true,
+        enableTime: false,
+        clickOpens: true,
+        // Allow selecting dates back to 2019
+        minDate: new Date(2019, 0, 1),
+        maxDate: new Date(),
+        // Show year dropdown
+        yearSelectorType: 'static',
         onChange: (selectedDates) => {
           if (selectedDates.length === 2) {
             const customRange: DateRange = {
@@ -87,16 +109,30 @@ export default function TimePeriodSelector({
               to: selectedDates[1],
               label: 'Custom Range'
             };
+            setStartDateInput(selectedDates[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+            setEndDateInput(selectedDates[1].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
             setIsCustomRange(true);
             onRangeChange(customRange);
             setShowCustomPicker(false);
+          } else if (selectedDates.length === 1) {
+            setStartDateInput(selectedDates[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+          }
+        },
+        onOpen: () => {
+          // Make the year dropdown more prominent
+          const yearInput = document.querySelector('.flatpickr-current-month .numInput.cur-year') as HTMLInputElement;
+          if (yearInput) {
+            yearInput.style.width = '80px';
           }
         }
       });
 
+      flatpickrRef.current = Array.isArray(picker) ? picker[0] : picker;
+
       return () => {
-        if (!Array.isArray(picker)) {
-          picker.destroy();
+        if (flatpickrRef.current) {
+          flatpickrRef.current.destroy();
+          flatpickrRef.current = null;
         }
       };
     }
@@ -289,7 +325,7 @@ export default function TimePeriodSelector({
           style={{ zIndex: 1000000 }}
         >
           <div 
-            className={`relative rounded-xl shadow-2xl max-w-md w-full mx-4 pointer-events-auto animate-in zoom-in-95 fade-in duration-200 ${
+            className={`relative rounded-xl shadow-2xl max-w-2xl w-full mx-4 pointer-events-auto animate-in zoom-in-95 fade-in duration-200 ${
               isHFC
                 ? 'bg-gradient-to-br from-[#1a4d7a] to-[#15426a] border-2 border-white/10'
                 : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
@@ -348,39 +384,46 @@ export default function TimePeriodSelector({
                 }`}>
                   Quick Presets
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {Object.entries(getQuickPresets()).map(([key, preset]) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleQuickPreset(preset);
-                      }}
-                      className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 ${
-                        isHFC
-                          ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40 focus:ring-[#f5b942]/50'
-                          : 'bg-gradient-to-br from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 dark:from-gray-700 dark:to-gray-700 dark:hover:from-gray-600 dark:hover:to-gray-600 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-500 focus:ring-indigo-400 dark:focus:ring-indigo-500'
-                      }`}
-                    >
-                      <span className={`text-lg mb-1 ${
-                        key === 'thisYear' ? '📈' : key === 'lastYear' ? '📊' : '🌍'
-                      }`}>
-                        {key === 'thisYear' ? '📈' : key === 'lastYear' ? '📊' : '🌍'}
-                      </span>
-                      <span className={`text-xs font-semibold ${
-                        isHFC ? 'text-white' : 'text-gray-900 dark:text-white'
-                      }`}>
-                        {preset.label}
-                      </span>
-                      <span className={`text-[10px] mt-0.5 ${
-                        isHFC ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'
-                      }`}>
-                        {preset.from.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} - {preset.to.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                      </span>
-                    </button>
-                  ))}
+                <div className="grid grid-cols-5 gap-2">
+                  {Object.entries(getQuickPresets()).map(([key, preset]) => {
+                    const icons: Record<string, string> = {
+                      thisYear: '📈',
+                      lastYear: '📊',
+                      last3Years: '📉',
+                      last5Years: '📆',
+                      allTime: '🌍'
+                    };
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleQuickPreset(preset);
+                        }}
+                        className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 ${
+                          isHFC
+                            ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40 focus:ring-[#f5b942]/50'
+                            : 'bg-gradient-to-br from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 dark:from-gray-700 dark:to-gray-700 dark:hover:from-gray-600 dark:hover:to-gray-600 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-500 focus:ring-indigo-400 dark:focus:ring-indigo-500'
+                        }`}
+                      >
+                        <span className="text-lg mb-1">
+                          {icons[key]}
+                        </span>
+                        <span className={`text-xs font-semibold text-center ${
+                          isHFC ? 'text-white' : 'text-gray-900 dark:text-white'
+                        }`}>
+                          {preset.label}
+                        </span>
+                        <span className={`text-[10px] mt-0.5 text-center ${
+                          isHFC ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'
+                        }`}>
+                          {preset.from.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} - {preset.to.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -413,6 +456,142 @@ export default function TimePeriodSelector({
                 }`}>
                   Select Date Range
                 </label>
+
+                {/* Manual Date Inputs */}
+                <div className="mb-4 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={`block text-xs font-medium mb-1.5 ${
+                      isHFC ? 'text-white/80' : 'text-gray-600 dark:text-gray-400'
+                    }`}>
+                      Start Date
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Click calendar below"
+                      value={startDateInput}
+                      readOnly
+                      className={`w-full px-3 py-2 rounded-lg text-sm border focus:outline-none focus:ring-2 ${
+                        isHFC
+                          ? 'bg-white/10 border-white/20 text-white placeholder-white/40 focus:ring-[#f5b942]/50 focus:border-[#f5b942]/50'
+                          : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500'
+                      }`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-xs font-medium mb-1.5 ${
+                      isHFC ? 'text-white/80' : 'text-gray-600 dark:text-gray-400'
+                    }`}>
+                      End Date
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Click calendar below"
+                      value={endDateInput}
+                      readOnly
+                      className={`w-full px-3 py-2 rounded-lg text-sm border focus:outline-none focus:ring-2 ${
+                        isHFC
+                          ? 'bg-white/10 border-white/20 text-white placeholder-white/40 focus:ring-[#f5b942]/50 focus:border-[#f5b942]/50'
+                          : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500'
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {/* Year Quick Jump */}
+                <div className="mb-4">
+                  <label className={`block text-xs font-medium mb-2 ${
+                    isHFC ? 'text-white/80' : 'text-gray-600 dark:text-gray-400'
+                  }`}>
+                    Jump to Year
+                  </label>
+                  <div className="grid grid-cols-6 gap-2 mb-2">
+                    {[2025, 2024, 2023, 2022, 2021, 2020].map(year => (
+                      <button
+                        key={year}
+                        type="button"
+                        onClick={() => {
+                          if (flatpickrRef.current) {
+                            flatpickrRef.current.jumpToDate(new Date(year, 0, 1));
+                          }
+                        }}
+                        className={`px-2 py-1.5 rounded text-xs font-semibold transition-all duration-150 ${
+                          isHFC
+                            ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40'
+                            : 'bg-gray-100 hover:bg-indigo-100 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 hover:border-indigo-300'
+                        }`}
+                      >
+                        {year}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-6 gap-2">
+                    {[2019].map(year => (
+                      <button
+                        key={year}
+                        type="button"
+                        onClick={() => {
+                          if (flatpickrRef.current) {
+                            flatpickrRef.current.jumpToDate(new Date(year, 0, 1));
+                          }
+                        }}
+                        className={`px-2 py-1.5 rounded text-xs font-semibold transition-all duration-150 ${
+                          isHFC
+                            ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40'
+                            : 'bg-gray-100 hover:bg-indigo-100 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 hover:border-indigo-300'
+                        }`}
+                      >
+                        {year}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  {/* Custom Year Input */}
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      type="number"
+                      min="2019"
+                      max={new Date().getFullYear()}
+                      placeholder="Enter year (e.g., 2019)"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const year = parseInt((e.target as HTMLInputElement).value);
+                          if (year >= 2019 && year <= new Date().getFullYear()) {
+                            if (flatpickrRef.current) {
+                              flatpickrRef.current.jumpToDate(new Date(year, 0, 1));
+                            }
+                            (e.target as HTMLInputElement).value = '';
+                          }
+                        }
+                      }}
+                      className={`flex-1 px-3 py-2 rounded-lg text-sm border focus:outline-none focus:ring-2 ${
+                        isHFC
+                          ? 'bg-white/10 border-white/20 text-white placeholder-white/40 focus:ring-[#f5b942]/50 focus:border-[#f5b942]/50'
+                          : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500'
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                        const year = parseInt(input.value);
+                        if (year >= 2019 && year <= new Date().getFullYear()) {
+                          if (flatpickrRef.current) {
+                            flatpickrRef.current.jumpToDate(new Date(year, 0, 1));
+                          }
+                          input.value = '';
+                        }
+                      }}
+                      className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
+                        isHFC
+                          ? 'bg-[#f5b942] hover:bg-[#f7c868] text-[#1a4d7a]'
+                          : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                      }`}
+                    >
+                      Go
+                    </button>
+                  </div>
+                </div>
+                
                 <div className="flex justify-center">
                   <input
                     id="custom-date-range"
@@ -433,11 +612,17 @@ export default function TimePeriodSelector({
                 }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className={`text-xs ${
+                <div className={`text-xs ${
                   isHFC ? 'text-white/80' : 'text-blue-700 dark:text-blue-300'
                 }`}>
-                  <span className="font-semibold">Tip:</span> Click the input to open the calendar. Select your start date, then your end date.
-                </p>
+                  <p className="font-semibold mb-1">Quick Tips:</p>
+                  <ul className="list-disc list-inside space-y-0.5 text-[11px]">
+                    <li>Type a year (e.g., 2001) and press Enter or click Go to jump to that year</li>
+                    <li>Click quick year buttons to navigate faster</li>
+                    <li>Select start date, then end date on the calendar</li>
+                    <li>Use the arrow buttons in calendar header to navigate months</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>

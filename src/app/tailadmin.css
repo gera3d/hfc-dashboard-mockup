@@ -346,10 +346,24 @@
 
 .flatpickr-current-month {
   @apply !p-0;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 200px !important;
+  gap: 0.5rem !important;
 }
 .flatpickr-current-month .cur-month,
 .flatpickr-current-month input.cur-year {
   @apply !h-auto !pt-0 !text-lg !font-medium !text-gray-800 dark:!text-white/90;
+}
+.flatpickr-current-month input.cur-year {
+  min-width: 4.5rem !important;
+  width: 4.5rem !important;
+  flex-shrink: 0 !important;
+}
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+  flex-shrink: 0 !important;
+  min-width: 80px !important;
 }
 
 .flatpickr-prev-month,
@@ -375,6 +389,9 @@
 
 .flatpickr-months > .flatpickr-month {
   background: none !important;
+  min-width: 280px !important;
+  display: flex !important;
+  justify-content: center !important;
 }
 .flatpickr-month .flatpickr-current-month .flatpickr-monthDropdown-months {
   background: none !important;
