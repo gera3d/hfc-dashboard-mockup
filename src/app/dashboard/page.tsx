@@ -70,6 +70,7 @@ import {
   loadDisplayPreferences,
   type DisplayPreferences 
 } from '@/lib/displayPreferences';
+import EnhancedLoader from '@/components/EnhancedLoader';
 
 interface Filters {
   dateRange: DateRange
@@ -92,6 +93,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [isReady, setIsReady] = useState(false);
   const [expandedSection, setExpandedSection] = useState<SectionId | null>(null);
+  const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
+  const [currentStep, setCurrentStep] = useState<string>('reviews');
   
   // Hidden agents state
   const [hiddenAgentIds, setHiddenAgentIds] = useState<Set<string>>(new Set());
@@ -205,12 +208,19 @@ export default function DashboardPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [reviewsData, agentsData, departmentsData] = await Promise.all([
-          loadReviews(),
-          loadAgents(),
-          loadDepartments()
-        ]);
+        setCurrentStep('reviews');
+        const reviewsData = await loadReviews();
+        setCompletedSteps(prev => new Set([...prev, 'reviews']));
         
+        setCurrentStep('agents');
+        const agentsData = await loadAgents();
+        setCompletedSteps(prev => new Set([...prev, 'agents']));
+        
+        setCurrentStep('departments');
+        const departmentsData = await loadDepartments();
+        setCompletedSteps(prev => new Set([...prev, 'departments']));
+        
+        setCurrentStep('metrics');
         // Apply Supabase overrides to preserve user changes
         const agentsWithOverrides = await applyAgentDepartmentAssignments(agentsData);
         const departmentsWithCustom = await mergeCustomDepartments(departmentsData);
@@ -227,6 +237,7 @@ export default function DashboardPage() {
         setReviews(updatedReviews);
         setAgents(agentsWithOverrides);
         setDepartments(departmentsWithCustom);
+        setCompletedSteps(prev => new Set([...prev, 'metrics']));
         
         const changeCount = getChangeCount();
         if (changeCount.agentChanges > 0 || changeCount.customDepartments > 0) {
@@ -463,45 +474,12 @@ export default function DashboardPage() {
   };
 
   if (loading) {
-    const isHFC = theme === 'hfc';
     return (
-      <div className={`fixed inset-0 flex items-center justify-center ${
-        isHFC 
-          ? 'bg-gradient-to-br from-[#2c5f8d] via-[#1e5a8e] to-[#164670]' 
-          : 'bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900'
-      }`}>
-        <div className="flex flex-col items-center gap-6">
-          {/* HFC Brand Logo */}
-          {isHFC && (
-            <div className="mb-2">
-              <HFCBrandTitle size="xl" showSubtitle={false} />
-            </div>
-          )}
-          
-          {/* Simple, clean spinner */}
-          <div className="relative w-16 h-16">
-            <div className={`absolute inset-0 border-4 rounded-full ${
-              isHFC 
-                ? 'border-white/20' 
-                : 'border-gray-300/50 dark:border-gray-700/50'
-            }`} />
-            <div className={`absolute inset-0 border-4 rounded-full border-transparent animate-spin ${
-              isHFC 
-                ? 'border-t-[#f5b942]' 
-                : 'border-t-indigo-600 dark:border-t-indigo-400'
-            }`} 
-            style={{ animationDuration: '0.8s' }}
-            />
-          </div>
-          
-          {/* Loading text */}
-          <p className={`text-sm font-medium ${
-            isHFC ? 'text-white/80' : 'text-gray-600 dark:text-gray-400'
-          }`}>
-            Loading...
-          </p>
-        </div>
-      </div>
+      <EnhancedLoader 
+        theme={theme === 'hfc' ? 'hfc' : 'default'}
+        completedSteps={completedSteps}
+        currentStep={currentStep}
+      />
     );
   }
 

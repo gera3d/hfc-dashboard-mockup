@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { signIn, signUp, getSession } from '@/lib/supabase';
 import HFCBrandTitle from '@/components/HFCBrandTitle';
 import { useTheme } from '@/context/ThemeContext';
+import EnhancedLoader from '@/components/EnhancedLoader';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -102,17 +103,12 @@ export default function LoginPage() {
 
   // Show loading screen while checking session
   if (checkingSession) {
-    return (
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ background: 'radial-gradient(ellipse at center, #4a7ba7 0%, #3a6a94 40%, #1e3d5a 100%)' }}>
-        <div className="relative z-10 text-center">
-          <HFCBrandTitle size="xl" showSubtitle={true} />
-          <div className="mt-8 flex justify-center">
-            <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-          </div>
-          <p className="text-white/60 text-sm mt-4">Loading...</p>
-        </div>
-      </div>
-    );
+    const authSteps = [
+      { id: 'auth', label: 'Checking authentication', duration: 1000 },
+      { id: 'session', label: 'Verifying session', duration: 800 },
+    ];
+    
+    return <EnhancedLoader theme="hfc" steps={authSteps} />;
   }
 
   return (
