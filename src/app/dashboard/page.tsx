@@ -71,6 +71,7 @@ import {
   type DisplayPreferences 
 } from '@/lib/displayPreferences';
 import EnhancedLoader from '@/components/EnhancedLoader';
+import AgentDetailsModal from '@/components/AgentDetailsModal';
 
 interface Filters {
   dateRange: DateRange
@@ -95,6 +96,11 @@ export default function DashboardPage() {
   const [expandedSection, setExpandedSection] = useState<SectionId | null>(null);
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const [currentStep, setCurrentStep] = useState<string>('reviews');
+  
+  // Agent detail slide state
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  const [isSliding, setIsSliding] = useState(false);
+  const [slideDirection, setSlideDirection] = useState<'in' | 'out'>('in');
   
   // Hidden agents state
   const [hiddenAgentIds, setHiddenAgentIds] = useState<Set<string>>(new Set());
@@ -470,7 +476,17 @@ export default function DashboardPage() {
   }, [visibleReviews]);
 
   const handleAgentClick = (agentId: string) => {
-    router.push(`/agent/${agentId}`);
+    setSlideDirection('in');
+    setSelectedAgentId(agentId);
+    // Prevent body scroll when agent detail is open
+    document.body.style.overflow = 'hidden';
+  };
+  
+  const handleBackToDashboard = () => {
+    setSlideDirection('out');
+    setSelectedAgentId(null);
+    // Re-enable body scroll
+    document.body.style.overflow = '';
   };
 
   if (loading) {
@@ -505,12 +521,14 @@ export default function DashboardPage() {
       onCompareModeChange={(enabled) => setFilters(prev => ({ ...prev, compareMode: enabled }))}
       dateRanges={dateRanges}
     >
-      {/* Centered Dashboard Container with smooth fade-in */}
-      <div 
-        className={`max-w-7xl mx-auto space-y-8 min-h-screen pb-12 px-6 transition-opacity duration-500 ${
-          isReady ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
+      <div className="relative w-full min-h-screen">
+        {/* Dashboard Container - slides left when agent selected */}
+        <div 
+          className={`w-full transition-transform duration-500 ease-in-out ${
+            selectedAgentId ? '-translate-x-full' : 'translate-x-0'
+          }`}
+        >
+          <div className="max-w-7xl mx-auto space-y-8 min-h-screen pb-12 px-6">
         
         {/* HFC Dashboard Title - Only shown in HFC theme */}
         {theme === 'hfc' && (
@@ -628,7 +646,8 @@ export default function DashboardPage() {
           <UnifiedAgentRankings 
             key={`agent-rankings-${filters.dateRange.label}`}
             data={agentMetrics} 
-            limit={10} 
+            limit={10}
+            onAgentClick={handleAgentClick}
           />
         </CollapsibleSection>
         </div>
@@ -921,6 +940,22 @@ export default function DashboardPage() {
         </CollapsibleSection>
         </div>
       </FadeInSection>
+          </div>
+        </div>
+      
+        {/* Agent Detail - slides in from right */}
+        <div 
+          className={`fixed inset-0 overflow-hidden transition-transform duration-500 ease-in-out z-50 ${
+            selectedAgentId ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          {selectedAgentId && (
+            <AgentDetailsModal 
+              agentId={selectedAgentId}
+              onClose={handleBackToDashboard}
+            />
+          )}
+        </div>
       </div>
     </DashboardLayout>
   );

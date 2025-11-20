@@ -203,7 +203,7 @@ export default function AgentDetail({ params }: AgentDetailProps) {
       <div className="bg-gradient-to-r from-[#0066cc] via-[#0077dd] to-[#0066cc] text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
           <button
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.back()}
             className="flex items-center gap-2 text-white/90 hover:text-white mb-4 sm:mb-6 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />

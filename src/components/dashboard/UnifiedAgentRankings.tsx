@@ -7,10 +7,19 @@ import { AgentMetrics } from '@/data/dataService';
 interface UnifiedAgentRankingsProps {
   data: AgentMetrics[];
   limit?: number;
+  onAgentClick?: (agentId: string) => void;
 }
 
-export default function UnifiedAgentRankings({ data, limit = 10 }: UnifiedAgentRankingsProps) {
+export default function UnifiedAgentRankings({ data, limit = 10, onAgentClick }: UnifiedAgentRankingsProps) {
   const router = useRouter();
+  
+  const handleAgentClick = (agentId: string) => {
+    if (onAgentClick) {
+      onAgentClick(agentId);
+    } else {
+      router.push(`/agent/${agentId}`);
+    }
+  };
   
   // Sort by total reviews descending and filter out agents with no reviews
   const sortedData = useMemo(() => {
@@ -53,7 +62,7 @@ export default function UnifiedAgentRankings({ data, limit = 10 }: UnifiedAgentR
             rank={1}
             medal="gold"
             featured={true}
-            onClick={() => router.push(`/agent/${topAgent.agent_id}`)}
+            onClick={() => handleAgentClick(topAgent.agent_id)}
           />
         </div>
         
@@ -72,7 +81,7 @@ export default function UnifiedAgentRankings({ data, limit = 10 }: UnifiedAgentR
                 rank={rank}
                 medal={medal}
                 runnerUp={true}
-                onClick={() => router.push(`/agent/${agent.agent_id}`)}
+                onClick={() => handleAgentClick(agent.agent_id)}
               />
             </div>
           );
@@ -104,7 +113,7 @@ export default function UnifiedAgentRankings({ data, limit = 10 }: UnifiedAgentR
                     agent={agent}
                     rank={rank}
                     compact={true}
-                    onClick={() => router.push(`/agent/${agent.agent_id}`)}
+                    onClick={() => handleAgentClick(agent.agent_id)}
                   />
                 </div>
               );
