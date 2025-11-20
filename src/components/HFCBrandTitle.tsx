@@ -13,10 +13,10 @@ export default function HFCBrandTitle({
 }: HFCBrandTitleProps) {
   
   const sizeClasses = {
-    sm: 'text-xl md:text-2xl',
-    md: 'text-2xl md:text-3xl',
-    lg: 'text-2xl md:text-3xl lg:text-4xl',
-    xl: 'text-3xl md:text-4xl lg:text-5xl'
+    sm: 'text-lg sm:text-xl md:text-2xl',
+    md: 'text-xl sm:text-2xl md:text-3xl',
+    lg: 'text-xl sm:text-2xl md:text-3xl lg:text-4xl',
+    xl: 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl'
   };
 
   return (
@@ -49,7 +49,7 @@ export default function HFCBrandTitle({
         </span>
       </h1>
       {showSubtitle && (
-        <p className="text-white/90 text-sm md:text-base font-light mt-1">
+        <p className="text-white/90 text-xs sm:text-sm md:text-base font-light mt-1">
           Reviews Dashboard
         </p>
       )}

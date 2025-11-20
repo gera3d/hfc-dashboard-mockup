@@ -18,6 +18,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "HFC Reviews Dashboard",
   description: "Dashboard for monitoring HFC customer reviews and agent performance",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes",
 };
 
 export default function RootLayout({

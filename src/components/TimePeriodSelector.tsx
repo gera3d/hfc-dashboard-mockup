@@ -209,8 +209,8 @@ export default function TimePeriodSelector({
           </button>
         </div>
 
-        {/* Period Selection - 6 options in one row */}
-        <div className="grid grid-cols-6 gap-1">
+        {/* Period Selection - responsive grid */}
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-1">
           {periods.map((period) => {
             const isSelected = period.key === 'custom' 
               ? isCustomRange 
@@ -227,7 +227,7 @@ export default function TimePeriodSelector({
                   }
                 }}
                 data-period-selector="true"
-                className={`relative group flex flex-col items-center justify-center p-1.5 rounded transition-all duration-200 focus:outline-none focus:ring-2 ${
+                className={`relative group flex flex-col items-center justify-center p-2 sm:p-1.5 rounded transition-all duration-200 focus:outline-none focus:ring-2 ${
                   isSelected
                     ? isHFC
                       ? 'bg-[#1e5a8e] text-white shadow-lg shadow-[#1e5a8e]/30 focus:ring-[#f5b942]/50'
@@ -238,20 +238,20 @@ export default function TimePeriodSelector({
                 }`}
               >
                 
-                <span className="text-base mb-0.5 relative z-10">
+                <span className="text-lg sm:text-base mb-0.5 relative z-10">
                   {period.icon}
                 </span>
-                <span className="text-[9px] font-semibold relative z-10">
+                <span className="text-[10px] sm:text-[9px] font-semibold relative z-10">
                   {period.label}
                 </span>
                 
                 {isSelected && (
-                  <div className="absolute top-0.5 right-0.5">
-                    <div className={`w-2.5 h-2.5 rounded-full flex items-center justify-center ${
+                  <div className="absolute top-1 right-1 sm:top-0.5 sm:right-0.5">
+                    <div className={`w-3 h-3 sm:w-2.5 sm:h-2.5 rounded-full flex items-center justify-center ${
                       isHFC ? 'bg-[#f5b942]' : 'bg-white/30'
                     }`}>
                       <svg 
-                        className={`w-1.5 h-1.5 ${isHFC ? 'text-[#1e5a8e]' : 'text-white'}`}
+                        className={`w-2 h-2 sm:w-1.5 sm:h-1.5 ${isHFC ? 'text-[#1e5a8e]' : 'text-white'}`}
                         fill="currentColor" 
                         viewBox="0 0 20 20"
                       >
@@ -321,11 +321,11 @@ export default function TimePeriodSelector({
         
         {/* Modal with scale and fade animation */}
         <div 
-          className="fixed inset-0 flex items-center justify-center pointer-events-none"
+          className="fixed inset-0 flex items-center justify-center pointer-events-none px-4"
           style={{ zIndex: 1000000 }}
         >
           <div 
-            className={`relative rounded-xl shadow-2xl max-w-2xl w-full mx-4 pointer-events-auto animate-in zoom-in-95 fade-in duration-200 ${
+            className={`relative rounded-xl shadow-2xl max-w-2xl w-full pointer-events-auto animate-in zoom-in-95 fade-in duration-200 ${
               isHFC
                 ? 'bg-gradient-to-br from-[#1a4d7a] to-[#15426a] border-2 border-white/10'
                 : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
@@ -338,25 +338,25 @@ export default function TimePeriodSelector({
                 : 'bg-gradient-to-r from-blue-500 to-purple-500'
             }`} />
             
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               {/* Header */}
-              <div className="flex items-start justify-between mb-6">
+              <div className="flex items-start justify-between mb-4 sm:mb-6">
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  <div className="flex items-center gap-2 mb-1 sm:mb-2">
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center ${
                       isHFC
                         ? 'bg-gradient-to-br from-[#1e5a8e] to-[#164771]'
                         : 'bg-gradient-to-br from-blue-500 to-blue-600'
                     }`}>
-                      <span className="text-xl">📅</span>
+                      <span className="text-lg sm:text-xl">📅</span>
                     </div>
-                    <h3 className={`text-xl font-bold ${
+                    <h3 className={`text-lg sm:text-xl font-bold ${
                       isHFC ? 'text-white' : 'text-gray-900 dark:text-white'
                     }`}>
                       Custom Date Range
                     </h3>
                   </div>
-                  <p className={`text-sm ${
+                  <p className={`text-xs sm:text-sm ${
                     isHFC ? 'text-white/70' : 'text-gray-600 dark:text-gray-400'
                   }`}>
                     Select your start and end dates
@@ -365,7 +365,7 @@ export default function TimePeriodSelector({
                 <button
                   type="button"
                   onClick={() => setShowCustomPicker(false)}
-                  className={`p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95 ${
+                  className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 hover:scale-110 active:scale-95 ${
                     isHFC
                       ? 'hover:bg-white/10 text-white/70 hover:text-white'
                       : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
@@ -378,13 +378,13 @@ export default function TimePeriodSelector({
               </div>
 
               {/* Quick Presets */}
-              <div className="mb-6">
-                <label className={`block text-sm font-semibold mb-3 ${
+              <div className="mb-4 sm:mb-6">
+                <label className={`block text-xs sm:text-sm font-semibold mb-2 sm:mb-3 ${
                   isHFC ? 'text-white' : 'text-gray-700 dark:text-gray-300'
                 }`}>
                   Quick Presets
                 </label>
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                   {Object.entries(getQuickPresets()).map(([key, preset]) => {
                     const icons: Record<string, string> = {
                       thisYear: '📈',

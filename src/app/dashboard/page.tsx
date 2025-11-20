@@ -521,22 +521,22 @@ export default function DashboardPage() {
       onCompareModeChange={(enabled) => setFilters(prev => ({ ...prev, compareMode: enabled }))}
       dateRanges={dateRanges}
     >
-      <div className="relative w-full min-h-screen">
+      <div className={`relative w-full min-h-screen transition-opacity duration-500 ${isReady ? 'opacity-100' : 'opacity-0'}`}>
         {/* Dashboard Container - slides left when agent selected */}
         <div 
           className={`w-full transition-transform duration-500 ease-in-out ${
             selectedAgentId ? '-translate-x-full' : 'translate-x-0'
           }`}
         >
-          <div className="max-w-7xl mx-auto space-y-8 min-h-screen pb-12 px-6">
+          <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 min-h-screen pb-12 px-4 sm:px-6">
         
         {/* HFC Dashboard Title - Only shown in HFC theme */}
         {theme === 'hfc' && (
           <div className="text-center pt-1 pb-1">
-            <h1 className="hfc-title-horizontal text-2xl md:text-3xl lg:text-4xl text-white tracking-tight">
+            <h1 className="hfc-title-horizontal text-xl sm:text-2xl md:text-3xl lg:text-4xl text-white tracking-tight">
               <span className="font-extrabold">HEALTH</span> <span className="hfc-for-word">for</span> <span className="font-extrabold">CALIFORNIA</span>
             </h1>
-            <p className="text-sm md:text-base text-white/90 mt-0.5 font-light">
+            <p className="text-xs sm:text-sm md:text-base text-white/90 mt-0.5 font-light">
               Reviews Dashboard
             </p>
           </div>

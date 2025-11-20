@@ -28,7 +28,7 @@ export default function DashboardLayout({
   return (
     <>
       <TopNav />
-      <main className={`${theme === 'hfc' ? 'pt-20 min-h-screen bg-transparent' : 'pt-16 bg-[#F6F9FC] dark:bg-gray-900'}`}>
+      <main className={`${theme === 'hfc' ? 'pt-16 sm:pt-20 min-h-screen bg-transparent' : 'pt-14 sm:pt-16 bg-[#F6F9FC] dark:bg-gray-900'}`}>
         {children}
       </main>
       <HFCFooter />
