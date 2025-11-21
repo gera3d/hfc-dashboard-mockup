@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   
   // Performance optimizations
-  reactStrictMode: true,
+  reactStrictMode: false,
   
   // Optimize production builds
   compiler: {

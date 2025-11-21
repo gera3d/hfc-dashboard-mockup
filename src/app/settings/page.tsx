@@ -9,6 +9,7 @@ import {
   refreshDepartments,
   updateAgentDepartment 
 } from '@/data/dataService';
+import { clearIndexedDB, fetchCachedData } from '@/data/googleSheetsService';
 import { 
   getChangeCount, 
   clearAllOverrides, 
@@ -151,6 +152,12 @@ export default function SettingsPage() {
   const handleSyncComplete = useCallback(async (success: boolean) => {
     if (success) {
       setLastSyncTime(new Date());
+      
+      // Clear IndexedDB to allow client cache to refresh
+      await clearIndexedDB();
+      
+      // Fetch latest data from cache (which will reload from server)
+      await fetchCachedData();
       
       // Reload data after successful sync
       const [agentsData, departmentsData] = await Promise.all([

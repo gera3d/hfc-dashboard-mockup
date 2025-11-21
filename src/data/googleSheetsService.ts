@@ -9,6 +9,82 @@ interface ParsedData {
   departments: Department[];
 }
 
+// IndexedDB helper functions
+const DB_NAME = 'GoogleSheetsCache';
+const DB_VERSION = 1;
+const STORE_NAME = 'parsedData';
+const CACHE_KEY = 'google_sheets_data';
+
+function openDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined' || !window.indexedDB) {
+      reject(new Error('IndexedDB not available'));
+      return;
+    }
+
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+
+    request.onupgradeneeded = (event) => {
+      const db = (event.target as IDBOpenDBRequest).result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+  });
+}
+
+async function getFromIndexedDB(key: string): Promise<{ data: ParsedData; timestamp: number } | null> {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readonly');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.get(key);
+
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.warn('[IndexedDB] Failed to read:', error);
+    return null;
+  }
+}
+
+async function saveToIndexedDB(key: string, data: ParsedData, timestamp: number): Promise<void> {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.put({ data, timestamp }, key);
+
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.warn('[IndexedDB] Failed to write:', error);
+  }
+}
+
+export async function clearIndexedDB(): Promise<void> {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.clear();
+
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.warn('[IndexedDB] Failed to clear:', error);
+  }
+}
+
 // Helper function to parse CSV text
 function parseCSV(csvText: string): ParsedData {
   const lines = csvText.trim().split('\n');
@@ -195,7 +271,26 @@ function parseCSV(csvText: string): ParsedData {
 
 // Fetch data from local cached file (fast)
 export async function fetchCachedData(): Promise<ParsedData | null> {
+  const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+  
   try {
+    // Check IndexedDB first (only in browser)
+    if (typeof window !== 'undefined') {
+      const cached = await getFromIndexedDB(CACHE_KEY);
+      
+      if (cached) {
+        const now = Date.now();
+        
+        if (now - cached.timestamp < CACHE_DURATION_MS) {
+          console.log('[Google Sheets] 💾 Using IndexedDB cache');
+          console.log('[Google Sheets] ✅ Loaded', cached.data.reviews.length, 'reviews from cache');
+          return cached.data;
+        } else {
+          console.log('[Google Sheets] ⏰ IndexedDB cache expired');
+        }
+      }
+    }
+    
     console.log('[Google Sheets] 📥 Loading from API...');
     
     // Fetch cached data from API route
@@ -223,6 +318,15 @@ export async function fetchCachedData(): Promise<ParsedData | null> {
     const parsedData = parseCSV(cachedSheetsData.csv);
     console.log('[Google Sheets] ✅ Loaded', parsedData.reviews.length, 'reviews,', parsedData.agents.length, 'agents');
     
+    // Store in IndexedDB (only in browser)
+    if (typeof window !== 'undefined') {
+      const dataStr = JSON.stringify(parsedData);
+      const dataSizeKB = Math.round(dataStr.length / 1024);
+      
+      await saveToIndexedDB(CACHE_KEY, parsedData, Date.now());
+      console.log(`[Google Sheets] 💾 Saved to IndexedDB cache (${dataSizeKB}KB)`);
+    }
+    
     return parsedData;
   } catch (error) {
     console.error('[Google Sheets] ❌ Error loading cached data:', error);
@@ -233,6 +337,12 @@ export async function fetchCachedData(): Promise<ParsedData | null> {
 // Sync fresh data from Google Sheets (slow, saves to local cache)
 export async function syncFromGoogleSheets(): Promise<{ success: boolean; message: string; lastUpdated?: string }> {
   try {
+    // Clear IndexedDB cache before syncing (only in browser)
+    if (typeof window !== 'undefined') {
+      await clearIndexedDB();
+      console.log('[Google Sheets] 🗑️ Cleared IndexedDB cache');
+    }
+    
     console.log('[Google Sheets] Syncing from Google Sheets...');
     
     const response = await fetch('/api/sync-sheets', {
@@ -309,9 +419,15 @@ export async function getCachedGoogleSheetsData(): Promise<ParsedData | null> {
 
 // Refresh function to clear cache and fetch fresh data
 export async function refreshGoogleSheetsData(): Promise<ParsedData | null> {
-  // Force fresh fetch by clearing cache
+  // Force fresh fetch by clearing all caches
   cachedData = null;
   cacheExpiry = 0;
+  
+  // Clear IndexedDB cache (only in browser)
+  if (typeof window !== 'undefined') {
+    await clearIndexedDB();
+    console.log('[Google Sheets] 🗑️ Cleared all caches');
+  }
   
   return await getCachedGoogleSheetsData();
 }
