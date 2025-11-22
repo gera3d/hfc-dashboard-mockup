@@ -172,7 +172,7 @@ async function downloadSheetData(syncId: string): Promise<string> {
     const sheets = google.sheets({ 
       version: 'v4', 
       auth,
-      timeout: 90000, // 90 second timeout to handle rate limiting
+      timeout: 270000, // 270 second (4.5 minute) timeout to handle large datasets
     });
     
     await setSyncStatus(syncId, {
@@ -331,9 +331,9 @@ async function backgroundSync(syncId: string): Promise<void> {
 
     console.log('[Sync] Background sync started for', syncId);
 
-    // Add timeout wrapper (2 minutes max)
+    // Add timeout wrapper (5 minutes max for large datasets)
     const timeoutPromise = new Promise<never>((_, reject) => 
-      setTimeout(() => reject(new Error('Sync timeout after 120 seconds')), 120000)
+      setTimeout(() => reject(new Error('Sync timeout after 300 seconds')), 300000)
     );
 
     const csvText = await Promise.race([

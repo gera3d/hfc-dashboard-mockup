@@ -87,16 +87,16 @@ export default function AgentDetail({ params }: AgentDetailProps) {
         console.log('✅ Unhide result:', success)
         if (success) {
           setIsHidden(false)
-          alert('Agent is now visible on the dashboard')
+          console.log('Agent is now visible on the dashboard')
         } else {
-          alert('Failed to unhide agent. Check console for errors.')
+          console.error('Failed to unhide agent. Check console for errors.')
         }
       } else {
         const success = await hideAgent(agent.id)
         console.log('✅ Hide result:', success)
         if (success) {
           setIsHidden(true)
-          alert('Agent is now hidden from the dashboard')
+          console.log('Agent is now hidden from the dashboard')
         } else {
           alert('Failed to hide agent. Check console for errors.')
         }

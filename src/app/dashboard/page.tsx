@@ -187,13 +187,13 @@ export default function DashboardPage() {
             console.log('🔄 Starting migration...');
             const result = await migrateDepartmentDataToSupabase();
             if (result.success) {
-              alert(`✅ Migration successful!\n\n` +
+              console.log(`✅ Migration successful!\n\n` +
                 `• ${result.customDepartmentsMigrated} custom departments migrated\n` +
                 `• ${result.agentAssignmentsMigrated} agent assignments migrated`);
               // Reload data to show migrated data
               window.location.reload();
             } else {
-              alert(`⚠️ Migration completed with errors:\n\n${result.errors.join('\n')}`);
+              console.warn(`⚠️ Migration completed with errors:\n\n${result.errors.join('\n')}`);
             }
           }
         }
@@ -297,7 +297,7 @@ export default function DashboardPage() {
       }
     } catch (error) {
       console.error('Error updating agent department:', error);
-      alert('❌ Failed to update agent department');
+      console.error('❌ Failed to update agent department');
     }
   };
 
@@ -326,7 +326,7 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('❌ Error creating department:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      alert(`Failed to create department: ${errorMessage}\n\nPlease check:\n1. Supabase tables exist (run supabase-departments-setup.sql)\n2. Browser console for detailed error`);
+      console.error(`Failed to create department: ${errorMessage}\n\nPlease check:\n1. Supabase tables exist (run supabase-departments-setup.sql)\n2. Browser console for detailed error`);
       throw error;
     }
   };
@@ -347,7 +347,7 @@ export default function DashboardPage() {
       console.log(`✅ Agent ${agentId} hidden successfully`);
     } catch (error) {
       console.error('❌ Error hiding agent:', error);
-      alert('Failed to hide agent. Please try again.');
+      console.error('Failed to hide agent. Please try again.');
     }
   };
 

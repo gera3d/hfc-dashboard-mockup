@@ -63,7 +63,8 @@ export async function testSupabaseConnection() {
   }
 }
 
-// Auto-run test in development
-if (typeof window !== 'undefined') {
-  testSupabaseConnection()
-}
+// Auto-run test in development - DISABLED for production
+// Uncomment the lines below to test Supabase connection manually:
+// if (typeof window !== 'undefined') {
+//   testSupabaseConnection()
+// }

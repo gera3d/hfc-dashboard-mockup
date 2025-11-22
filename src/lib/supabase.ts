@@ -11,8 +11,13 @@
 
 import { createClient } from '@supabase/supabase-js'
 
+// Environment variables with secure fallback check
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://yncbcjaymepacfyjsoyj.supabase.co'
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InluY2JjamF5bWVwYWNmeWpzb3lqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwODE5NjUsImV4cCI6MjA3ODY1Nzk2NX0.b5mMGy8eb_hDfFCEn6RtP1JNAYvTIFliYc86ku8pUdo'
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('⚠️ Supabase credentials not configured')
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {

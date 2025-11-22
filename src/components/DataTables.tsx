@@ -58,7 +58,7 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
       setNewDeptName('')
     } catch (error) {
       console.error('Error creating department:', error)
-      alert('Failed to create department')
+      console.error('Failed to create department')
     } finally {
       setIsCreating(false)
     }

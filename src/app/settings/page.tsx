@@ -188,10 +188,10 @@ export default function SettingsPage() {
       setAgents(agentsWithOverrides);
       setDepartments(departmentsWithCustom);
       
-      alert('✅ Data refreshed from local cache');
+      console.log('✅ Data refreshed from local cache');
     } catch (error) {
       console.error('Error refreshing data:', error);
-      alert('❌ Failed to refresh data');
+      console.error('❌ Failed to refresh data');
     } finally {
       setLoading(false);
     }
@@ -205,7 +205,7 @@ export default function SettingsPage() {
     if (confirm(message)) {
       clearAllOverrides();
       await handleRefresh();
-      alert('✅ Local changes cleared. Data reloaded from source.');
+      console.log('✅ Local changes cleared. Data reloaded from source.');
     }
   };
 
@@ -232,7 +232,7 @@ export default function SettingsPage() {
       }
     } catch (error) {
       console.error('Error updating agent department:', error);
-      alert('❌ Failed to update agent department');
+      console.error('❌ Failed to update agent department');
     }
   };
 
@@ -263,9 +263,9 @@ export default function SettingsPage() {
       const hidden = await getHiddenAgents();
       console.log('✅ Agent unhidden, new hidden list:', hidden)
       setHiddenAgents(hidden);
-      alert('Agent is now visible on the dashboard')
+      console.log('Agent is now visible on the dashboard')
     } else {
-      alert('Failed to unhide agent. Check console for errors.')
+      console.error('Failed to unhide agent. Check console for errors.')
     }
   };
 
@@ -320,7 +320,7 @@ export default function SettingsPage() {
                     Reset to Original
                   </button>
                   <button
-                    onClick={() => alert('Push to Google Sheets feature coming soon!')}
+                    onClick={() => console.log('Push to Google Sheets feature coming soon!')}
                     className="px-4 py-2 text-sm bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-medium"
                   >
                     Push to Google Sheets
