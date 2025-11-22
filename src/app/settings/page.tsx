@@ -25,6 +25,7 @@ import {
 } from '@/lib/supabaseService';
 import { AgentDepartmentManager } from '@/components/AgentDepartmentManager';
 import PerformanceTierGuide from '@/components/dashboard/PerformanceTierGuide';
+import TrainingManual from '@/components/TrainingManual';
 import type { Agent, Department } from '@/data/dataService';
 import { 
   loadDisplayPreferences, 
@@ -330,6 +331,11 @@ export default function SettingsPage() {
             </div>
           </div>
         )}
+
+        {/* Training Manual Section */}
+        <div className="mb-6">
+          <TrainingManual />
+        </div>
 
         {/* Data Sync Section */}
         <div className="bg-white rounded-xl border-2 border-gray-200 shadow-sm mb-6">

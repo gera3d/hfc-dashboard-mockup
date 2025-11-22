@@ -9,13 +9,15 @@ interface DepartmentPerformanceRankingsProps {
   departments: Department[];
   agents: Agent[];
   limit?: number;
+  onAgentClick?: (agentId: string) => void;
 }
 
 export default function DepartmentPerformanceRankings({ 
   reviews, 
   departments,
   agents,
-  limit = 10 
+  limit = 10,
+  onAgentClick
 }: DepartmentPerformanceRankingsProps) {
   
   // Track which agent is expanded
@@ -234,6 +236,7 @@ export default function DepartmentPerformanceRankings({
                             agent={agent} 
                             medal={medal}
                             rank={idx + 1}
+                            onAgentClick={onAgentClick}
                           />
                         );
                       })}
@@ -324,7 +327,8 @@ export default function DepartmentPerformanceRankings({
                             medal={medal}
                             reviews={reviews}
                             expandedAgent={expandedAgent} 
-                            setExpandedAgent={setExpandedAgent} 
+                            setExpandedAgent={setExpandedAgent}
+                            onAgentClick={onAgentClick}
                             compact 
                           />
                         );
@@ -342,7 +346,7 @@ export default function DepartmentPerformanceRankings({
 }
 
 // Mobile Agent Card Component
-function MobileAgentCard({ agent, medal, rank }: any) {
+function MobileAgentCard({ agent, medal, rank, onAgentClick }: any) {
   const router = useRouter();
   
   const medals = {
@@ -352,10 +356,18 @@ function MobileAgentCard({ agent, medal, rank }: any) {
   };
 
   const m = medal ? medals[medal as keyof typeof medals] : null;
+  
+  const handleClick = () => {
+    if (onAgentClick) {
+      onAgentClick(agent.id);
+    } else {
+      router.push(`/agent/${agent.id}`);
+    }
+  };
 
   return (
     <button
-      onClick={() => router.push(`/agent/${agent.id}`)}
+      onClick={handleClick}
       className={`w-full rounded-lg border-2 ${m?.border || 'border-gray-300'} bg-white hover:shadow-lg hover:scale-[1.02] transition-all duration-300 overflow-hidden text-left`}
     >
       {m && (
@@ -405,7 +417,7 @@ function MobileAgentCard({ agent, medal, rank }: any) {
 }
 
 // Agent Card Component
-function AgentCard({ agent, deptName, medal, compact, simple, reviews, expandedAgent, setExpandedAgent }: any) {
+function AgentCard({ agent, deptName, medal, compact, simple, reviews, expandedAgent, setExpandedAgent, onAgentClick }: any) {
   const router = useRouter();
   const agentKey = `${deptName}-${agent.id}`;
   const isExpanded = expandedAgent === agentKey;
@@ -417,6 +429,14 @@ function AgentCard({ agent, deptName, medal, compact, simple, reviews, expandedA
   };
 
   const m = medal ? medals[medal as keyof typeof medals] : null;
+  
+  const handleClick = () => {
+    if (onAgentClick) {
+      onAgentClick(agent.id);
+    } else {
+      router.push(`/agent/${agent.id}`);
+    }
+  };
 
   if (simple) {
     return (
@@ -461,7 +481,7 @@ function AgentCard({ agent, deptName, medal, compact, simple, reviews, expandedA
     
     return (
       <button
-        onClick={() => router.push(`/agent/${agent.id}`)}
+        onClick={handleClick}
         className={`w-full rounded-xl border-2 ${m?.border || 'border-gray-300'} bg-white hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 relative overflow-hidden cursor-pointer text-left hover:border-[#0066cc]`}
       >
         {/* Medal Accent Strip - thicker and properly visible */}

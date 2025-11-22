@@ -741,7 +741,8 @@ export default function DashboardPage() {
             reviews={visibleReviews} 
             departments={departments} 
             agents={visibleAgents} 
-            limit={10} 
+            limit={10}
+            onAgentClick={handleAgentClick}
           />
         </CollapsibleSection>
         </div>
