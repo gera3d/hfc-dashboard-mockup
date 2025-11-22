@@ -100,8 +100,6 @@ export default function TimePeriodSelector({
         // Allow selecting dates back to 2019
         minDate: new Date(2019, 0, 1),
         maxDate: new Date(),
-        // Show year dropdown
-        yearSelectorType: 'static',
         onChange: (selectedDates) => {
           if (selectedDates.length === 2) {
             const customRange: DateRange = {

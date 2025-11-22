@@ -521,7 +521,6 @@ export default function Dashboard() {
           <CollapsibleSection
             title="Agent Performance Rankings"
             subtitle="Top performing agents by satisfaction score"
-            defaultExpanded={true}
             badge="Top 10"
             icon={<Trophy className="w-5 h-5" />}
             previewContent={
@@ -564,7 +563,6 @@ export default function Dashboard() {
             <CollapsibleSection
               title="Customer Satisfaction Trend"
               subtitle="Daily satisfaction scores and average ratings over time"
-              defaultExpanded={false}
               badge={`${satisfactionTrendData.length} days`}
               icon={<TrendingUp className="w-5 h-5" />}
               previewContent={
@@ -594,7 +592,6 @@ export default function Dashboard() {
               <CollapsibleSection
                 title="Department Comparison"
                 subtitle="Performance metrics across departments"
-                defaultExpanded={false}
                 badge={`${departments.length} depts`}
                 icon={<BarChart3 className="w-5 h-5" />}
                 previewContent={
@@ -614,7 +611,6 @@ export default function Dashboard() {
               <CollapsibleSection
                 title="Problem Spotlight"
                 subtitle="Identify and track low-satisfaction issues"
-                defaultExpanded={false}
                 badge="Critical"
                 icon={<AlertCircle className="w-5 h-5" />}
                 previewContent={
@@ -644,7 +640,6 @@ export default function Dashboard() {
             <CollapsibleSection
               title="Agent Performance Report"
               subtitle="Complete agent metrics with department management"
-              defaultExpanded={false}
               badge={`${agentMetrics.length} agents`}
               icon={<Users className="w-5 h-5" />}
               previewContent={
@@ -679,7 +674,6 @@ export default function Dashboard() {
             <CollapsibleSection
               title="All Reviews"
               subtitle="Complete review data with agent and department information"
-              defaultExpanded={false}
               badge={`${filteredData.length} reviews`}
               icon={<FileText className="w-5 h-5" />}
               previewContent={
@@ -708,7 +702,6 @@ export default function Dashboard() {
             <CollapsibleSection
               title="Customer Feedback"
               subtitle="Detailed customer comments and sentiment analysis"
-              defaultExpanded={false}
               badge="With Comments"
               icon={<MessageSquare className="w-5 h-5" />}
               previewContent={

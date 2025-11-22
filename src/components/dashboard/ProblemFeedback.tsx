@@ -154,7 +154,7 @@ export default function ProblemFeedback({ reviews, onDismiss }: ProblemFeedbackP
             {/* Source Badge */}
             {review.source && (
               <div className="mt-2">
-                <Badge color="secondary" className="text-xs">
+                <Badge color="info" size="sm">
                   {review.source}
                 </Badge>
               </div>

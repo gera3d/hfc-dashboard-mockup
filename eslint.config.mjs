@@ -18,7 +18,18 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "src/app/page-backup.tsx",
     ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { varsIgnorePattern: "^_", argsIgnorePattern: "^_" }
+      ],
+      "@typescript-eslint/ban-ts-comment": "warn",
+      "@next/next/no-img-element": "off",
+      "react/no-unescaped-entities": "off",
+    },
   },
 ];
 

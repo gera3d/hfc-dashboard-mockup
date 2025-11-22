@@ -22,8 +22,8 @@ export default function AnimatedNumber({
   const [displayValue, setDisplayValue] = useState(value);
   const [isAnimating, setIsAnimating] = useState(false);
   const previousValue = useRef(value);
-  const animationFrameRef = useRef<number | undefined>();
-  const startTimeRef = useRef<number | undefined>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
+  const startTimeRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     // If value hasn't changed, don't animate

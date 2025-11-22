@@ -12,7 +12,6 @@ import {
   RefreshCw,
   Settings,
   Eye,
-  Filter,
   Calendar,
   Building2
 } from 'lucide-react';
@@ -131,10 +130,10 @@ export default function TrainingManual() {
             <h4 className="font-semibold text-blue-900 mb-3">Available Time Periods:</h4>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="bg-white rounded p-2">
-                <span className="font-semibold">📅 7 Days</span> - Last week's activity
+                <span className="font-semibold">📅 7 Days</span> - Last week&apos;s activity
               </div>
               <div className="bg-white rounded p-2">
-                <span className="font-semibold">📆 30 Days</span> - Last month's trends
+                <span className="font-semibold">📆 30 Days</span> - Last month&apos;s trends
               </div>
               <div className="bg-white rounded p-2">
                 <span className="font-semibold">🗓️ 90 Days</span> - Quarterly performance
@@ -207,7 +206,7 @@ export default function TrainingManual() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="font-semibold text-blue-900 mb-2">Navigation Tip:</h4>
             <p className="text-sm text-blue-800">
-              Click the <strong>"Back to Dashboard"</strong> button at the top of the agent detail page to return to the main dashboard. Your filters and section states will be preserved.
+              Click the <strong>&quot;Back to Dashboard&quot;</strong> button at the top of the agent detail page to return to the main dashboard. Your filters and section states will be preserved.
             </p>
           </div>
         </div>
@@ -313,14 +312,14 @@ export default function TrainingManual() {
               <div>
                 <h5 className="font-semibold text-blue-900 mb-1">⚡ Quick Refresh</h5>
                 <p className="text-sm text-blue-800">
-                  Click "Refresh Data" in Settings to reload from your browser's cache (instant, no download required).
+                  Click &quot;Refresh Data&quot; in Settings to reload from your browser&apos;s cache (instant, no download required).
                 </p>
               </div>
               
               <div>
                 <h5 className="font-semibold text-blue-900 mb-1">📥 Full Sync</h5>
                 <p className="text-sm text-blue-800">
-                  Click "Sync from Google Sheets" in Settings to download the latest data from your spreadsheet (takes 2-5 minutes).
+                  Click &quot;Sync from Google Sheets&quot; in Settings to download the latest data from your spreadsheet (takes 2-5 minutes).
                 </p>
               </div>
             </div>
@@ -338,7 +337,7 @@ export default function TrainingManual() {
             <ul className="text-sm text-amber-800 space-y-1">
               <li>• Before important presentations or meetings</li>
               <li>• When you know new reviews have been added</li>
-              <li>• If data seems outdated (check "Last Updated" time)</li>
+              <li>• If data seems outdated (check &quot;Last Updated&quot; time)</li>
               <li>• At the start of each day for the latest metrics</li>
             </ul>
           </div>
@@ -366,7 +365,7 @@ export default function TrainingManual() {
               
               <div className="flex items-start gap-2">
                 <div className="flex-shrink-0 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">2</div>
-                <p className="text-sm text-gray-700">Click the "Hide Agent" button in the header (eye icon)</p>
+                <p className="text-sm text-gray-700">Click the &quot;Hide Agent&quot; button in the header (eye icon)</p>
               </div>
               
               <div className="flex items-start gap-2">
@@ -384,8 +383,8 @@ export default function TrainingManual() {
               </p>
               <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
                 <li>Go to Settings page</li>
-                <li>Scroll to the "Hidden Agents" section</li>
-                <li>Click "Unhide" next to the agent's name</li>
+                <li>Scroll to the &quot;Hidden Agents&quot; section</li>
+                <li>Click &quot;Unhide&quot; next to the agent&apos;s name</li>
                 <li>The agent will immediately reappear in the dashboard</li>
               </ol>
             </div>
@@ -394,7 +393,7 @@ export default function TrainingManual() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="font-semibold text-blue-900 mb-2">📊 Important Note:</h4>
             <p className="text-sm text-blue-800">
-              Hidden agents' data is still included in department totals and overall metrics. Hiding only affects their visibility in agent rankings and lists.
+              Hidden agents&apos; data is still included in department totals and overall metrics. Hiding only affects their visibility in agent rankings and lists.
             </p>
           </div>
         </div>
@@ -444,7 +443,7 @@ export default function TrainingManual() {
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <h4 className="font-semibold text-green-900 mb-2">💾 Local Changes:</h4>
             <p className="text-sm text-green-800">
-              Agent department assignments and custom departments are saved locally in your browser. These changes won't affect other users until pushed to Google Sheets.
+              Agent department assignments and custom departments are saved locally in your browser. These changes won&apos;t affect other users until pushed to Google Sheets.
             </p>
           </div>
         </div>
@@ -477,14 +476,14 @@ export default function TrainingManual() {
               <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-3">
                 <h5 className="font-semibold text-purple-900 mb-1">Monthly Analysis</h5>
                 <p className="text-sm text-purple-800">
-                  At month-end, use the "This Month" and "Last Month" filters to track trends. Look for improvements and areas needing attention.
+                  At month-end, use the &quot;This Month&quot; and &quot;Last Month&quot; filters to track trends. Look for improvements and areas needing attention.
                 </p>
               </div>
               
               <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-3">
                 <h5 className="font-semibold text-amber-900 mb-1">Coaching Opportunities</h5>
                 <p className="text-sm text-amber-800">
-                  Click into low-performing agents' detail pages to read their specific feedback. Use this for targeted coaching sessions.
+                  Click into low-performing agents&apos; detail pages to read their specific feedback. Use this for targeted coaching sessions.
                 </p>
               </div>
               
@@ -501,7 +500,7 @@ export default function TrainingManual() {
             <h4 className="font-semibold text-yellow-900 mb-2">⚡ Quick Actions:</h4>
             <ul className="text-sm text-yellow-800 space-y-1">
               <li>• Press <kbd className="px-2 py-0.5 bg-white border border-yellow-300 rounded text-xs">ESC</kbd> on agent detail pages to return to dashboard</li>
-              <li>• Collapse sections you don't use frequently to reduce scrolling</li>
+              <li>• Collapse sections you don&apos;t use frequently to reduce scrolling</li>
               <li>• Use the Compare toggle to quickly see if metrics are improving</li>
               <li>• Filter by specific time periods during team meetings for focused discussions</li>
             </ul>
