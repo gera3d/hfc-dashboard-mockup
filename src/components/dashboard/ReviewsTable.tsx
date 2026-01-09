@@ -18,11 +18,11 @@ interface ReviewsTableProps {
   maxRows?: number;
 }
 
-export const ReviewsTable: React.FC<ReviewsTableProps> = ({ 
-  reviews, 
-  agents, 
+export const ReviewsTable: React.FC<ReviewsTableProps> = ({
+  reviews,
+  agents,
   departments,
-  maxRows = 10 
+  maxRows = 10
 }) => {
   const getAgentName = (agentId: string) => {
     const agent = agents.find(a => a.id === agentId);
@@ -42,9 +42,9 @@ export const ReviewsTable: React.FC<ReviewsTableProps> = ({
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -119,14 +119,6 @@ export const ReviewsTable: React.FC<ReviewsTableProps> = ({
           </TableBody>
         </Table>
       </div>
-
-      {reviews.length > maxRows && (
-        <div className="flex justify-center pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-          <button className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
-            View All {reviews.length} Reviews
-          </button>
-        </div>
-      )}
     </div>
   );
 };

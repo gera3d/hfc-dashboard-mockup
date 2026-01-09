@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Review } from "@/data/dataService";
-import { X, AlertTriangle, Star, User, Calendar, MessageSquare } from "lucide-react";
+import { X, AlertTriangle, Star, User, Calendar, MessageSquare, ExternalLink, RotateCcw, Eye, EyeOff } from "lucide-react";
 import Badge from "@/components/tailadmin/ui/badge/Badge";
 
 interface ProblemFeedbackProps {
@@ -12,14 +12,25 @@ interface ProblemFeedbackProps {
 
 export default function ProblemFeedback({ reviews, onDismiss }: ProblemFeedbackProps) {
   const [dismissedReviews, setDismissedReviews] = useState<Set<string>>(new Set());
+  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
+  const [showDismissed, setShowDismissed] = useState(false);
 
-  // Filter for 1★, 2★, 3★ reviews with comments, excluding dismissed
-  const problemReviews = reviews.filter(
-    (review) => 
-      review.rating <= 3 && 
-      review.comment && 
-      review.comment.trim().length > 0 &&
-      !dismissedReviews.has(review.id)
+  // All problem reviews (1★, 2★, 3★ with comments)
+  const allProblemReviews = reviews.filter(
+    (review) =>
+      review.rating <= 3 &&
+      review.comment &&
+      review.comment.trim().length > 0
+  );
+
+  // Active (non-dismissed) reviews
+  const problemReviews = allProblemReviews.filter(
+    (review) => !dismissedReviews.has(review.id)
+  );
+
+  // Dismissed reviews
+  const clearedReviews = allProblemReviews.filter(
+    (review) => dismissedReviews.has(review.id)
   );
 
   const handleDismiss = (reviewId: string) => {
@@ -27,6 +38,19 @@ export default function ProblemFeedback({ reviews, onDismiss }: ProblemFeedbackP
     if (onDismiss) {
       onDismiss(reviewId);
     }
+  };
+
+  const handleRestore = (reviewId: string) => {
+    setDismissedReviews((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(reviewId);
+      return newSet;
+    });
+  };
+
+  const handleRestoreAll = () => {
+    setDismissedReviews(new Set());
+    setShowDismissed(false);
   };
 
   const getRatingColor = (rating: number) => {
@@ -50,7 +74,7 @@ export default function ProblemFeedback({ reviews, onDismiss }: ProblemFeedbackP
     }
   };
 
-  if (problemReviews.length === 0) {
+  if (problemReviews.length === 0 && clearedReviews.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white p-8 dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="flex flex-col items-center justify-center text-center">
@@ -68,8 +92,65 @@ export default function ProblemFeedback({ reviews, onDismiss }: ProblemFeedbackP
     );
   }
 
+  // Show empty state with link to cleared reviews if all are dismissed
+  if (problemReviews.length === 0 && clearedReviews.length > 0) {
+    return (
+      <div className="rounded-2xl border border-gray-200 bg-white p-8 dark:border-gray-800 dark:bg-white/[0.03]">
+        {/* Centered header content */}
+        <div className="flex flex-col items-center justify-center text-center mb-6">
+          <div className="flex items-center justify-center w-16 h-16 mb-4 bg-green-100 rounded-full dark:bg-green-900/20">
+            <Star className="w-8 h-8 text-green-600 dark:text-green-400 fill-green-600 dark:fill-green-400" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-2">
+            All Caught Up!
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            You've cleared all problem feedback for this period.
+          </p>
+          <button
+            onClick={() => setShowDismissed(!showDismissed)}
+            className="inline-flex items-center gap-2 text-sm font-medium text-[#0066cc] hover:text-[#0055aa] transition-colors"
+          >
+            {showDismissed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {showDismissed ? 'Hide' : 'Show'} {clearedReviews.length} cleared review{clearedReviews.length !== 1 ? 's' : ''}
+          </button>
+        </div>
+
+        {/* Cleared Reviews Grid - Full width, not centered */}
+        {showDismissed && (
+          <div className="w-full">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+                Cleared Reviews
+              </span>
+              <button
+                onClick={handleRestoreAll}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-[#0066cc] transition-colors"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Restore All
+              </button>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {clearedReviews.map((review) => (
+                <ClearedReviewCard
+                  key={review.id}
+                  review={review}
+                  onRestore={handleRestore}
+                  getRatingColor={getRatingColor}
+                  getRatingBgColor={getRatingBgColor}
+                  formatDate={formatDate}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4">
+    <>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -85,9 +166,21 @@ export default function ProblemFeedback({ reviews, onDismiss }: ProblemFeedbackP
             </p>
           </div>
         </div>
-        <Badge color="error">
-          {problemReviews.length}
-        </Badge>
+        <div className="flex items-center gap-3">
+          {/* Show Cleared Link */}
+          {clearedReviews.length > 0 && (
+            <button
+              onClick={() => setShowDismissed(!showDismissed)}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-[#0066cc] transition-colors"
+            >
+              {showDismissed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              {showDismissed ? 'Hide' : 'Show'} {clearedReviews.length} cleared
+            </button>
+          )}
+          <Badge color="error">
+            {problemReviews.length}
+          </Badge>
+        </div>
       </div>
 
       {/* Feedback Cards */}
@@ -112,11 +205,10 @@ export default function ProblemFeedback({ reviews, onDismiss }: ProblemFeedbackP
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star
                     key={star}
-                    className={`w-4 h-4 ${
-                      star <= review.rating
-                        ? `${getRatingColor(review.rating)} fill-current`
-                        : 'text-gray-300 dark:text-gray-600'
-                    }`}
+                    className={`w-4 h-4 ${star <= review.rating
+                      ? `${getRatingColor(review.rating)} fill-current`
+                      : 'text-gray-300 dark:text-gray-600'
+                      }`}
                   />
                 ))}
               </div>
@@ -151,16 +243,178 @@ export default function ProblemFeedback({ reviews, onDismiss }: ProblemFeedbackP
               </div>
             </div>
 
-            {/* Source Badge */}
-            {review.source && (
-              <div className="mt-2">
-                <Badge color="info" size="sm">
-                  {review.source}
-                </Badge>
-              </div>
-            )}
           </div>
         ))}
+      </div>
+
+      {/* Review Detail Modal */}
+      {selectedReview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={() => setSelectedReview(null)}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Full Review</h3>
+                <button
+                  onClick={() => setSelectedReview(null)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              {/* Rating */}
+              <div>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Rating</label>
+                <div className="flex items-center gap-2 mt-1">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <Star
+                      key={star}
+                      className={`w-6 h-6 ${star <= selectedReview.rating ? `${getRatingColor(selectedReview.rating)} fill-current` : 'text-gray-300 dark:text-gray-600'}`}
+                    />
+                  ))}
+                  <span className={`text-lg font-bold ${getRatingColor(selectedReview.rating)}`}>
+                    {selectedReview.rating} / 5
+                  </span>
+                </div>
+              </div>
+
+              {/* Comment */}
+              <div>
+                <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Customer Feedback</label>
+                <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <MessageSquare className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-gray-900 dark:text-gray-100 leading-relaxed">
+                      {selectedReview.comment || 'No comment provided'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Metadata */}
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Agent</label>
+                  <p className="text-gray-900 dark:text-white flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    {selectedReview.agent_id}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Date</label>
+                  <p className="text-gray-900 dark:text-white flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    {formatDate(selectedReview.review_ts)}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Source</label>
+                  <p className="text-gray-900 dark:text-white">{selectedReview.source}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cleared Reviews Section */}
+      {showDismissed && clearedReviews.length > 0 && (
+        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+              Cleared Reviews ({clearedReviews.length})
+            </span>
+            <button
+              onClick={handleRestoreAll}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-[#0066cc] transition-colors"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Restore All
+            </button>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {clearedReviews.map((review) => (
+              <ClearedReviewCard
+                key={review.id}
+                review={review}
+                onRestore={handleRestore}
+                getRatingColor={getRatingColor}
+                getRatingBgColor={getRatingBgColor}
+                formatDate={formatDate}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// Cleared Review Card Component
+interface ClearedReviewCardProps {
+  review: Review;
+  onRestore: (reviewId: string) => void;
+  getRatingColor: (rating: number) => string;
+  getRatingBgColor: (rating: number) => string;
+  formatDate: (dateString: string) => string;
+}
+
+function ClearedReviewCard({ review, onRestore, getRatingColor, getRatingBgColor, formatDate }: ClearedReviewCardProps) {
+  return (
+    <div
+      className={`relative rounded-xl border p-4 transition-all opacity-60 hover:opacity-100 ${getRatingBgColor(review.rating)}`}
+    >
+      {/* Restore Button */}
+      <button
+        onClick={() => onRestore(review.id)}
+        className="absolute top-3 right-3 flex items-center justify-center gap-1 px-2 py-1 text-xs font-medium text-[#0066cc] bg-white/80 rounded-md transition-colors hover:bg-white hover:shadow-sm"
+        title="Restore"
+      >
+        <RotateCcw className="w-3 h-3" />
+        Restore
+      </button>
+
+      {/* Rating Stars */}
+      <div className="flex items-center gap-2 mb-3">
+        <div className="flex gap-1">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star
+              key={star}
+              className={`w-4 h-4 ${star <= review.rating
+                ? `${getRatingColor(review.rating)} fill-current`
+                : 'text-gray-300 dark:text-gray-600'
+                }`}
+            />
+          ))}
+        </div>
+        <span className={`text-sm font-semibold ${getRatingColor(review.rating)}`}>
+          {review.rating}★
+        </span>
+      </div>
+
+      {/* Comment Bubble */}
+      <div className="relative mb-3">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
+          <div className="flex items-start gap-2 mb-2">
+            <MessageSquare className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed line-clamp-3">
+              {review.comment}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Metadata */}
+      <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-1">
+          <User className="w-3 h-3" />
+          <span className="font-medium">{review.agent_id}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Calendar className="w-3 h-3" />
+          <span>{formatDate(review.review_ts)}</span>
+        </div>
       </div>
     </div>
   );

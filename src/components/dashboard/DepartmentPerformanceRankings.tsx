@@ -12,20 +12,20 @@ interface DepartmentPerformanceRankingsProps {
   onAgentClick?: (agentId: string) => void;
 }
 
-export default function DepartmentPerformanceRankings({ 
-  reviews, 
+export default function DepartmentPerformanceRankings({
+  reviews,
   departments,
   agents,
   limit = 10,
   onAgentClick
 }: DepartmentPerformanceRankingsProps) {
-  
+
   // Track which agent is expanded
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
-  
+
   // Track which departments are collapsed
   const [collapsedDepartments, setCollapsedDepartments] = useState<Set<string>>(new Set());
-  
+
   // Toggle department collapse
   const toggleDepartment = (deptId: string) => {
     setCollapsedDepartments(prev => {
@@ -38,7 +38,7 @@ export default function DepartmentPerformanceRankings({
       return newSet;
     });
   };
-  
+
   // Process department metrics
   const departmentData = useMemo(() => {
     console.log('📊 DepartmentPerformanceRankings - Processing with:', {
@@ -46,14 +46,17 @@ export default function DepartmentPerformanceRankings({
       agentsCount: agents.length,
       departmentsCount: departments.length
     });
-    
-    return departments
+
+    // Filter out the "general" fallback department - it shouldn't appear in rankings
+    const filteredDepartments = departments.filter(dept => dept.id !== 'general');
+
+    return filteredDepartments
       .map((dept) => {
         const deptReviews = reviews.filter((r) => r.department_id === dept.id);
         const deptAgents = agents.filter((a) => a.department_id === dept.id);
-        
+
         console.log(`📋 Dept ${dept.name}: ${deptReviews.length} reviews, ${deptAgents.length} agents`);
-        
+
         // Calculate stats for each agent
         const agentsWithStats = deptAgents.map((agent) => {
           const agentReviews = reviews.filter((r) => r.agent_id === agent.id);
@@ -63,7 +66,7 @@ export default function DepartmentPerformanceRankings({
           const agentAvgRating = agentTotal > 0
             ? agentReviews.reduce((sum, r) => sum + r.rating, 0) / agentTotal
             : 0;
-          
+
           return {
             ...agent,
             totalReviews: agentTotal,
@@ -72,22 +75,22 @@ export default function DepartmentPerformanceRankings({
             avgRating: agentAvgRating
           };
         })
-        .filter(agent => agent.totalReviews > 0) // Only include agents with reviews
-        .sort((a, b) => b.totalReviews - a.totalReviews);
-        
+          .filter(agent => agent.totalReviews > 0) // Only include agents with reviews
+          .sort((a, b) => b.totalReviews - a.totalReviews);
+
         const totalReviews = deptReviews.length;
         const fiveStarReviews = deptReviews.filter((r) => r.rating === 5).length;
         const fourStarReviews = deptReviews.filter((r) => r.rating === 4).length;
         const problemReviews = deptReviews.filter((r) => r.rating <= 3).length;
-        
+
         const avgRating = totalReviews > 0
           ? deptReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
           : 0;
-        
-        const fiveStarRate = totalReviews > 0 
-          ? (fiveStarReviews / totalReviews) * 100 
+
+        const fiveStarRate = totalReviews > 0
+          ? (fiveStarReviews / totalReviews) * 100
           : 0;
-        
+
         const customerSatisfaction = totalReviews > 0
           ? ((fiveStarReviews + fourStarReviews) / totalReviews) * 100
           : 0;
@@ -108,19 +111,19 @@ export default function DepartmentPerformanceRankings({
       .slice(0, limit);
   }, [reviews, departments, agents, limit]);
 
-  const teamAvgRating = departmentData.length > 0 
-    ? departmentData.reduce((sum, d) => sum + d.rating, 0) / departmentData.length 
+  const teamAvgRating = departmentData.length > 0
+    ? departmentData.reduce((sum, d) => sum + d.rating, 0) / departmentData.length
     : 0;
 
   const getBadges = (dept: typeof departmentData[0], rank: number) => {
     const badges: Array<{ icon: string; label: string; color: string }> = [];
-    
+
     if (rank === 0) badges.push({ icon: '👑', label: 'Top Department', color: 'bg-gradient-to-r from-yellow-400 to-yellow-600' });
     if (dept.rating >= 4.9) badges.push({ icon: '⭐', label: 'Quality Leader', color: 'bg-gradient-to-r from-[#00ca6f] to-[#00b562]' });
     else if (dept.rating >= 4.5) badges.push({ icon: '✨', label: 'Excellent', color: 'bg-gradient-to-r from-[#0066cc] to-[#0055aa]' });
     if (dept.reviews >= 100) badges.push({ icon: '🏆', label: 'Volume Leader', color: 'bg-gradient-to-r from-[#0066cc] to-[#004d99]' });
     if (dept.percent_5_star >= 90) badges.push({ icon: '💎', label: 'Customer Favorite', color: 'bg-gradient-to-r from-[#00ca6f] to-[#00a558]' });
-    
+
     return badges;
   };
 
@@ -151,16 +154,16 @@ export default function DepartmentPerformanceRankings({
     <div className="relative mb-8 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-[#0066cc]/5 via-white to-[#00ca6f]/5 rounded-2xl" />
       <div className="relative bg-white rounded-2xl border-2 border-gray-300 shadow-lg hover:shadow-2xl hover:border-[#0066cc] transition-all duration-300 overflow-hidden p-4 sm:p-6">
-        
+
         {/* Mobile Card Layout */}
         <div className="block lg:hidden space-y-4">
           {departmentData.map((dept, rank) => {
             const badges = getBadges(dept, rank);
             const trend = getTrendIndicator(dept);
-            
+
             return (
-              <div 
-                key={dept.name} 
+              <div
+                key={dept.name}
                 className="bg-white rounded-xl border-2 border-gray-300 shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-[#0066cc]"
               >
                 {/* Mobile Department Header */}
@@ -183,7 +186,7 @@ export default function DepartmentPerformanceRankings({
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Mobile Stats */}
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="bg-white rounded-lg p-2 border border-gray-200">
@@ -195,27 +198,26 @@ export default function DepartmentPerformanceRankings({
                       <div className="text-[#0066cc] font-black text-sm">{dept.customer_satisfaction.toFixed(1)}%</div>
                     </div>
                   </div>
-                  
+
                   {dept.problem_reviews > 0 && (
                     <div className="mt-2 text-xs font-bold text-red-600 bg-red-50 rounded-lg px-3 py-1.5 border border-red-200">
                       ⚠️ {dept.problem_reviews} issues
                     </div>
                   )}
-                  
+
                   {/* Collapse/Expand Button */}
                   <button
                     onClick={() => toggleDepartment(dept.name)}
-                    className={`mt-3 w-full p-2 rounded-lg transition-all border-2 flex items-center justify-center gap-2 text-sm font-bold ${
-                      collapsedDepartments.has(dept.name)
+                    className={`mt-3 w-full p-2 rounded-lg transition-all border-2 flex items-center justify-center gap-2 text-sm font-bold ${collapsedDepartments.has(dept.name)
                         ? 'bg-white border-[#0066cc]/30 text-[#0066cc]'
                         : 'bg-[#0066cc]/5 border-[#0066cc] text-[#0066cc]'
-                    }`}
+                      }`}
                   >
                     <span>{collapsedDepartments.has(dept.name) ? 'Show' : 'Hide'} Agents</span>
-                    <svg 
+                    <svg
                       className={`w-4 h-4 transition-transform duration-300 ${collapsedDepartments.has(dept.name) ? '' : 'rotate-180'}`}
-                      fill="none" 
-                      stroke="currentColor" 
+                      fill="none"
+                      stroke="currentColor"
                       viewBox="0 0 24 24"
                       strokeWidth={2.5}
                     >
@@ -231,9 +233,9 @@ export default function DepartmentPerformanceRankings({
                       {dept.agents.map((agent, idx) => {
                         const medal = idx === 0 ? 'gold' : idx === 1 ? 'silver' : idx === 2 ? 'bronze' : undefined;
                         return (
-                          <MobileAgentCard 
+                          <MobileAgentCard
                             key={agent.id}
-                            agent={agent} 
+                            agent={agent}
                             medal={medal}
                             rank={idx + 1}
                             onAgentClick={onAgentClick}
@@ -253,10 +255,10 @@ export default function DepartmentPerformanceRankings({
           {departmentData.map((dept, rank) => {
             const badges = getBadges(dept, rank);
             const trend = getTrendIndicator(dept);
-            
+
             return (
-              <div 
-                key={dept.name} 
+              <div
+                key={dept.name}
                 className="bg-white rounded-2xl border-2 border-gray-300 shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-[#0066cc] animate-in slide-in-from-right-12 fade-in"
                 style={{ animationDuration: '600ms', animationDelay: `${rank * 100}ms` }}
               >
@@ -293,17 +295,16 @@ export default function DepartmentPerformanceRankings({
                     {/* Collapse/Expand Button */}
                     <button
                       onClick={() => toggleDepartment(dept.name)}
-                      className={`ml-4 p-2.5 rounded-lg transition-all border-2 ${
-                        collapsedDepartments.has(dept.name)
+                      className={`ml-4 p-2.5 rounded-lg transition-all border-2 ${collapsedDepartments.has(dept.name)
                           ? 'bg-white border-[#0066cc]/30 text-[#0066cc] hover:bg-[#0066cc]/5'
                           : 'bg-white border-[#0066cc] text-[#0066cc] shadow-md hover:shadow-lg'
-                      }`}
+                        }`}
                       aria-label={collapsedDepartments.has(dept.name) ? "Expand department" : "Collapse department"}
                     >
-                      <svg 
+                      <svg
                         className={`w-6 h-6 transition-transform duration-300 ${collapsedDepartments.has(dept.name) ? '' : 'rotate-180'}`}
-                        fill="none" 
-                        stroke="currentColor" 
+                        fill="none"
+                        stroke="currentColor"
                         viewBox="0 0 24 24"
                         strokeWidth={2.5}
                       >
@@ -320,16 +321,16 @@ export default function DepartmentPerformanceRankings({
                       {dept.agents.map((agent, idx) => {
                         const medal = idx === 0 ? 'gold' : idx === 1 ? 'silver' : idx === 2 ? 'bronze' : undefined;
                         return (
-                          <AgentCard 
+                          <AgentCard
                             key={agent.id}
-                            agent={agent} 
-                            deptName={dept.name} 
+                            agent={agent}
+                            deptName={dept.name}
                             medal={medal}
                             reviews={reviews}
-                            expandedAgent={expandedAgent} 
+                            expandedAgent={expandedAgent}
                             setExpandedAgent={setExpandedAgent}
                             onAgentClick={onAgentClick}
-                            compact 
+                            compact
                           />
                         );
                       })}
@@ -348,7 +349,7 @@ export default function DepartmentPerformanceRankings({
 // Mobile Agent Card Component
 function MobileAgentCard({ agent, medal, rank, onAgentClick }: any) {
   const router = useRouter();
-  
+
   const medals = {
     gold: { color: 'from-yellow-400 to-amber-500', border: 'border-yellow-400', bg: 'bg-yellow-500' },
     silver: { color: 'from-gray-400 to-gray-500', border: 'border-gray-400', bg: 'bg-gray-400' },
@@ -356,7 +357,7 @@ function MobileAgentCard({ agent, medal, rank, onAgentClick }: any) {
   };
 
   const m = medal ? medals[medal as keyof typeof medals] : null;
-  
+
   const handleClick = () => {
     if (onAgentClick) {
       onAgentClick(agent.id);
@@ -373,7 +374,7 @@ function MobileAgentCard({ agent, medal, rank, onAgentClick }: any) {
       {m && (
         <div className={`h-1 bg-gradient-to-r ${m.color}`} />
       )}
-      
+
       <div className="p-3">
         <div className="flex items-center gap-2 mb-2">
           <div className={`relative h-12 w-12 rounded-full border-2 ${m?.border || 'border-[#0066cc]'} flex-shrink-0`}>
@@ -396,7 +397,7 @@ function MobileAgentCard({ agent, medal, rank, onAgentClick }: any) {
             <div className="text-[10px] text-gray-600 font-medium">{agent.totalReviews} reviews</div>
           </div>
         </div>
-        
+
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-1">
             <span className="text-yellow-400">★</span>
@@ -406,7 +407,7 @@ function MobileAgentCard({ agent, medal, rank, onAgentClick }: any) {
             <span className="text-red-600 font-bold">⚠️ {agent.problemCount}</span>
           )}
         </div>
-        
+
         {/* Rating bar */}
         <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
           <div className="h-full bg-[#00ca6f]" style={{ width: `${(agent.fiveStarCount / agent.totalReviews) * 100}%` }} />
@@ -429,7 +430,7 @@ function AgentCard({ agent, deptName, medal, compact, simple, reviews, expandedA
   };
 
   const m = medal ? medals[medal as keyof typeof medals] : null;
-  
+
   const handleClick = () => {
     if (onAgentClick) {
       onAgentClick(agent.id);
@@ -469,7 +470,7 @@ function AgentCard({ agent, deptName, medal, compact, simple, reviews, expandedA
       two: agentReviews.filter((r: Review) => r.rating === 2).length,
       one: agentReviews.filter((r: Review) => r.rating === 1).length,
     };
-    
+
     const total = agent.totalReviews;
     const percentages = {
       five: total > 0 ? (ratingCounts.five / total) * 100 : 0,
@@ -478,7 +479,7 @@ function AgentCard({ agent, deptName, medal, compact, simple, reviews, expandedA
       two: total > 0 ? (ratingCounts.two / total) * 100 : 0,
       one: total > 0 ? (ratingCounts.one / total) * 100 : 0,
     };
-    
+
     return (
       <button
         onClick={handleClick}
@@ -488,7 +489,7 @@ function AgentCard({ agent, deptName, medal, compact, simple, reviews, expandedA
         {m && (
           <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${m.color} z-0 rounded-t-lg`} />
         )}
-        
+
         <div className="flex items-center p-4 pl-28 pr-4 relative min-h-[100px]">
           {/* Extra Large Avatar - dramatic "bulb" that overlaps borders */}
           <div className={`absolute -left-4 top-1/2 -translate-y-1/2 h-28 w-28 rounded-full border-4 ${m?.border || 'border-[#0066cc]'} shadow-xl bg-white z-10`}>
@@ -502,16 +503,15 @@ function AgentCard({ agent, deptName, medal, compact, simple, reviews, expandedA
             />
             {/* Medal Rank Number - white text on solid colored background */}
             {m && (
-              <div className={`absolute bottom-0 right-0 h-9 w-9 rounded-full flex items-center justify-center text-base font-black shadow-xl border-3 border-white z-20 ${
-                medal === 'gold' ? 'bg-yellow-500 text-white' : 
-                medal === 'silver' ? 'bg-gray-400 text-white' : 
-                'bg-orange-500 text-white'
-              }`}>
+              <div className={`absolute bottom-0 right-0 h-9 w-9 rounded-full flex items-center justify-center text-base font-black shadow-xl border-3 border-white z-20 ${medal === 'gold' ? 'bg-yellow-500 text-white' :
+                  medal === 'silver' ? 'bg-gray-400 text-white' :
+                    'bg-orange-500 text-white'
+                }`}>
                 {medal === 'gold' ? '1' : medal === 'silver' ? '2' : '3'}
               </div>
             )}
           </div>
-          
+
           {/* Info - text content with generous spacing */}
           <div className="flex-1 min-w-0 relative z-20">
             <div className="text-xs font-bold text-gray-900 truncate">{agent.display_name}</div>
@@ -522,14 +522,14 @@ function AgentCard({ agent, deptName, medal, compact, simple, reviews, expandedA
               <span className="text-gray-300">•</span>
               <span className="text-sm font-black text-[#0066cc]">{agent.avgRating.toFixed(2)}★</span>
             </div>
-            
+
             {/* Rating Distribution Bar */}
             {total > 0 && (
               <div className="flex items-center gap-1 mt-1">
                 <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden flex">
                   {/* 5 Star - HFC Green */}
                   {percentages.five > 0 && (
-                    <div 
+                    <div
                       className="h-full bg-[#00ca6f] transition-all duration-500"
                       style={{ width: `${percentages.five}%` }}
                       title={`${ratingCounts.five} five-star (${percentages.five.toFixed(0)}%)`}
@@ -537,7 +537,7 @@ function AgentCard({ agent, deptName, medal, compact, simple, reviews, expandedA
                   )}
                   {/* 4 Star - Light Green */}
                   {percentages.four > 0 && (
-                    <div 
+                    <div
                       className="h-full bg-gradient-to-r from-lime-400 to-lime-500 transition-all duration-500"
                       style={{ width: `${percentages.four}%` }}
                       title={`${ratingCounts.four} four-star (${percentages.four.toFixed(0)}%)`}
@@ -545,7 +545,7 @@ function AgentCard({ agent, deptName, medal, compact, simple, reviews, expandedA
                   )}
                   {/* 3 Star - Yellow */}
                   {percentages.three > 0 && (
-                    <div 
+                    <div
                       className="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 transition-all duration-500"
                       style={{ width: `${percentages.three}%` }}
                       title={`${ratingCounts.three} three-star (${percentages.three.toFixed(0)}%)`}
@@ -553,7 +553,7 @@ function AgentCard({ agent, deptName, medal, compact, simple, reviews, expandedA
                   )}
                   {/* 2 Star - Orange */}
                   {percentages.two > 0 && (
-                    <div 
+                    <div
                       className="h-full bg-gradient-to-r from-orange-400 to-orange-600 transition-all duration-500"
                       style={{ width: `${percentages.two}%` }}
                       title={`${ratingCounts.two} two-star (${percentages.two.toFixed(0)}%)`}
@@ -561,7 +561,7 @@ function AgentCard({ agent, deptName, medal, compact, simple, reviews, expandedA
                   )}
                   {/* 1 Star - Red */}
                   {percentages.one > 0 && (
-                    <div 
+                    <div
                       className="h-full bg-gradient-to-r from-red-400 to-red-600 transition-all duration-500"
                       style={{ width: `${percentages.one}%` }}
                       title={`${ratingCounts.one} one-star (${percentages.one.toFixed(0)}%)`}

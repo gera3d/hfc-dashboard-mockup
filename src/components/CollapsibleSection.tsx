@@ -30,34 +30,32 @@ export function CollapsibleSection({
   const innerContentRef = useRef<HTMLDivElement>(null)
 
   return (
-    <div 
-      className={`bg-white rounded-2xl border-2 transition-all duration-300 overflow-hidden ${
-        isExpanded 
-          ? 'border-[#0066cc] shadow-2xl ring-4 ring-[#0066cc]/10' 
+    <div
+      className={`bg-white rounded-2xl border-2 transition-all duration-300 overflow-hidden ${isExpanded
+          ? 'border-[#0066cc] shadow-2xl ring-4 ring-[#0066cc]/10'
           : 'border-gray-300 hover:border-[#0066cc] hover:shadow-xl'
-      }`}
+        }`}
     >
       {/* Header - Always Visible */}
       <button
         onClick={onToggle}
-        className={`w-full px-4 sm:px-6 py-4 sm:py-5 transition-all duration-200 ${
-          isExpanded 
-            ? 'bg-gradient-to-r from-[#0066cc]/5 to-[#00ca6f]/5 rounded-t-2xl' 
+        className={`w-full px-4 sm:px-6 py-4 sm:py-5 transition-all duration-200 ${isExpanded
+            ? 'bg-gradient-to-r from-[#0066cc]/5 to-[#00ca6f]/5 rounded-t-2xl'
             : 'hover:bg-gray-50 rounded-2xl'
-        }`}
+          }`}
       >
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full">
           {/* Top row: Icon, Title, Badge, Toggle */}
           <div className="flex items-center gap-2 sm:gap-4 w-full">
             {/* Icon */}
             {icon && (
-              <div 
+              <div
                 className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-[#0066cc] bg-[#0066cc]/10 border border-[#0066cc]/20"
               >
                 {icon}
               </div>
             )}
-            
+
             {/* Title & Subtitle */}
             <div className="text-left min-w-0 flex-1">
               <div className="flex items-center gap-1.5 sm:gap-2">
@@ -76,31 +74,30 @@ export function CollapsibleSection({
                 </p>
               )}
             </div>
-            
+
             {/* Preview Content when collapsed - desktop only inline */}
             {!isExpanded && previewContent && (
               <div className="hidden sm:block sm:flex-1 min-w-0 sm:mr-4">
                 {previewContent}
               </div>
             )}
-            
+
             {/* Toggle Button - always on the right */}
             <div className="flex-shrink-0">
-              <div 
-                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center transition-all duration-200 ${
-                isExpanded 
-                  ? 'bg-white text-[#0066cc] border-2 border-[#0066cc] shadow-md' 
-                  : 'bg-white text-[#0066cc] border-2 border-[#0066cc]/30 hover:bg-gray-50'
-              }`}
-              style={{
-                transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-              }}
-            >
-              <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
+              <div
+                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center transition-all duration-200 ${isExpanded
+                    ? 'bg-white text-[#0066cc] border-2 border-[#0066cc] shadow-md'
+                    : 'bg-white text-[#0066cc] border-2 border-[#0066cc]/30 hover:bg-gray-50'
+                  }`}
+                style={{
+                  transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+              >
+                <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
             </div>
           </div>
-          </div>
-          
+
           {/* Preview Content when collapsed - mobile gets its own row */}
           {!isExpanded && previewContent && (
             <div className="block sm:hidden w-full mt-2">
@@ -109,13 +106,14 @@ export function CollapsibleSection({
           )}
         </div>
       </button>
-      
+
       {/* Content - Collapsible */}
       <div
         ref={contentRef}
-        className="transition-all duration-300 overflow-hidden"
+        className="transition-all duration-300"
         style={{
-          maxHeight: isExpanded ? `${innerContentRef.current?.scrollHeight || 2000}px` : '0px',
+          maxHeight: isExpanded ? 'none' : '0px',
+          overflow: isExpanded ? 'visible' : 'hidden',
           opacity: isExpanded ? 1 : 0,
         }}
       >

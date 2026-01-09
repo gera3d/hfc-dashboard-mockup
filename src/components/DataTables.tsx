@@ -32,22 +32,22 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
   const [showNewDeptModal, setShowNewDeptModal] = useState<string | null>(null) // agentId
   const [newDeptName, setNewDeptName] = useState('')
   const [isCreating, setIsCreating] = useState(false)
-  
+
   const handleDepartmentChange = async (agentId: string, departmentId: string) => {
     if (departmentId === 'CREATE_NEW') {
       setShowNewDeptModal(agentId)
       return
     }
-    
+
     if (onDepartmentChange) {
       onDepartmentChange(agentId, departmentId)
     }
     setEditingAgentId(null)
   }
-  
+
   const handleCreateDepartment = async (agentId: string) => {
     if (!newDeptName.trim() || !onCreateDepartment) return
-    
+
     setIsCreating(true)
     try {
       const newDeptId = await onCreateDepartment(newDeptName.trim())
@@ -63,7 +63,7 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
       setIsCreating(false)
     }
   }
-  
+
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
@@ -72,50 +72,50 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
       setSortDirection('desc')
     }
   }
-  
+
   const sortedData = [...data].sort((a, b) => {
     let aValue: string | number | null = a[sortField]
     let bValue: string | number | null = b[sortField]
-    
+
     // Handle date strings
     if (sortField === 'last_review_date') {
       aValue = aValue ? new Date(aValue as string).getTime() : 0
       bValue = bValue ? new Date(bValue as string).getTime() : 0
     }
-    
+
     // Handle string fields
     if (typeof aValue === 'string' && typeof bValue === 'string') {
       aValue = aValue.toLowerCase()
       bValue = bValue.toLowerCase()
     }
-    
+
     if (sortDirection === 'asc') {
       return (aValue as number) < (bValue as number) ? -1 : (aValue as number) > (bValue as number) ? 1 : 0
     } else {
       return (aValue as number) > (bValue as number) ? -1 : (aValue as number) < (bValue as number) ? 1 : 0
     }
   })
-  
+
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return <div className="w-4 h-4" />
-    return sortDirection === 'asc' ? 
-      <ChevronUp className="w-4 h-4 text-blue-600" /> : 
+    return sortDirection === 'asc' ?
+      <ChevronUp className="w-4 h-4 text-blue-600" /> :
       <ChevronDown className="w-4 h-4 text-blue-600" />
   }
-  
+
   const formatLastReviewDate = (dateStr: string | null) => {
     if (!dateStr) return 'Never'
     const date = new Date(dateStr)
     const now = new Date()
     const diffTime = Math.abs(now.getTime() - date.getTime())
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    
+
     if (diffDays === 1) return 'Today'
     if (diffDays <= 7) return `${diffDays} days ago`
     if (diffDays <= 30) return `${Math.ceil(diffDays / 7)} weeks ago`
     return date.toLocaleDateString()
   }
-  
+
   // Group by department
   const grouped = sortedData.reduce((acc, agent) => {
     if (!acc[agent.department_name]) acc[agent.department_name] = [];
@@ -141,15 +141,15 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
   const grandSummary = calcSummary(sortedData);
 
   return (
-    <TableContainer 
-      title="Agent Performance" 
+    <TableContainer
+      title="Agent Performance"
       subtitle="Detailed metrics for all agents, grouped by department, with totals and averages"
     >
       <div className="overflow-x-auto">
         <table className="min-w-full table-fixed">
           <thead className="bg-gray-50">
             <tr>
-              <th 
+              <th
                 className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-36"
                 onClick={() => handleSort('agent_name')}
               >
@@ -158,7 +158,7 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
                   <SortIcon field="agent_name" />
                 </div>
               </th>
-              <th 
+              <th
                 className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-32"
                 onClick={() => handleSort('department_name')}
               >
@@ -167,7 +167,7 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
                   <SortIcon field="department_name" />
                 </div>
               </th>
-              <th 
+              <th
                 className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-12"
                 onClick={() => handleSort('star_1')}
               >
@@ -176,7 +176,7 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
                   <SortIcon field="star_1" />
                 </div>
               </th>
-              <th 
+              <th
                 className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-12"
                 onClick={() => handleSort('star_2')}
               >
@@ -185,7 +185,7 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
                   <SortIcon field="star_2" />
                 </div>
               </th>
-              <th 
+              <th
                 className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-12"
                 onClick={() => handleSort('star_3')}
               >
@@ -194,7 +194,7 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
                   <SortIcon field="star_3" />
                 </div>
               </th>
-              <th 
+              <th
                 className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-12"
                 onClick={() => handleSort('star_4')}
               >
@@ -203,7 +203,7 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
                   <SortIcon field="star_4" />
                 </div>
               </th>
-              <th 
+              <th
                 className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-12"
                 onClick={() => handleSort('star_5')}
               >
@@ -212,7 +212,7 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
                   <SortIcon field="star_5" />
                 </div>
               </th>
-              <th 
+              <th
                 className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-16"
                 onClick={() => handleSort('total')}
               >
@@ -221,7 +221,7 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
                   <SortIcon field="total" />
                 </div>
               </th>
-              <th 
+              <th
                 className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-16"
                 onClick={() => handleSort('avg_rating')}
               >
@@ -230,7 +230,7 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
                   <SortIcon field="avg_rating" />
                 </div>
               </th>
-              <th 
+              <th
                 className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-14"
                 onClick={() => handleSort('percent_5_star')}
               >
@@ -239,7 +239,7 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
                   <SortIcon field="percent_5_star" />
                 </div>
               </th>
-              <th 
+              <th
                 className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 w-20"
                 onClick={() => handleSort('last_review_date')}
               >
@@ -361,7 +361,7 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
           </tbody>
         </table>
       </div>
-      
+
       {/* New Department Modal */}
       {showNewDeptModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowNewDeptModal(null)}>
@@ -424,31 +424,31 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
 
 export function ReviewTable({ data, agents = defaultAgents, departments = defaultDepartments, showPagination = true, pageSize = 10 }: ReviewTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
-  const [selectedReview, setSelectedReview] = useState<Review | null>(null)
-  
+  const [expandedReviewId, setExpandedReviewId] = useState<string | null>(null)
+
   // Sort reviews by date (most recent first)
   const sortedData = [...data].sort((a, b) => {
     return new Date(b.review_ts).getTime() - new Date(a.review_ts).getTime()
   })
-  
+
   const totalPages = Math.ceil(sortedData.length / pageSize)
   const startIndex = (currentPage - 1) * pageSize
   const endIndex = startIndex + pageSize
   const currentData = showPagination ? sortedData.slice(startIndex, endIndex) : sortedData
-  
+
   const getAgentName = (agentId: string) => {
     return agents.find(a => a.id === agentId)?.display_name || 'Unknown'
   }
-  
+
   const getDepartmentName = (departmentId: string) => {
     return departments.find(d => d.id === departmentId)?.name || 'Unknown'
   }
-  
+
   const formatDateTime = (dateStr: string) => {
     const date = new Date(dateStr)
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
-  
+
   const getRatingColor = (rating: number) => {
     const colors = {
       1: 'text-red-600',
@@ -459,16 +459,16 @@ export function ReviewTable({ data, agents = defaultAgents, departments = defaul
     }
     return colors[rating as keyof typeof colors] || 'text-gray-600'
   }
-  
+
   const truncateComment = (comment: string, length = 100) => {
     if (comment.length <= length) return comment
     return comment.substring(0, length) + '...'
   }
-  
+
   return (
     <>
-      <TableContainer 
-        title="Individual Reviews" 
+      <TableContainer
+        title="Individual Reviews"
         subtitle="Complete review history with details"
       >
         {/* Mobile Card Layout */}
@@ -477,8 +477,7 @@ export function ReviewTable({ data, agents = defaultAgents, departments = defaul
             {currentData.map((review) => (
               <div
                 key={review.id}
-                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => setSelectedReview(review)}
+                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
@@ -492,12 +491,37 @@ export function ReviewTable({ data, agents = defaultAgents, departments = defaul
                     </span>
                   </div>
                 </div>
-                <div className="text-sm text-gray-700 mb-3 line-clamp-2">
-                  {review.comment ? truncateComment(review.comment, 80) : 'No comment'}
+                <div className="text-sm text-gray-700 mb-3">
+                  {review.comment ? (
+                    expandedReviewId === review.id ? (
+                      <div>
+                        <p className="whitespace-pre-wrap">{review.comment}</p>
+                        <button
+                          onClick={() => setExpandedReviewId(null)}
+                          className="text-blue-600 hover:text-blue-800 text-xs mt-1 font-medium"
+                        >
+                          Show less
+                        </button>
+                      </div>
+                    ) : (
+                      <div>
+                        <span>{truncateComment(review.comment, 80)}</span>
+                        {review.comment.length > 80 && (
+                          <button
+                            onClick={() => setExpandedReviewId(review.id)}
+                            className="text-blue-600 hover:text-blue-800 text-xs ml-1 font-medium"
+                          >
+                            Read more
+                          </button>
+                        )}
+                      </div>
+                    )
+                  ) : (
+                    <span className="text-gray-400 italic">No comment</span>
+                  )}
                 </div>
-                <div className="flex items-center justify-between text-xs text-gray-500">
+                <div className="text-xs text-gray-500">
                   <span>{formatDateTime(review.review_ts)}</span>
-                  <span className="text-gray-400">{review.source}</span>
                 </div>
               </div>
             ))}
@@ -524,19 +548,14 @@ export function ReviewTable({ data, agents = defaultAgents, departments = defaul
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Comment
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Source
-                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {currentData.map((review) => (
                 <tr
                   key={review.id}
-                  className="group bg-white hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 last:border-b-0 cursor-pointer"
+                  className="group bg-white hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 last:border-b-0"
                   tabIndex={0}
-                  onClick={() => setSelectedReview(review)}
-                  onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setSelectedReview(review)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{formatDateTime(review.review_ts)}</div>
@@ -557,18 +576,41 @@ export function ReviewTable({ data, agents = defaultAgents, departments = defaul
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900 max-w-md">
-                      {review.comment ? truncateComment(review.comment) : 'No comment'}
+                      {review.comment ? (
+                        expandedReviewId === review.id ? (
+                          <div>
+                            <p className="whitespace-pre-wrap">{review.comment}</p>
+                            <button
+                              onClick={() => setExpandedReviewId(null)}
+                              className="text-blue-600 hover:text-blue-800 text-xs mt-1 font-medium"
+                            >
+                              Show less
+                            </button>
+                          </div>
+                        ) : (
+                          <div>
+                            <span>{truncateComment(review.comment)}</span>
+                            {review.comment.length > 100 && (
+                              <button
+                                onClick={() => setExpandedReviewId(review.id)}
+                                className="text-blue-600 hover:text-blue-800 text-xs ml-1 font-medium"
+                              >
+                                Read more
+                              </button>
+                            )}
+                          </div>
+                        )
+                      ) : (
+                        <span className="text-gray-400 italic">No comment</span>
+                      )}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{review.source}</div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        
+
         {showPagination && totalPages > 1 && (
           <div className="px-4 sm:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="text-xs sm:text-sm text-gray-700 text-center sm:text-left">
@@ -596,72 +638,6 @@ export function ReviewTable({ data, agents = defaultAgents, departments = defaul
           </div>
         )}
       </TableContainer>
-      
-      {/* Review Detail Modal */}
-      {selectedReview && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
-          <div className="bg-white rounded-xl sm:rounded-2xl max-w-2xl w-full max-h-[90vh] sm:max-h-[80vh] overflow-y-auto">
-            <div className="p-4 sm:p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Review Details</h3>
-                <button
-                  onClick={() => setSelectedReview(null)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-            <div className="p-4 sm:p-6">
-              <div className="space-y-3 sm:space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div>
-                    <label className="text-xs sm:text-sm font-medium text-gray-500">Agent</label>
-                    <p className="text-sm sm:text-base text-gray-900">{getAgentName(selectedReview.agent_id)}</p>
-                  </div>
-                  <div>
-                    <label className="text-xs sm:text-sm font-medium text-gray-500">Department</label>
-                    <p className="text-sm sm:text-base text-gray-900">{getDepartmentName(selectedReview.department_id)}</p>
-                  </div>
-                  <div>
-                    <label className="text-xs sm:text-sm font-medium text-gray-500">Date & Time</label>
-                    <p className="text-sm sm:text-base text-gray-900">{formatDateTime(selectedReview.review_ts)}</p>
-                  </div>
-                  <div>
-                    <label className="text-xs sm:text-sm font-medium text-gray-500">Source</label>
-                    <p className="text-sm sm:text-base text-gray-900">{selectedReview.source}</p>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs sm:text-sm font-medium text-gray-500">Rating</label>
-                  <div className="flex items-center gap-1.5 sm:gap-2 mt-1">
-                    {[1, 2, 3, 4, 5].map(star => (
-                      <Star 
-                        key={star}
-                        className={`w-5 h-5 sm:w-6 sm:h-6 ${star <= selectedReview.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
-                      />
-                    ))}
-                    <span className={`text-base sm:text-lg font-medium ${getRatingColor(selectedReview.rating)}`}>
-                      {selectedReview.rating} / 5
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs sm:text-sm font-medium text-gray-500">Comment</label>
-                  <div className="mt-2 p-3 sm:p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-start gap-2 sm:gap-3">
-                      <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                      <p className="text-sm sm:text-base text-gray-900 leading-relaxed">
-                        {selectedReview.comment || 'No comment provided'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }
@@ -669,33 +645,33 @@ export function ReviewTable({ data, agents = defaultAgents, departments = defaul
 // Customer Feedback Table - Only shows reviews with comments
 export function CustomerFeedbackTable({ data, agents = defaultAgents, departments = defaultDepartments, showPagination = true, pageSize = 10 }: ReviewTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
-  const [selectedReview, setSelectedReview] = useState<Review | null>(null)
-  
+  const [expandedReviewId, setExpandedReviewId] = useState<string | null>(null)
+
   // Filter to only reviews with comments, then sort by date (most recent first)
   const feedbackData = useMemo(() => {
     return [...data]
       .filter(review => review.comment && review.comment.trim().length > 0)
       .sort((a, b) => new Date(b.review_ts).getTime() - new Date(a.review_ts).getTime())
   }, [data])
-  
+
   const totalPages = Math.ceil(feedbackData.length / pageSize)
   const startIndex = (currentPage - 1) * pageSize
   const endIndex = startIndex + pageSize
   const currentData = showPagination ? feedbackData.slice(startIndex, endIndex) : feedbackData
-  
+
   const getAgentName = (agentId: string) => {
     return agents.find(a => a.id === agentId)?.display_name || 'Unknown'
   }
-  
+
   const getDepartmentName = (departmentId: string) => {
     return departments.find(d => d.id === departmentId)?.name || 'Unknown'
   }
-  
+
   const formatDateTime = (dateStr: string) => {
     const date = new Date(dateStr)
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
-  
+
   const getRatingColor = (rating: number) => {
     const colors = {
       1: 'text-red-600',
@@ -706,11 +682,11 @@ export function CustomerFeedbackTable({ data, agents = defaultAgents, department
     }
     return colors[rating as keyof typeof colors] || 'text-gray-600'
   }
-  
+
   return (
     <>
-      <TableContainer 
-        title="Customer Feedback" 
+      <TableContainer
+        title="Customer Feedback"
         subtitle={`Reviews with written comments • ${feedbackData.length} total`}
       >
         <div className="overflow-x-auto">
@@ -732,15 +708,12 @@ export function CustomerFeedbackTable({ data, agents = defaultAgents, department
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Customer Feedback
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Source
-                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {currentData.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center">
+                  <td colSpan={5} className="px-6 py-12 text-center">
                     <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                     <p className="text-gray-500">No customer feedback available for this period</p>
                   </td>
@@ -749,10 +722,7 @@ export function CustomerFeedbackTable({ data, agents = defaultAgents, department
                 currentData.map((review) => (
                   <tr
                     key={review.id}
-                    className="group bg-white hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 last:border-b-0 cursor-pointer"
-                    tabIndex={0}
-                    onClick={() => setSelectedReview(review)}
-                    onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setSelectedReview(review)}
+                    className="group bg-white hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 last:border-b-0"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{formatDateTime(review.review_ts)}</div>
@@ -771,14 +741,31 @@ export function CustomerFeedbackTable({ data, agents = defaultAgents, department
                       </div>
                     </td>
                     <td className="px-6 py-4 max-w-md">
-                      <div className="text-sm text-gray-900 line-clamp-2">
-                        {review.comment}
+                      <div className="text-sm text-gray-900">
+                        {expandedReviewId === review.id ? (
+                          <div>
+                            <p className="whitespace-pre-wrap">{review.comment}</p>
+                            <button
+                              onClick={() => setExpandedReviewId(null)}
+                              className="text-blue-600 hover:text-blue-800 text-xs mt-2 font-medium"
+                            >
+                              Show less
+                            </button>
+                          </div>
+                        ) : (
+                          <div>
+                            <span className="line-clamp-2">{review.comment}</span>
+                            {review.comment && review.comment.length > 100 && (
+                              <button
+                                onClick={() => setExpandedReviewId(review.id)}
+                                className="text-blue-600 hover:text-blue-800 text-xs mt-1 font-medium block"
+                              >
+                                Read more
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 capitalize">
-                        {review.source}
-                      </span>
                     </td>
                   </tr>
                 ))
@@ -812,16 +799,15 @@ export function CustomerFeedbackTable({ data, agents = defaultAgents, department
                   } else {
                     pageNum = currentPage - 2 + i
                   }
-                  
+
                   return (
                     <button
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
-                      className={`px-3 py-1 text-sm rounded-md ${
-                        currentPage === pageNum
-                          ? 'bg-blue-600 text-white'
-                          : 'border border-gray-300 hover:bg-gray-50'
-                      }`}
+                      className={`px-3 py-1 text-sm rounded-md ${currentPage === pageNum
+                        ? 'bg-blue-600 text-white'
+                        : 'border border-gray-300 hover:bg-gray-50'
+                        }`}
                     >
                       {pageNum}
                     </button>
@@ -839,83 +825,6 @@ export function CustomerFeedbackTable({ data, agents = defaultAgents, department
           </div>
         )}
       </TableContainer>
-
-      {/* Modal for full feedback view */}
-      {selectedReview && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-gray-900">Customer Feedback Details</h3>
-              <button
-                onClick={() => setSelectedReview(null)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Date & Time</label>
-                  <div className="mt-1 text-gray-900">{formatDateTime(selectedReview.review_ts)}</div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Source</label>
-                  <div className="mt-1">
-                    <span className="px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800 capitalize">
-                      {selectedReview.source}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Agent</label>
-                  <div className="mt-1 text-gray-900 font-medium">{getAgentName(selectedReview.agent_id)}</div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Department</label>
-                  <div className="mt-1 text-gray-900">{getDepartmentName(selectedReview.department_id)}</div>
-                </div>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-gray-500">Rating</label>
-                <div className="mt-2 flex items-center gap-2">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-6 h-6 ${
-                          i < selectedReview.rating
-                            ? `fill-current ${getRatingColor(selectedReview.rating)}`
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className={`text-lg font-medium ${getRatingColor(selectedReview.rating)}`}>
-                    {selectedReview.rating} / 5
-                  </span>
-                </div>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-gray-500">Customer Feedback</label>
-                <div className="mt-2 p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <MessageCircle className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                    <p className="text-gray-900 leading-relaxed">
-                      {selectedReview.comment}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }
