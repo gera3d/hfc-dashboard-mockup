@@ -35,12 +35,12 @@ export const getHiddenAgents = async (): Promise<string[]> => {
     const { data, error } = await supabase
       .from('hidden_agents')
       .select('agent_id')
-    
+
     if (error) {
       console.error('Error fetching hidden agents:', error)
       return []
     }
-    
+
     return data?.map(item => item.agent_id) || []
   } catch (error) {
     console.error('Failed to get hidden agents:', error)
@@ -56,14 +56,14 @@ export const hideAgent = async (agentId: string, hiddenBy?: string): Promise<boo
   try {
     // Normalize agent ID to lowercase to match data service
     const normalizedId = agentId.toLowerCase();
-    
+
     const { error } = await supabase
       .from('hidden_agents')
       .insert({
         agent_id: normalizedId,
         hidden_by: hiddenBy
       })
-    
+
     if (error) {
       // If agent is already hidden, this is fine
       if (error.code === '23505') { // Unique constraint violation
@@ -73,7 +73,7 @@ export const hideAgent = async (agentId: string, hiddenBy?: string): Promise<boo
       console.error('Error hiding agent:', error)
       return false
     }
-    
+
     console.log(`👁️ Hidden agent: ${normalizedId}`)
     return true
   } catch (error) {
@@ -90,17 +90,17 @@ export const unhideAgent = async (agentId: string): Promise<boolean> => {
   try {
     // Normalize agent ID to lowercase to match data service
     const normalizedId = agentId.toLowerCase();
-    
+
     const { error } = await supabase
       .from('hidden_agents')
       .delete()
       .eq('agent_id', normalizedId)
-    
+
     if (error) {
       console.error('Error unhiding agent:', error)
       return false
     }
-    
+
     console.log(`👁️ Unhidden agent: ${normalizedId}`)
     return true
   } catch (error) {
@@ -117,18 +117,18 @@ export const isAgentHidden = async (agentId: string): Promise<boolean> => {
   try {
     // Normalize agent ID to lowercase to match data service
     const normalizedId = agentId.toLowerCase();
-    
+
     const { data, error } = await supabase
       .from('hidden_agents')
       .select('agent_id')
       .eq('agent_id', normalizedId)
       .maybeSingle()
-    
+
     if (error) {
       console.error('Error checking if agent is hidden:', error)
       return false
     }
-    
+
     return !!data
   } catch (error) {
     console.error('Failed to check if agent is hidden:', error)
@@ -143,7 +143,7 @@ export const filterHiddenAgents = async <T extends { agent_id: string }>(items: 
   try {
     const hiddenAgentIds = await getHiddenAgents()
     if (hiddenAgentIds.length === 0) return items
-    
+
     const hiddenSet = new Set(hiddenAgentIds)
     return items.filter(item => !hiddenSet.has(item.agent_id))
   } catch (error) {
@@ -172,7 +172,139 @@ export const subscribeToHiddenAgents = (callback: (agentIds: string[]) => void) 
       }
     )
     .subscribe()
-  
+
+  return () => {
+    supabase.removeChannel(channel)
+  }
+}
+
+// ============================================
+// DISMISSED REVIEWS MANAGEMENT
+// ============================================
+
+/**
+ * Get list of dismissed review IDs from Supabase
+ */
+export const getDismissedReviews = async (): Promise<string[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('dismissed_reviews')
+      .select('review_id')
+
+    if (error) {
+      // Table might not exist yet
+      if (error.code === '42P01') {
+        console.warn('dismissed_reviews table does not exist. Please run supabase-dismissed-reviews.sql')
+        return []
+      }
+      console.error('Error fetching dismissed reviews:', error)
+      return []
+    }
+
+    return data?.map(item => item.review_id) || []
+  } catch (error) {
+    console.error('Failed to get dismissed reviews:', error)
+    return []
+  }
+}
+
+/**
+ * Dismiss a review by adding to Supabase
+ */
+export const dismissReview = async (reviewId: string, dismissedBy?: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('dismissed_reviews')
+      .insert({
+        review_id: reviewId,
+        dismissed_by: dismissedBy
+      })
+
+    if (error) {
+      // If review is already dismissed, this is fine
+      if (error.code === '23505') { // Unique constraint violation
+        console.log(`Review ${reviewId} is already dismissed`)
+        return true
+      }
+      console.error('Error dismissing review:', error)
+      return false
+    }
+
+    console.log(`🔕 Dismissed review: ${reviewId}`)
+    return true
+  } catch (error) {
+    console.error('Failed to dismiss review:', error)
+    return false
+  }
+}
+
+/**
+ * Restore a dismissed review by removing from Supabase
+ */
+export const restoreReview = async (reviewId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('dismissed_reviews')
+      .delete()
+      .eq('review_id', reviewId)
+
+    if (error) {
+      console.error('Error restoring review:', error)
+      return false
+    }
+
+    console.log(`🔔 Restored review: ${reviewId}`)
+    return true
+  } catch (error) {
+    console.error('Failed to restore review:', error)
+    return false
+  }
+}
+
+/**
+ * Restore all dismissed reviews (clear the dismissed list)
+ */
+export const restoreAllReviews = async (): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('dismissed_reviews')
+      .delete()
+      .neq('id', 0) // Delete all rows
+
+    if (error) {
+      console.error('Error restoring all reviews:', error)
+      return false
+    }
+
+    console.log(`🔔 Restored all dismissed reviews`)
+    return true
+  } catch (error) {
+    console.error('Failed to restore all reviews:', error)
+    return false
+  }
+}
+
+/**
+ * Subscribe to changes in dismissed reviews (real-time updates)
+ */
+export const subscribeToDismissedReviews = (callback: (reviewIds: string[]) => void) => {
+  const channel = supabase
+    .channel('dismissed-reviews-changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*', // Listen to INSERT, UPDATE, DELETE
+        schema: 'public',
+        table: 'dismissed_reviews'
+      },
+      async () => {
+        console.log('Dismissed reviews changed')
+        const dismissedReviews = await getDismissedReviews()
+        callback(dismissedReviews)
+      }
+    )
+    .subscribe()
+
   return () => {
     supabase.removeChannel(channel)
   }
@@ -191,12 +323,12 @@ export const getCustomDepartments = async (): Promise<CustomDepartment[]> => {
       .from('custom_departments')
       .select('*')
       .order('created_at', { ascending: true })
-    
+
     if (error) {
       console.error('Error fetching custom departments:', error)
       return []
     }
-    
+
     return data || []
   } catch (error) {
     console.error('Failed to get custom departments:', error)
@@ -208,13 +340,13 @@ export const getCustomDepartments = async (): Promise<CustomDepartment[]> => {
  * Create a new custom department in Supabase
  */
 export const createCustomDepartment = async (
-  id: string, 
-  name: string, 
+  id: string,
+  name: string,
   createdBy?: string
 ): Promise<boolean> => {
   try {
     console.log(`🏢 Attempting to create custom department: "${name}" (ID: ${id})`)
-    
+
     const { data, error } = await supabase
       .from('custom_departments')
       .insert({
@@ -223,21 +355,21 @@ export const createCustomDepartment = async (
         created_by: createdBy
       })
       .select()
-    
+
     if (error) {
       // If department already exists, this is fine
       if (error.code === '23505') { // Unique constraint violation
         console.log(`⚠️ Custom department "${name}" already exists`)
         return true
       }
-      
+
       // Check if table doesn't exist
       if (error.code === '42P01') {
         console.error(`❌ Table 'custom_departments' does not exist!`)
         console.error(`Please run the SQL migration: supabase-departments-setup.sql`)
         console.error(`Visit: https://supabase.com/dashboard/project/yncbcjaymepacfyjsoyj/sql/new`)
       }
-      
+
       console.error('❌ Error creating custom department:', {
         code: error.code,
         message: error.message,
@@ -246,7 +378,7 @@ export const createCustomDepartment = async (
       })
       return false
     }
-    
+
     console.log(`✅ Created custom department: ${name}`, data)
     return true
   } catch (error) {
@@ -264,12 +396,12 @@ export const deleteCustomDepartment = async (departmentId: string): Promise<bool
       .from('custom_departments')
       .delete()
       .eq('id', departmentId)
-    
+
     if (error) {
       console.error('Error deleting custom department:', error)
       return false
     }
-    
+
     console.log(`🗑️ Deleted custom department: ${departmentId}`)
     return true
   } catch (error) {
@@ -282,7 +414,7 @@ export const deleteCustomDepartment = async (departmentId: string): Promise<bool
  * Update a custom department name
  */
 export const updateCustomDepartment = async (
-  departmentId: string, 
+  departmentId: string,
   name: string
 ): Promise<boolean> => {
   try {
@@ -290,12 +422,12 @@ export const updateCustomDepartment = async (
       .from('custom_departments')
       .update({ name })
       .eq('id', departmentId)
-    
+
     if (error) {
       console.error('Error updating custom department:', error)
       return false
     }
-    
+
     console.log(`✏️ Updated custom department: ${departmentId} → ${name}`)
     return true
   } catch (error) {
@@ -316,18 +448,18 @@ export const getAgentDepartmentAssignments = async (): Promise<Record<string, st
     const { data, error } = await supabase
       .from('agent_department_assignments')
       .select('agent_id, department_id')
-    
+
     if (error) {
       console.error('Error fetching agent department assignments:', error)
       return {}
     }
-    
+
     // Convert array to map of agent_id -> department_id
     const assignments: Record<string, string> = {}
     data?.forEach(item => {
       assignments[item.agent_id] = item.department_id
     })
-    
+
     return assignments
   } catch (error) {
     console.error('Failed to get agent department assignments:', error)
@@ -345,7 +477,7 @@ export const assignAgentToDepartment = async (
 ): Promise<boolean> => {
   try {
     console.log(`👤 Attempting to assign agent ${agentId} to department ${departmentId}`)
-    
+
     const { data, error } = await supabase
       .from('agent_department_assignments')
       .upsert({
@@ -356,7 +488,7 @@ export const assignAgentToDepartment = async (
         onConflict: 'agent_id'
       })
       .select()
-    
+
     if (error) {
       // Check if table doesn't exist
       if (error.code === '42P01') {
@@ -364,7 +496,7 @@ export const assignAgentToDepartment = async (
         console.error(`Please run the SQL migration: supabase-departments-setup.sql`)
         console.error(`Visit: https://supabase.com/dashboard/project/yncbcjaymepacfyjsoyj/sql/new`)
       }
-      
+
       console.error('❌ Error assigning agent to department:', {
         code: error.code,
         message: error.message,
@@ -373,7 +505,7 @@ export const assignAgentToDepartment = async (
       })
       return false
     }
-    
+
     console.log(`✅ Assigned agent ${agentId} to department ${departmentId}`, data)
     return true
   } catch (error) {
@@ -391,12 +523,12 @@ export const removeAgentDepartmentAssignment = async (agentId: string): Promise<
       .from('agent_department_assignments')
       .delete()
       .eq('agent_id', agentId)
-    
+
     if (error) {
       console.error('Error removing agent department assignment:', error)
       return false
     }
-    
+
     console.log(`🔄 Removed department assignment for agent ${agentId}`)
     return true
   } catch (error) {
@@ -414,12 +546,12 @@ export const clearAllAgentAssignments = async (): Promise<boolean> => {
       .from('agent_department_assignments')
       .delete()
       .neq('id', 0) // Delete all rows
-    
+
     if (error) {
       console.error('Error clearing all agent assignments:', error)
       return false
     }
-    
+
     console.log(`🗑️ Cleared all agent department assignments`)
     return true
   } catch (error) {
@@ -437,12 +569,12 @@ export const clearAllCustomDepartments = async (): Promise<boolean> => {
       .from('custom_departments')
       .delete()
       .neq('id', '') // Delete all rows
-    
+
     if (error) {
       console.error('Error clearing all custom departments:', error)
       return false
     }
-    
+
     console.log(`🗑️ Cleared all custom departments`)
     return true
   } catch (error) {
@@ -457,13 +589,13 @@ export const clearAllCustomDepartments = async (): Promise<boolean> => {
 export const applyAgentDepartmentAssignments = async (agents: Agent[]): Promise<Agent[]> => {
   try {
     const assignments = await getAgentDepartmentAssignments()
-    
+
     if (Object.keys(assignments).length === 0) {
       return agents
     }
-    
+
     console.log(`📝 Applying ${Object.keys(assignments).length} agent department assignments from Supabase`)
-    
+
     return agents.map(agent => {
       const assignedDeptId = assignments[agent.id]
       if (assignedDeptId) {
@@ -486,23 +618,23 @@ export const applyAgentDepartmentAssignments = async (agents: Agent[]): Promise<
 export const mergeCustomDepartments = async (standardDepts: Department[]): Promise<Department[]> => {
   try {
     const customDepts = await getCustomDepartments()
-    
+
     if (customDepts.length === 0) {
       return standardDepts
     }
-    
+
     console.log(`📝 Adding ${customDepts.length} custom departments from Supabase`)
-    
+
     // Convert custom departments to Department format
     const customDepartments: Department[] = customDepts.map(cd => ({
       id: cd.id,
       name: cd.name
     }))
-    
+
     // Merge, avoiding duplicates
     const existingIds = new Set(standardDepts.map(d => d.id))
     const newCustomDepts = customDepartments.filter(cd => !existingIds.has(cd.id))
-    
+
     return [...standardDepts, ...newCustomDepts]
   } catch (error) {
     console.error('Failed to merge custom departments:', error)
@@ -541,7 +673,7 @@ export const subscribeToDepartmentChanges = (callback: () => void) => {
       }
     )
     .subscribe()
-  
+
   return () => {
     supabase.removeChannel(customDeptChannel)
   }

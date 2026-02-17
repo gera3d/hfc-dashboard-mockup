@@ -41,15 +41,15 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
     prevMetricsRef.current = metrics;
   }, [metrics, currentMetrics]);
   
-  // Calculate key metrics
-  const fiveStarRate = (metrics.star_5 / metrics.total) * 100;
-  const prevFiveStarRate = previousMetrics ? (previousMetrics.star_5 / previousMetrics.total) * 100 : null;
-  
+  // Calculate key metrics (guard against division by zero when no reviews)
+  const fiveStarRate = metrics.total > 0 ? (metrics.star_5 / metrics.total) * 100 : 0;
+  const prevFiveStarRate = previousMetrics && previousMetrics.total > 0 ? (previousMetrics.star_5 / previousMetrics.total) * 100 : null;
+
   const problemReviews = metrics.star_1 + metrics.star_2;
   const prevProblemReviews = previousMetrics ? previousMetrics.star_1 + previousMetrics.star_2 : null;
-  
+
   const positiveReviews = metrics.star_4 + metrics.star_5;
-  const positiveRate = (positiveReviews / metrics.total) * 100;
+  const positiveRate = metrics.total > 0 ? (positiveReviews / metrics.total) * 100 : 0;
   
   // Helper to calculate percentage change
   const getChange = (current: number, previous: number | null) => {
@@ -147,11 +147,11 @@ export default function EnhancedMetricsGrid({ metrics, previousMetrics, showComp
   );
   
   function renderCards(metricsData: MetricsSummary, isExiting: boolean) {
-    const fiveStarRate = (metricsData.star_5 / metricsData.total) * 100;
+    const fiveStarRate = metricsData.total > 0 ? (metricsData.star_5 / metricsData.total) * 100 : 0;
     const problemReviews = metricsData.star_1 + metricsData.star_2;
     const positiveReviews = metricsData.star_4 + metricsData.star_5;
-    
-    const prevFiveStarRate = previousMetrics ? (previousMetrics.star_5 / previousMetrics.total) * 100 : null;
+
+    const prevFiveStarRate = previousMetrics && previousMetrics.total > 0 ? (previousMetrics.star_5 / previousMetrics.total) * 100 : null;
     const prevProblemReviews = previousMetrics ? previousMetrics.star_1 + previousMetrics.star_2 : null;
     
     const satisfactionChange = getChange(fiveStarRate, prevFiveStarRate);

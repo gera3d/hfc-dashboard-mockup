@@ -262,6 +262,63 @@ function parseCSV(csvText: string): ParsedData {
     }
   });
 
+  // --- Merge short-name agents into their full-name counterparts ---
+  // The CSV transitioned from short names (e.g., "Billy") to full names with
+  // last initial (e.g., "BillyH").  The parser creates separate agent IDs
+  // (billy vs billyh) so reviews are split across two "agents" that are really
+  // the same person.  We merge the short-name agent into the full-name agent
+  // so that Supabase department assignments (which reference the full-name ID)
+  // cover ALL of that agent's reviews.
+
+  const allIds = Array.from(agentsMap.keys());
+
+  // Build a merge map: shortId → canonicalLongId
+  const mergeMap = new Map<string, string>();
+
+  for (const shortId of allIds) {
+    // Find all longer IDs that start with this shortId + exactly one extra letter
+    const candidates = allIds.filter(
+      longId => longId !== shortId &&
+        longId.length === shortId.length + 1 &&
+        longId.startsWith(shortId)
+    );
+
+    if (candidates.length === 1) {
+      // Unambiguous: one full-name match (e.g., billy → billyh)
+      mergeMap.set(shortId, candidates[0]);
+    } else if (candidates.length > 1) {
+      // Ambiguous (e.g., jacob → jacobl, jacobh).  The short name was the
+      // original agent before last-initials were added.  Merge into the
+      // candidate with the most reviews — that's overwhelmingly the same person.
+      const reviewCounts = candidates.map(c => ({
+        id: c,
+        count: reviews.filter(r => r.agent_id === c).length
+      }));
+      reviewCounts.sort((a, b) => b.count - a.count);
+      mergeMap.set(shortId, reviewCounts[0].id);
+      console.log(`[Agent Merge] Ambiguous merge for "${shortId}" → choosing "${reviewCounts[0].id}" (${reviewCounts[0].count} reviews) over ${reviewCounts.slice(1).map(r => `"${r.id}" (${r.count})`).join(', ')}`);
+    }
+    // candidates.length === 0 → no merge needed (standalone agent like "chris", "jaxon", "rodney")
+  }
+
+  if (mergeMap.size > 0) {
+    console.log(`[Agent Merge] Merging ${mergeMap.size} short-name agents into full-name counterparts:`,
+      Array.from(mergeMap.entries()).map(([s, l]) => `${s}→${l}`).join(', '));
+
+    // Remap review agent_ids
+    for (const review of reviews) {
+      const canonical = mergeMap.get(review.agent_id);
+      if (canonical) {
+        review.agent_id = canonical;
+      }
+    }
+
+    // Remove merged (short-name) agent entries from the map
+    for (const shortId of mergeMap.keys()) {
+      agentsMap.delete(shortId);
+    }
+  }
+
   return {
     reviews,
     agents: Array.from(agentsMap.values()),

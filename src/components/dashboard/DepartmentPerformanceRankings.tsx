@@ -47,8 +47,24 @@ export default function DepartmentPerformanceRankings({
       departmentsCount: departments.length
     });
 
-    // Filter out the "general" fallback department - it shouldn't appear in rankings
-    const filteredDepartments = departments.filter(dept => dept.id !== 'general');
+    // Check if there are any non-general departments with agents assigned
+    const nonGeneralDepts = departments.filter(dept => dept.id !== 'general');
+    const hasCustomDepartments = nonGeneralDepts.some(dept =>
+      agents.some(a => a.department_id === dept.id)
+    );
+
+    // If custom departments exist with agents assigned, filter out the "general" fallback.
+    // Otherwise include "general" (displayed as "All Agents") so rankings aren't empty.
+    const filteredDepartments = hasCustomDepartments
+      ? departments.filter(dept => {
+          // Keep non-general departments always.
+          // Keep "general" only if agents are still assigned to it (unassigned agents).
+          if (dept.id === 'general') {
+            return agents.some(a => a.department_id === 'general');
+          }
+          return true;
+        })
+      : departments;
 
     return filteredDepartments
       .map((dept) => {
@@ -96,7 +112,7 @@ export default function DepartmentPerformanceRankings({
           : 0;
 
         return {
-          name: dept.name,
+          name: dept.id === 'general' ? 'Unassigned' : dept.name,
           reviews: totalReviews,
           rating: avgRating,
           percent_5_star: fiveStarRate,
@@ -111,8 +127,10 @@ export default function DepartmentPerformanceRankings({
       .slice(0, limit);
   }, [reviews, departments, agents, limit]);
 
-  const teamAvgRating = departmentData.length > 0
-    ? departmentData.reduce((sum, d) => sum + d.rating, 0) / departmentData.length
+  // Weighted team average across departments (weight by review count, not mean-of-means)
+  const totalTeamReviews = departmentData.reduce((sum, d) => sum + d.reviews, 0);
+  const teamAvgRating = totalTeamReviews > 0
+    ? departmentData.reduce((sum, d) => sum + d.rating * d.reviews, 0) / totalTeamReviews
     : 0;
 
   const getBadges = (dept: typeof departmentData[0], rank: number) => {

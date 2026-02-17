@@ -1,9 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Review } from "@/data/dataService";
 import { X, AlertTriangle, Star, User, Calendar, MessageSquare, ExternalLink, RotateCcw, Eye, EyeOff } from "lucide-react";
 import Badge from "@/components/tailadmin/ui/badge/Badge";
+import {
+  getDismissedReviews,
+  dismissReview,
+  restoreReview,
+  restoreAllReviews,
+  subscribeToDismissedReviews
+} from "@/lib/supabaseService";
 
 interface ProblemFeedbackProps {
   reviews: Review[];
@@ -14,6 +21,30 @@ export default function ProblemFeedback({ reviews, onDismiss }: ProblemFeedbackP
   const [dismissedReviews, setDismissedReviews] = useState<Set<string>>(new Set());
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [showDismissed, setShowDismissed] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load dismissed reviews from Supabase on mount
+  useEffect(() => {
+    const loadDismissedReviews = async () => {
+      try {
+        const dismissedIds = await getDismissedReviews();
+        setDismissedReviews(new Set(dismissedIds));
+      } catch (error) {
+        console.error('Failed to load dismissed reviews:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDismissedReviews();
+
+    // Subscribe to real-time changes
+    const unsubscribe = subscribeToDismissedReviews((reviewIds) => {
+      setDismissedReviews(new Set(reviewIds));
+    });
+
+    return unsubscribe;
+  }, []);
 
   // All problem reviews (1★, 2★, 3★ with comments)
   const allProblemReviews = reviews.filter(
@@ -33,24 +64,54 @@ export default function ProblemFeedback({ reviews, onDismiss }: ProblemFeedbackP
     (review) => dismissedReviews.has(review.id)
   );
 
-  const handleDismiss = (reviewId: string) => {
+  const handleDismiss = async (reviewId: string) => {
+    // Optimistic update
     setDismissedReviews((prev) => new Set(prev).add(reviewId));
+
+    // Persist to Supabase
+    const success = await dismissReview(reviewId);
+    if (!success) {
+      // Revert on failure
+      setDismissedReviews((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(reviewId);
+        return newSet;
+      });
+    }
+
     if (onDismiss) {
       onDismiss(reviewId);
     }
   };
 
-  const handleRestore = (reviewId: string) => {
+  const handleRestore = async (reviewId: string) => {
+    // Optimistic update
     setDismissedReviews((prev) => {
       const newSet = new Set(prev);
       newSet.delete(reviewId);
       return newSet;
     });
+
+    // Persist to Supabase
+    const success = await restoreReview(reviewId);
+    if (!success) {
+      // Revert on failure
+      setDismissedReviews((prev) => new Set(prev).add(reviewId));
+    }
   };
 
-  const handleRestoreAll = () => {
+  const handleRestoreAll = async () => {
+    // Optimistic update
+    const previousDismissed = new Set(dismissedReviews);
     setDismissedReviews(new Set());
     setShowDismissed(false);
+
+    // Persist to Supabase
+    const success = await restoreAllReviews();
+    if (!success) {
+      // Revert on failure
+      setDismissedReviews(previousDismissed);
+    }
   };
 
   const getRatingColor = (rating: number) => {

@@ -38,18 +38,32 @@ async function ensureSyncStatusDir() {
 }
 
 async function getSyncStatus(syncId: string): Promise<SyncStatusType | null> {
-  try {
-    const filePath = join(SYNC_STATUS_DIR, `${syncId}.json`);
-    const data = await readFile(filePath, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    // File doesn't exist or other read error
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return null; // File not found - sync doesn't exist
+  const filePath = join(SYNC_STATUS_DIR, `${syncId}.json`);
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const data = await readFile(filePath, 'utf-8');
+      if (!data.trim()) {
+        // File is empty - being written, retry
+        await new Promise(r => setTimeout(r, 50));
+        continue;
+      }
+      return JSON.parse(data);
+    } catch (error) {
+      const nodeErr = error as NodeJS.ErrnoException;
+      if (nodeErr.code === 'ENOENT') {
+        return null; // File not found - sync doesn't exist
+      }
+      // JSON parse error or other - file may be mid-write, retry
+      if (attempt < 2) {
+        await new Promise(r => setTimeout(r, 50));
+        continue;
+      }
+      console.error('[Sync] Error reading status after retries:', error);
+      return null;
     }
-    console.error('[Sync] Error reading status:', error);
-    return null;
   }
+  return null;
 }
 
 async function setSyncStatus(syncId: string, status: SyncStatusType): Promise<void> {

@@ -43,3 +43,9 @@ google-sheets-credentials.json
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Generated cache files (large, rebuilt on sync)
+src/data/cached-sheets-parsed.json
+src/data/cached-sheets-data.json
+src/data/temp-sheet-download.csv
+src/data/sync-status/

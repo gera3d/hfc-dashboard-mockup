@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { clearIndexedDB } from '@/data/googleSheetsService';
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 const CHECK_INTERVAL_MS = 60 * 60 * 1000; // Check every hour
@@ -102,6 +103,8 @@ export default function AutoSync() {
             localStorage.setItem('lastAutoSyncTime', startTime.toString());
             complete = true;
             syncInProgressRef.current = false;
+            // Clear IndexedDB so dashboard reloads fresh data on next visit
+            clearIndexedDB().catch(() => {});
           } else if (status.status === 'error') {
             console.error('[AutoSync] ❌ Automatic sync failed:', status.error);
             // Set timestamp anyway to prevent immediate retry

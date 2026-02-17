@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import { clearIndexedDB } from '@/data/googleSheetsService';
 
 export interface SyncStatus {
   isActive: boolean;
@@ -66,14 +67,8 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
       }
       
       if (!response.ok) {
-        console.warn('[SyncContext] Failed to get sync status:', response.status);
-        // Don't crash - just mark as inactive and stop polling
-        if (pollIntervalRef.current) {
-          clearInterval(pollIntervalRef.current);
-          pollIntervalRef.current = null;
-        }
-        setSyncId(null);
-        syncLockRef.current = false;
+        console.warn('[SyncContext] Failed to get sync status:', response.status, '- will retry');
+        // Transient error (e.g. file mid-write causing 500) - keep polling, don't stop
         return;
       }
 
@@ -98,6 +93,11 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
         setSyncId(null);
         // Release lock when sync completes or errors
         syncLockRef.current = false;
+
+        // Clear IndexedDB cache so dashboard reloads fresh data on next render
+        if (status.status === 'complete') {
+          clearIndexedDB().catch(() => {});
+        }
       }
     } catch (error) {
       console.warn('[SyncContext] Error polling sync status - stopping poll:', error);

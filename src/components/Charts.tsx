@@ -206,9 +206,10 @@ export function AgentLeaderboard({ data, limit = 10 }: AgentLeaderboardProps) {
     first5: chartData.slice(0, 5).map(c => ({ name: c.name, reviews: c.reviews, rating: c.rating }))
   });
   
-  // Calculate team average for comparison
-  const teamAvgRating = chartData.length > 0 
-    ? chartData.reduce((sum, a) => sum + a.rating, 0) / chartData.length 
+  // Calculate team average for comparison (weighted by review count)
+  const totalReviews = chartData.reduce((sum, a) => sum + a.reviews, 0)
+  const teamAvgRating = totalReviews > 0
+    ? chartData.reduce((sum, a) => sum + a.rating * a.reviews, 0) / totalReviews
     : 0
   
   // Generate performance badges based on multiple criteria

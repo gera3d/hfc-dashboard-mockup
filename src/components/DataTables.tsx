@@ -123,19 +123,22 @@ export function AgentTable({ data, onAgentClick, departments = defaultDepartment
     return acc;
   }, {} as Record<string, AgentMetrics[]>);
 
-  // Calculate department and grand totals/averages
+  // Calculate department and grand totals/averages.
+  // Uses weighted averages (not mean-of-means) so agents with more reviews
+  // contribute proportionally to the aggregate avg_rating and percent_5_star.
   const calcSummary = (agents: AgentMetrics[]) => {
     const sum = (field: keyof AgentMetrics) => agents.reduce((a, b) => a + (Number(b[field]) || 0), 0);
-    const avg = (field: keyof AgentMetrics) => agents.length ? sum(field) / agents.length : 0;
+    const totalReviews = sum('total');
+    const totalStars = sum('star_1') * 1 + sum('star_2') * 2 + sum('star_3') * 3 + sum('star_4') * 4 + sum('star_5') * 5;
     return {
       star_1: sum('star_1'),
       star_2: sum('star_2'),
       star_3: sum('star_3'),
       star_4: sum('star_4'),
       star_5: sum('star_5'),
-      total: sum('total'),
-      avg_rating: avg('avg_rating'),
-      percent_5_star: avg('percent_5_star'),
+      total: totalReviews,
+      avg_rating: totalReviews > 0 ? Math.round((totalStars / totalReviews) * 100) / 100 : 0,
+      percent_5_star: totalReviews > 0 ? Math.round((sum('star_5') / totalReviews) * 100 * 100) / 100 : 0,
     };
   };
   const grandSummary = calcSummary(sortedData);

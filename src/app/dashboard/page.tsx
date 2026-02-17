@@ -165,6 +165,17 @@ export default function DashboardPage() {
       ]);
       const agentsWithOverrides = await applyAgentDepartmentAssignments(agentsData);
       const departmentsWithCustom = await mergeCustomDepartments(departmentsData);
+
+      // CRITICAL: Also update reviews to match new agent department assignments,
+      // otherwise reviews keep department_id='general' and department rankings show 0 reviews.
+      setReviews(prevReviews => prevReviews.map(review => {
+        const agent = agentsWithOverrides.find((a: Agent) => a.id === review.agent_id);
+        if (agent && agent.department_id !== review.department_id) {
+          return { ...review, department_id: agent.department_id };
+        }
+        return review;
+      }));
+
       setAgents(agentsWithOverrides);
       setDepartments(departmentsWithCustom);
     });
@@ -436,6 +447,21 @@ export default function DashboardPage() {
   const agentMetrics = getAgentMetrics(visibleReviews, visibleAgents, departments);
   const dailyMetrics = getDailyMetrics(visibleReviews, filters.dateRange);
 
+  // Departments eligible for rankings (include "general" only when no custom depts have agents)
+  const rankableDepartments = useMemo(() => {
+    const nonGeneralDepts = departments.filter(d => d.id !== 'general');
+    const hasCustomDepartments = nonGeneralDepts.some(dept =>
+      visibleAgents.some(a => a.department_id === dept.id)
+    );
+    if (hasCustomDepartments) {
+      return departments.filter(d => {
+        if (d.id === 'general') return visibleAgents.some(a => a.department_id === 'general');
+        return true;
+      });
+    }
+    return departments;
+  }, [departments, visibleAgents]);
+
   // Debug logging - DETAILED
   console.log('📊 DASHBOARD DEBUG - FULL DETAILS:', {
     totalReviews: reviews.length,
@@ -661,13 +687,16 @@ export default function DashboardPage() {
                   onToggle={() => handleSectionToggle('department-rankings')}
                   title="Department Performance Rankings"
                   subtitle="Compare performance metrics across all departments"
-                  badge={`${departments.filter(d => d.id !== 'general').length} dept${departments.filter(d => d.id !== 'general').length !== 1 ? 's' : ''}`}
+                  badge={`${rankableDepartments.length} dept${rankableDepartments.length !== 1 ? 's' : ''}`}
                   icon={<Building2 className="w-5 h-5" />}
                   previewContent={
                     <AnimatedPreview key={`dept-preview-${filters.dateRange.label}`} direction="right">
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 text-sm w-full">
-                        {/* Top 3 Departments with their top agent */}
-                        {departments.filter(d => d.id !== 'general').slice(0, 3).map((dept, index) => {
+                        {/* Top 3 Departments with reviews - skip any with 0 reviews */}
+                        {rankableDepartments
+                          .filter(dept => visibleReviews.some(r => r.department_id === dept.id))
+                          .slice(0, 3)
+                          .map((dept, index) => {
                           const deptReviews = visibleReviews.filter(r => r.department_id === dept.id);
                           const deptAgentMetrics = getAgentMetrics(deptReviews, visibleAgents, departments);
                           const topAgent = deptAgentMetrics[0];

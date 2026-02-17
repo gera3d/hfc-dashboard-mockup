@@ -2,26 +2,30 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  loadAgents, 
-  loadDepartments, 
-  refreshAgents, 
+import {
+  loadAgents,
+  loadDepartments,
+  refreshAgents,
   refreshDepartments,
-  updateAgentDepartment 
+  updateAgentDepartment
 } from '@/data/dataService';
 import { clearIndexedDB, fetchCachedData } from '@/data/googleSheetsService';
-import { 
-  getChangeCount, 
-  clearAllOverrides, 
-  saveAgentDepartment, 
+import {
+  getChangeCount,
+  clearAllOverrides,
+  saveAgentDepartment,
   saveCustomDepartment,
   applyAgentOverrides,
   mergeDepartments
 } from '@/lib/localStorage';
-import { 
-  getHiddenAgents, 
+import {
+  getHiddenAgents,
   unhideAgent,
-  subscribeToHiddenAgents
+  subscribeToHiddenAgents,
+  applyAgentDepartmentAssignments,
+  mergeCustomDepartments,
+  assignAgentToDepartment,
+  createCustomDepartment,
 } from '@/lib/supabaseService';
 import { AgentDepartmentManager } from '@/components/AgentDepartmentManager';
 import PerformanceTierGuide from '@/components/dashboard/PerformanceTierGuide';
@@ -112,7 +116,7 @@ export default function SettingsPage() {
     }
   }, []);
 
-  // Load initial data
+  // Load initial data (from Supabase, matching Dashboard's data source)
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -120,17 +124,17 @@ export default function SettingsPage() {
           loadAgents(),
           loadDepartments()
         ]);
-        
-        const agentsWithOverrides = applyAgentOverrides(agentsData);
-        const departmentsWithCustom = mergeDepartments(departmentsData);
-        
+
+        const agentsWithOverrides = await applyAgentDepartmentAssignments(agentsData);
+        const departmentsWithCustom = await mergeCustomDepartments(departmentsData);
+
         setAgents(agentsWithOverrides);
         setDepartments(departmentsWithCustom);
       } catch (error) {
         console.error('Error loading data:', error);
       }
     };
-    
+
     loadData();
   }, []);
 
@@ -153,22 +157,22 @@ export default function SettingsPage() {
   const handleSyncComplete = useCallback(async (success: boolean) => {
     if (success) {
       setLastSyncTime(new Date());
-      
+
       // Clear IndexedDB to allow client cache to refresh
       await clearIndexedDB();
-      
+
       // Fetch latest data from cache (which will reload from server)
       await fetchCachedData();
-      
-      // Reload data after successful sync
+
+      // Reload data after successful sync (apply Supabase overrides)
       const [agentsData, departmentsData] = await Promise.all([
         refreshAgents(),
         refreshDepartments()
       ]);
-      
-      const agentsWithOverrides = applyAgentOverrides(agentsData);
-      const departmentsWithCustom = mergeDepartments(departmentsData);
-      
+
+      const agentsWithOverrides = await applyAgentDepartmentAssignments(agentsData);
+      const departmentsWithCustom = await mergeCustomDepartments(departmentsData);
+
       setAgents(agentsWithOverrides);
       setDepartments(departmentsWithCustom);
     }
@@ -182,14 +186,14 @@ export default function SettingsPage() {
         refreshAgents(),
         refreshDepartments()
       ]);
-      
-      const agentsWithOverrides = applyAgentOverrides(agentsData);
-      const departmentsWithCustom = mergeDepartments(departmentsData);
-      
+
+      const agentsWithOverrides = await applyAgentDepartmentAssignments(agentsData);
+      const departmentsWithCustom = await mergeCustomDepartments(departmentsData);
+
       setAgents(agentsWithOverrides);
       setDepartments(departmentsWithCustom);
-      
-      console.log('✅ Data refreshed from local cache');
+
+      console.log('✅ Data refreshed from Supabase + cache');
     } catch (error) {
       console.error('Error refreshing data:', error);
       console.error('❌ Failed to refresh data');
@@ -210,26 +214,29 @@ export default function SettingsPage() {
     }
   };
 
-  // Agent department update handler
+  // Agent department update handler — writes to both Supabase (primary) and localStorage (fallback)
   const handleAgentDepartmentUpdate = async (agentId: string, departmentId: string) => {
     try {
-      saveAgentDepartment(agentId, departmentId);
-      
-      setAgents(prevAgents => 
-        prevAgents.map(agent => 
-          agent.id === agentId 
+      // Update local state immediately for responsive UI
+      setAgents(prevAgents =>
+        prevAgents.map(agent =>
+          agent.id === agentId
             ? { ...agent, department_id: departmentId }
             : agent
         )
       );
-      
-      await updateAgentDepartment(agentId, departmentId);
-      
+
+      // Save to Supabase (primary storage — Dashboard reads from here)
+      await assignAgentToDepartment(agentId, departmentId);
+
+      // Also save to localStorage as fallback
+      saveAgentDepartment(agentId, departmentId);
+
       const agent = agents.find(a => a.id === agentId);
       const dept = departments.find(d => d.id === departmentId);
-      
+
       if (agent && dept) {
-        console.log(`✅ ${agent.display_name} moved to ${dept.name} (saved to localStorage)`);
+        console.log(`✅ ${agent.display_name} moved to ${dept.name} (saved to Supabase + localStorage)`);
       }
     } catch (error) {
       console.error('Error updating agent department:', error);
@@ -237,7 +244,7 @@ export default function SettingsPage() {
     }
   };
 
-  // Create department handler
+  // Create department handler — writes to both Supabase (primary) and localStorage (fallback)
   const handleCreateDepartment = async (departmentName: string): Promise<string> => {
     try {
       const newDeptId = `dept-${Date.now()}`;
@@ -245,11 +252,17 @@ export default function SettingsPage() {
         id: newDeptId,
         name: departmentName
       };
-      
-      saveCustomDepartment(newDepartment);
+
+      // Update local state immediately
       setDepartments(prev => [...prev, newDepartment]);
-      
-      console.log(`✅ Department "${departmentName}" created and saved to localStorage`);
+
+      // Save to Supabase (primary storage — Dashboard reads from here)
+      await createCustomDepartment(newDeptId, departmentName);
+
+      // Also save to localStorage as fallback
+      saveCustomDepartment(newDepartment);
+
+      console.log(`✅ Department "${departmentName}" created (saved to Supabase + localStorage)`);
       return newDeptId;
     } catch (error) {
       console.error('Error creating department:', error);
