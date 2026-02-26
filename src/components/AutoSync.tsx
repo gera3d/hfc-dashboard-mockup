@@ -3,8 +3,8 @@
 import { useEffect, useRef } from 'react';
 import { clearIndexedDB } from '@/data/googleSheetsService';
 
-const ONE_DAY_MS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-const CHECK_INTERVAL_MS = 60 * 60 * 1000; // Check every hour
+const SYNC_INTERVAL_MS = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
+const CHECK_INTERVAL_MS = 30 * 60 * 1000; // Check every 30 minutes
 const INITIAL_DELAY_MS = 10000; // Wait 10 seconds after page load
 
 export default function AutoSync() {
@@ -31,9 +31,9 @@ export default function AutoSync() {
         const lastSyncTime = localStorage.getItem('lastAutoSyncTime');
         const now = Date.now();
 
-        // If never synced or more than 24 hours, trigger sync
-        if (!lastSyncTime || now - parseInt(lastSyncTime) > ONE_DAY_MS) {
-          console.log('[AutoSync] 🔄 Starting automatic daily sync...');
+        // If never synced or more than interval, trigger sync
+        if (!lastSyncTime || now - parseInt(lastSyncTime) > SYNC_INTERVAL_MS) {
+          console.log('[AutoSync] 🔄 Starting automatic sync...');
           syncInProgressRef.current = true;
 
           // Trigger background sync (fire and forget - don't block UI)
@@ -57,9 +57,15 @@ export default function AutoSync() {
               localStorage.setItem('lastAutoSyncTime', now.toString());
             });
         } else {
-          const timeUntilNext = ONE_DAY_MS - (now - parseInt(lastSyncTime));
-          const hoursUntilNext = Math.floor(timeUntilNext / (60 * 60 * 1000));
-          console.log(`[AutoSync] ⏸️ Next sync in ~${hoursUntilNext} hours`);
+          const timeUntilNextMs = SYNC_INTERVAL_MS - (now - parseInt(lastSyncTime));
+          const hoursUntilNext = Math.floor(timeUntilNextMs / (60 * 60 * 1000));
+          const minsUntilNext = Math.floor((timeUntilNextMs % (60 * 60 * 1000)) / (60 * 1000));
+
+          if (hoursUntilNext > 0) {
+            console.log(`[AutoSync] ⏸️ Next sync in ~${hoursUntilNext}h ${minsUntilNext}m`);
+          } else {
+            console.log(`[AutoSync] ⏸️ Next sync in ~${minsUntilNext}m`);
+          }
         }
       } catch (error) {
         console.error('[AutoSync] Error during auto-sync check:', error);
@@ -74,10 +80,10 @@ export default function AutoSync() {
 
       while (!complete && attempts < maxAttempts) {
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         try {
           const statusResponse = await fetch(`/api/sync-sheets-bg?syncId=${syncId}`);
-          
+
           // Handle 404 - sync was cleaned up or completed
           if (statusResponse.status === 404) {
             console.log('[AutoSync] ✅ Sync completed (status file cleaned up)');
@@ -86,7 +92,7 @@ export default function AutoSync() {
             syncInProgressRef.current = false;
             break;
           }
-          
+
           if (!statusResponse.ok) {
             console.error('[AutoSync] ❌ Sync status check failed:', statusResponse.status);
             // Set timestamp to prevent immediate retry
@@ -104,7 +110,7 @@ export default function AutoSync() {
             complete = true;
             syncInProgressRef.current = false;
             // Clear IndexedDB so dashboard reloads fresh data on next visit
-            clearIndexedDB().catch(() => {});
+            clearIndexedDB().catch(() => { });
           } else if (status.status === 'error') {
             console.error('[AutoSync] ❌ Automatic sync failed:', status.error);
             // Set timestamp anyway to prevent immediate retry
@@ -132,9 +138,11 @@ export default function AutoSync() {
     };
 
     // OPTIMIZATION: Delay initial check by 10 seconds to not block page load
+    console.log('[AutoSync] ⏳ Scheduled initial status check in 10s');
     const initialTimeout = setTimeout(checkAndSync, INITIAL_DELAY_MS);
 
-    // Then check every hour
+    // Then check every 30 minutes
+    console.log('[AutoSync] 🕒 Background monitor active (Checking every 30m)');
     const interval = setInterval(checkAndSync, CHECK_INTERVAL_MS);
 
     return () => {
